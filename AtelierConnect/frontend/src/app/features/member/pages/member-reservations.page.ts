@@ -174,6 +174,19 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
                 </div>
               </form>
 
+              <div class="mt-3 rounded-lg border border-sky-200 bg-sky-50 p-3">
+                <p class="mb-2 text-sm text-sky-900">
+                  {{ language.t('member.reservations.consentInfo') }}
+                </p>
+                <button mat-stroked-button type="button"
+                        (click)="consentToPublicOpening()"
+                        [disabled]="actionId() !== null || consentedMatchIds().has(selectedManagedMatch()!.id)">
+                  {{ consentedMatchIds().has(selectedManagedMatch()!.id)
+                    ? language.t('member.reservations.consentSuccess')
+                    : language.t('member.reservations.consentAction') }}
+                </button>
+              </div>
+
               @if (pendingDeleteMatchId() === selectedManagedMatch()!.id) {
                 <div class="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900">
                   <p class="font-semibold">{{ language.t('member.reservations.confirmation') }}</p>
@@ -284,6 +297,7 @@ export class MemberReservationsPage {
 
   readonly loading = signal(false);
   readonly actionId = signal<number | null>(null);
+  readonly consentedMatchIds = signal<Set<number>>(new Set());
   readonly message = signal('');
   readonly errorMessage = signal('');
   readonly reservations = signal<ReservationResponse[]>([]);
@@ -469,6 +483,32 @@ export class MemberReservationsPage {
           this.setPageError(extractApiErrorMessage(error, this.language.t('member.reservations.updateError')));
         }
       });
+  }
+
+  consentToPublicOpening(): void {
+    const atelier = this.selectedManagedMatch();
+    if (!atelier || atelier.typeMatch !== 'PRIVE' || this.actionId() !== null) {
+      return;
+    }
+    if (!confirm(this.language.t('member.reservations.consentConfirm'))) {
+      return;
+    }
+
+    this.actionId.set(atelier.id);
+    this.message.set('');
+    this.errorMessage.set('');
+    this.matchesApi.consentToPublicOpening(atelier.id).subscribe({
+      next: () => {
+        this.actionId.set(null);
+        this.consentedMatchIds.update(ids => new Set([...ids, atelier.id]));
+        this.message.set(this.language.t('member.reservations.consentSuccess'));
+      },
+      error: (error) => {
+        this.actionId.set(null);
+        this.setPageError(extractApiErrorMessage(error,
+          this.language.t('member.reservations.consentError')));
+      }
+    });
   }
 
   requestDeleteManagedMatch(): void {
