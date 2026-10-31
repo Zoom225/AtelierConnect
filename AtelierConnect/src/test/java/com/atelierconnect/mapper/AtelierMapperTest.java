@@ -87,6 +87,19 @@ class AtelierMapperTest {
     }
 
     @Test
+    @DisplayName("Enregistre et expose le consentement daté à l'ouverture publique")
+    void mapsConsentAndTimestamp() {
+        LocalDateTime moment = LocalDateTime.of(2026, 10, 31, 12, 0);
+        match.setAccordOuverturePublique(true);
+        match.setDateAccordOuverturePublique(moment);
+
+        AtelierDto dto = matchMapper.toAtelierDto(match);
+
+        assertTrue(dto.accordOuverturePublique());
+        assertEquals(moment, dto.dateAccordOuverturePublique());
+    }
+
+    @Test
     @DisplayName("toMatchDto - Doit retourner null si le Match est null")
     void toMatchDto_shouldReturnNull_whenMatchIsNull() {
         AtelierDto resultDto = matchMapper.toAtelierDto(null);
