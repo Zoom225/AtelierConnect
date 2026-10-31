@@ -41,7 +41,9 @@ public class AtelierMapper {
                 match.getStatut(),
                 match.getNbJoueursActuels(),
                 match.getPrixParJoueur(),
-                match.getDateConversionPublic()
+                match.getDateConversionPublic(),
+                match.getAccordOuverturePublique(),
+                match.getDateAccordOuverturePublique()
         );
     }
 }
