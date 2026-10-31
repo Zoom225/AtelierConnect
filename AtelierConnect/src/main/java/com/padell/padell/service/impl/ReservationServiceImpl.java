@@ -9,8 +9,8 @@ import com.padell.padell.exception.BusinessException;
 import com.padell.padell.exception.ResourceNotFoundException;
 import com.padell.padell.repository.PaiementRepository;
 import com.padell.padell.repository.ReservationRepository;
-import com.padell.padell.service.MatchService;
-import com.padell.padell.service.MembreService;
+import com.padell.padell.service.AtelierService;
+import com.padell.padell.service.ParticipantService;
 import com.padell.padell.service.ReservationService;
 import com.padell.padell.service.AtelierRules;
 import lombok.RequiredArgsConstructor;
@@ -31,8 +31,8 @@ public class ReservationServiceImpl implements ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final PaiementRepository paiementRepository;
-    private final MatchService matchService;
-    private final MembreService membreService;
+    private final AtelierService matchService;
+    private final ParticipantService membreService;
 
     @Override
     @Transactional

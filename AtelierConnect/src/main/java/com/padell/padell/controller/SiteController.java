@@ -4,7 +4,7 @@ import com.padell.padell.dto.request.SiteRequest;
 import com.padell.padell.dto.response.SiteResponse;
 import com.padell.padell.entity.Centre;
 import com.padell.padell.mapper.SiteMapper;
-import com.padell.padell.service.SiteService;
+import com.padell.padell.service.CentreService;
 import com.padell.padell.service.impl.AdminAuthorizationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,7 +28,7 @@ import java.util.List;
 @Tag(name = "Sites", description = "Endpoints de gestion des sites de padel.")
 public class SiteController {
 
-    private final SiteService siteService;
+    private final CentreService siteService;
     private final SiteMapper siteMapper;
     private final AdminAuthorizationService adminAuthorizationService;
 

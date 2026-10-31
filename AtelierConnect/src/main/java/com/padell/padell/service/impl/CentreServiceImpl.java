@@ -3,7 +3,7 @@ package com.padell.padell.service.impl;
 import com.padell.padell.entity.Centre;
 import com.padell.padell.exception.ResourceNotFoundException;
 import com.padell.padell.repository.CentreRepository;
-import com.padell.padell.service.SiteService;
+import com.padell.padell.service.CentreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +11,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class SiteServiceImpl implements SiteService {
+public class CentreServiceImpl implements CentreService {
 
     private final CentreRepository siteRepository;
 

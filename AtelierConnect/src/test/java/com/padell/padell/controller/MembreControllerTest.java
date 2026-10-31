@@ -11,10 +11,10 @@ import com.padell.padell.entity.Participant;
 import com.padell.padell.mapper.MembreMapper;
 import com.padell.padell.repository.AdministrateurRepository;
 import com.padell.padell.repository.ParticipantRepository;
-import com.padell.padell.service.MembreService;
-import com.padell.padell.service.impl.CurrentMemberService;
-import com.padell.padell.service.impl.MembreAccessService;
-import com.padell.padell.service.impl.MembreCreationService;
+import com.padell.padell.service.ParticipantService;
+import com.padell.padell.service.impl.CurrentParticipantService;
+import com.padell.padell.service.impl.ParticipantAccessService;
+import com.padell.padell.service.impl.ParticipantCreationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,15 +49,15 @@ class MembreControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private MembreService membreService;
+    private ParticipantService membreService;
     @MockitoBean
     private MembreMapper membreMapper;
     @MockitoBean(name = "membreAccessService")
-    private MembreAccessService membreAccessService;
+    private ParticipantAccessService membreAccessService;
     @MockitoBean
-    private MembreCreationService membreCreationService;
+    private ParticipantCreationService membreCreationService;
     @MockitoBean
-    private CurrentMemberService currentMemberService;
+    private CurrentParticipantService currentMemberService;
 
     @MockitoBean
     private JwtConfig jwtConfig;

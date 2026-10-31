@@ -8,8 +8,8 @@ import com.padell.padell.exception.BusinessException;
 import com.padell.padell.exception.ResourceNotFoundException;
 import com.padell.padell.repository.ParticipantRepository;
 import com.padell.padell.repository.PenaliteRepository;
-import com.padell.padell.service.MembreService;
-import com.padell.padell.service.SiteService;
+import com.padell.padell.service.ParticipantService;
+import com.padell.padell.service.CentreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,14 +22,14 @@ import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
-public class MembreServiceImpl implements MembreService {
+public class ParticipantServiceImpl implements ParticipantService {
 
     @Value("${APP_DEMO_MEMBER_PASSWORD}")
     private String defaultMemberPassword;
 
     private final ParticipantRepository membreRepository;
     private final PenaliteRepository penaliteRepository;
-    private final SiteService siteService;
+    private final CentreService siteService;
     private final PasswordEncoder passwordEncoder;
 
     @Override

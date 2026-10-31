@@ -13,7 +13,7 @@ import com.padell.padell.mapper.ReservationMapper;
 import com.padell.padell.repository.AdministrateurRepository;
 import com.padell.padell.repository.ParticipantRepository;
 import com.padell.padell.service.ReservationService;
-import com.padell.padell.service.impl.CurrentMemberService;
+import com.padell.padell.service.impl.CurrentParticipantService;
 import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -53,7 +53,7 @@ class ReservationControllerTest {
     @MockitoBean
     private ReservationMapper reservationMapper;
     @MockitoBean
-    private CurrentMemberService currentMemberService;
+    private CurrentParticipantService currentMemberService;
 
     @MockitoBean
     private JwtConfig jwtConfig;

@@ -7,8 +7,8 @@ import com.padell.padell.exception.BusinessException;
 import com.padell.padell.exception.ResourceNotFoundException;
 import com.padell.padell.repository.ParticipantRepository;
 import com.padell.padell.repository.PenaliteRepository;
-import com.padell.padell.service.impl.MembreServiceImpl;
-import com.padell.padell.service.SiteService;
+import com.padell.padell.service.impl.ParticipantServiceImpl;
+import com.padell.padell.service.CentreService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests de MembreService")
-class MembreServiceTest {
+class ParticipantServiceTest {
 
     @Mock
     private ParticipantRepository membreRepository;
@@ -39,13 +39,13 @@ class MembreServiceTest {
     private PenaliteRepository penaliteRepository;
 
     @Mock
-    private SiteService siteService;
+    private CentreService siteService;
 
     @Mock // Added PasswordEncoder mock
     private PasswordEncoder passwordEncoder;
 
     @InjectMocks
-    private MembreServiceImpl membreService;
+    private ParticipantServiceImpl membreService;
 
     private Participant membreGlobal;
     private Participant membreSite;

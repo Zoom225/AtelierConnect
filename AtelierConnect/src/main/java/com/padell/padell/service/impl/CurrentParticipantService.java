@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class CurrentMemberService {
+public class CurrentParticipantService {
 
     private final ParticipantRepository membreRepository;
 

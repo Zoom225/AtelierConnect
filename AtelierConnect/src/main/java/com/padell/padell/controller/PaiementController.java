@@ -3,7 +3,7 @@ package com.padell.padell.controller;
 import com.padell.padell.dto.response.PaiementResponse;
 import com.padell.padell.mapper.PaiementMapper;
 import com.padell.padell.service.PaiementService;
-import com.padell.padell.service.impl.CurrentMemberService;
+import com.padell.padell.service.impl.CurrentParticipantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -28,7 +28,7 @@ public class PaiementController {
 
     private final PaiementService paiementService;
     private final PaiementMapper paiementMapper;
-    private final CurrentMemberService currentMemberService;
+    private final CurrentParticipantService currentMemberService;
 
     @Operation(
             summary = "Payer une réservation pour un membre donné",

@@ -4,9 +4,9 @@ import com.padell.padell.dto.request.MatchRequest;
 import com.padell.padell.entity.Participant;
 import com.padell.padell.dto.request.CreateMatchRequest;
 import com.padell.padell.dto.response.MatchDto;
-import com.padell.padell.service.MatchService;
+import com.padell.padell.service.AtelierService;
 import com.padell.padell.service.impl.AdminAuthorizationService;
-import com.padell.padell.service.impl.CurrentMemberService;
+import com.padell.padell.service.impl.CurrentParticipantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -29,9 +29,9 @@ import java.util.List;
 @Tag(name = "Ateliers", description = "Gestion des ateliers collaboratifs ; /api/matches reste un alias transitoire.")
 public class MatchController {
 
-    private final MatchService matchService;
+    private final AtelierService matchService;
     private final AdminAuthorizationService adminAuthorizationService;
-    private final CurrentMemberService currentMemberService;
+    private final CurrentParticipantService currentMemberService;
 
     @Operation(
             summary = "Créer un match",

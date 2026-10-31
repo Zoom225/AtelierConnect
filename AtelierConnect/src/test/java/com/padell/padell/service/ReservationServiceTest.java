@@ -37,10 +37,10 @@ class ReservationServiceTest {
     private PaiementRepository paiementRepository;
 
     @Mock
-    private MatchService matchService;
+    private AtelierService matchService;
 
     @Mock
-    private MembreService membreService;
+    private ParticipantService membreService;
 
     @InjectMocks
     private ReservationServiceImpl reservationService;

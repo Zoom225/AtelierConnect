@@ -10,7 +10,7 @@ import com.padell.padell.mapper.PaiementMapper;
 import com.padell.padell.repository.AdministrateurRepository;
 import com.padell.padell.repository.ParticipantRepository;
 import com.padell.padell.service.PaiementService;
-import com.padell.padell.service.impl.CurrentMemberService;
+import com.padell.padell.service.impl.CurrentParticipantService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,7 +47,7 @@ class PaiementControllerTest {
     @MockitoBean
     private PaiementMapper paiementMapper;
     @MockitoBean
-    private CurrentMemberService currentMemberService;
+    private CurrentParticipantService currentMemberService;
 
     @MockitoBean
     private JwtConfig jwtConfig;

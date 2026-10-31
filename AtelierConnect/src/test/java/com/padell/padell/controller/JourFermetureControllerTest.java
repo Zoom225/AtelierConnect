@@ -11,7 +11,7 @@ import com.padell.padell.entity.enums.TypeAdministrateur;
 import com.padell.padell.repository.AdministrateurRepository;
 import com.padell.padell.repository.JourFermetureRepository;
 import com.padell.padell.repository.ParticipantRepository;
-import com.padell.padell.service.SiteService;
+import com.padell.padell.service.CentreService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,7 +54,7 @@ class JourFermetureControllerTest {
     private JourFermetureRepository jourFermetureRepository;
 
     @MockitoBean
-    private SiteService siteService;
+    private CentreService siteService;
 
     @MockitoBean
     private AdministrateurRepository administrateurRepository;

@@ -1,6 +1,6 @@
 package com.padell.padell.scheduler;
 
-import com.padell.padell.service.MatchService;
+import com.padell.padell.service.AtelierService;
 import com.padell.padell.service.PaiementService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AtelierScheduler {
 
-    private final MatchService matchService;
+    private final AtelierService matchService;
     private final PaiementService paiementService;
 
     // tourne tous les jours à minuit

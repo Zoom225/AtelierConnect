@@ -4,7 +4,7 @@ import com.padell.padell.entity.Participant;
 
 import java.util.List;
 
-public interface MembreService {
+public interface ParticipantService {
     Participant create(Participant membre);
     Participant create(Participant membre, Long siteId, String rawPassword);
     Participant prepareForCreation(Participant membre, Long siteId, String rawPassword);

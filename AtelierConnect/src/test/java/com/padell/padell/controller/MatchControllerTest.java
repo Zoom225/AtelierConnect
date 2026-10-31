@@ -8,9 +8,9 @@ import com.padell.padell.dto.request.CreateMatchRequest;
 import com.padell.padell.dto.response.MatchDto;
 import com.padell.padell.repository.AdministrateurRepository;
 import com.padell.padell.repository.ParticipantRepository;
-import com.padell.padell.service.MatchService;
+import com.padell.padell.service.AtelierService;
 import com.padell.padell.service.impl.AdminAuthorizationService;
-import com.padell.padell.service.impl.CurrentMemberService;
+import com.padell.padell.service.impl.CurrentParticipantService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -53,11 +53,11 @@ class MatchControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private MatchService matchService;
+    private AtelierService matchService;
     @MockitoBean
     private AdminAuthorizationService adminAuthorizationService;
     @MockitoBean
-    private CurrentMemberService currentMemberService;
+    private CurrentParticipantService currentMemberService;
 
     // Étape 3 : Mocker les dépendances de la chaîne de sécurité (Je wtAuthenticationFilter)
     @MockitoBean

@@ -12,7 +12,7 @@ import com.padell.padell.mapper.MatchMapper;
 import com.padell.padell.dto.request.CreateMatchRequest;
 import com.padell.padell.dto.response.MatchDto;
 import com.padell.padell.repository.*;
-import com.padell.padell.service.impl.MatchServiceImpl;
+import com.padell.padell.service.impl.AtelierServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests de MatchServiceImpl")
-class MatchServiceTest {
+class AtelierServiceTest {
 
     @Mock
     private AtelierRepository matchRepository;
@@ -50,14 +50,14 @@ class MatchServiceTest {
     @Mock
     private JourFermetureRepository jourFermetureRepository;
     @Mock
-    private TerrainService terrainService;
+    private SalleService terrainService;
     @Mock
-    private MembreService membreService;
+    private ParticipantService membreService;
     @Mock
     private MatchMapper matchMapper;
 
     @InjectMocks
-    private MatchServiceImpl matchService;
+    private AtelierServiceImpl matchService;
 
     private Participant organisateur;
     private Salle terrain;

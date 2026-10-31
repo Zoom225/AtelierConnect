@@ -12,10 +12,10 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class MembreAccessService {
+public class ParticipantAccessService {
 
     private final AdminAuthorizationService adminAuthorizationService;
-    private final CurrentMemberService currentMemberService;
+    private final CurrentParticipantService currentMemberService;
     private final ParticipantRepository membreRepository;
 
     public boolean canCreate(Long siteId) {

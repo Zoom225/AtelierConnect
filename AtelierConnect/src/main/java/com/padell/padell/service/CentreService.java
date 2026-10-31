@@ -4,7 +4,7 @@ import com.padell.padell.entity.Centre;
 
 import java.util.List;
 
-public interface SiteService {
+public interface CentreService {
     Centre create(Centre site);
     Centre getById(Long id);
     List<Centre> getAll();

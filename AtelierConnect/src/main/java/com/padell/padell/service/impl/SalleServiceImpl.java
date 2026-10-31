@@ -4,8 +4,8 @@ import com.padell.padell.entity.Centre;
 import com.padell.padell.entity.Salle;
 import com.padell.padell.exception.ResourceNotFoundException;
 import com.padell.padell.repository.SalleRepository;
-import com.padell.padell.service.SiteService;
-import com.padell.padell.service.TerrainService;
+import com.padell.padell.service.CentreService;
+import com.padell.padell.service.SalleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,10 +15,10 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TerrainServiceImpl implements TerrainService {
+public class SalleServiceImpl implements SalleService {
 
     private final SalleRepository terrainRepository;
-    private final SiteService siteService;
+    private final CentreService siteService;
 
     @Override
     public Salle create(Salle terrain, Long siteId) {

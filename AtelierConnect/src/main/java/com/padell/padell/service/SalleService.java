@@ -4,7 +4,7 @@ import com.padell.padell.entity.Salle;
 
 import java.util.List;
 
-public interface TerrainService {
+public interface SalleService {
     Salle create(Salle terrain, Long siteId);
     Salle getById(Long id);
     List<Salle> getAll();

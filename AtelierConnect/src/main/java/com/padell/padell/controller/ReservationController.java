@@ -7,7 +7,7 @@ import com.padell.padell.entity.Participant;
 import com.padell.padell.entity.Reservation;
 import com.padell.padell.mapper.ReservationMapper;
 import com.padell.padell.service.ReservationService;
-import com.padell.padell.service.impl.CurrentMemberService;
+import com.padell.padell.service.impl.CurrentParticipantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -34,7 +34,7 @@ public class ReservationController {
 
     private final ReservationService reservationService;
     private final ReservationMapper reservationMapper;
-    private final CurrentMemberService currentMemberService;
+    private final CurrentParticipantService currentMemberService;
 
     @Operation(
             summary = "Créer une réservation",

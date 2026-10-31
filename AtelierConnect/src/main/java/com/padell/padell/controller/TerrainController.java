@@ -4,7 +4,7 @@ import com.padell.padell.dto.request.TerrainRequest;
 import com.padell.padell.dto.response.TerrainResponse;
 import com.padell.padell.entity.Salle;
 import com.padell.padell.mapper.TerrainMapper;
-import com.padell.padell.service.TerrainService;
+import com.padell.padell.service.SalleService;
 import com.padell.padell.service.impl.AdminAuthorizationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,7 +28,7 @@ import java.util.List;
 @Tag(name = "Terrains", description = "Endpoints de gestion des terrains de padel.")
 public class TerrainController {
 
-    private final TerrainService terrainService;
+    private final SalleService terrainService;
     private final TerrainMapper terrainMapper;
     private final AdminAuthorizationService adminAuthorizationService;
 

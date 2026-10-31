@@ -2,8 +2,8 @@ package com.padell.padell.service;
 
 import com.padell.padell.entity.Participant;
 import com.padell.padell.service.impl.AdminAuthorizationService;
-import com.padell.padell.service.impl.CurrentMemberService;
-import com.padell.padell.service.impl.MembreAccessService;
+import com.padell.padell.service.impl.CurrentParticipantService;
+import com.padell.padell.service.impl.ParticipantAccessService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,16 +22,16 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests de MembreAccessService")
-class MembreAccessServiceTest {
+class ParticipantAccessServiceTest {
 
     @Mock
     private AdminAuthorizationService adminAuthorizationService;
 
     @Mock
-    private CurrentMemberService currentMemberService;
+    private CurrentParticipantService currentMemberService;
 
     @InjectMocks
-    private MembreAccessService membreAccessService;
+    private ParticipantAccessService membreAccessService;
 
     @AfterEach
     void tearDown() {

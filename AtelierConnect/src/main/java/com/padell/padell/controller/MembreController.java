@@ -6,10 +6,10 @@ import com.padell.padell.dto.request.MembreRequest;
 import com.padell.padell.dto.response.MembreResponse;
 import com.padell.padell.entity.Participant;
 import com.padell.padell.mapper.MembreMapper;
-import com.padell.padell.service.MembreService;
-import com.padell.padell.service.impl.CurrentMemberService;
-import com.padell.padell.service.impl.MembreCreationService;
-import com.padell.padell.service.impl.MembreAccessService;
+import com.padell.padell.service.ParticipantService;
+import com.padell.padell.service.impl.CurrentParticipantService;
+import com.padell.padell.service.impl.ParticipantCreationService;
+import com.padell.padell.service.impl.ParticipantAccessService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -34,12 +34,12 @@ import java.util.List;
         "Les membres se connectent avec leur matricule via /api/membres/login.")
 public class MembreController {
 
-    private final MembreService membreService;
+    private final ParticipantService membreService;
     private final MembreMapper membreMapper;
     private final JwtConfig jwtConfig;
-    private final MembreAccessService membreAccessService;
-    private final MembreCreationService membreCreationService;
-    private final CurrentMemberService currentMemberService;
+    private final ParticipantAccessService membreAccessService;
+    private final ParticipantCreationService membreCreationService;
+    private final CurrentParticipantService currentMemberService;
 
     @Operation(
             summary = "Créer un membre",

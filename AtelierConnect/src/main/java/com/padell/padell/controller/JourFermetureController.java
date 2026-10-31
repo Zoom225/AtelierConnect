@@ -9,7 +9,7 @@ import com.padell.padell.entity.enums.TypeAdministrateur;
 import com.padell.padell.exception.BusinessException;
 import com.padell.padell.repository.AdministrateurRepository;
 import com.padell.padell.repository.JourFermetureRepository;
-import com.padell.padell.service.SiteService;
+import com.padell.padell.service.CentreService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -31,7 +31,7 @@ import java.util.List;
 public class JourFermetureController {
 
     private final JourFermetureRepository jourFermetureRepository;
-    private final SiteService siteService;
+    private final CentreService siteService;
     private final AdministrateurRepository administrateurRepository;
 
     @Operation(

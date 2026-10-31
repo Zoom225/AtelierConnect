@@ -9,9 +9,9 @@ import com.padell.padell.mapper.MatchMapper;
 import com.padell.padell.dto.request.CreateMatchRequest;
 import com.padell.padell.dto.response.MatchDto;
 import com.padell.padell.repository.*;
-import com.padell.padell.service.MatchService;
-import com.padell.padell.service.MembreService;
-import com.padell.padell.service.TerrainService;
+import com.padell.padell.service.AtelierService;
+import com.padell.padell.service.ParticipantService;
+import com.padell.padell.service.SalleService;
 import com.padell.padell.service.AtelierRules;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,15 +28,15 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MatchServiceImpl implements MatchService {
+public class AtelierServiceImpl implements AtelierService {
 
     private final AtelierRepository matchRepository;
     private final ParticipantRepository membreRepository;
     private final ReservationRepository reservationRepository;
     private final PaiementRepository paiementRepository;
     private final JourFermetureRepository jourFermetureRepository;
-    private final TerrainService terrainService;
-    private final MembreService membreService;
+    private final SalleService terrainService;
+    private final ParticipantService membreService;
     private final MatchMapper matchMapper;
 
     @Override

@@ -7,7 +7,7 @@ import com.padell.padell.dto.response.MatchDto;
 
 import java.util.List;
 
-public interface MatchService {
+public interface AtelierService {
 
     MatchDto createMatch(CreateMatchRequest request, String username);
 
