@@ -174,7 +174,10 @@ describe('MemberCreateMatchPage', () => {
       heureDebut: '09:00',
       typeMatch: 'PRIVE',
       player1: 'g1002',
-      player2: 'l10001'
+      player2: 'l10001',
+      player3: 'g1003',
+      player4: 's10001',
+      player5: 'g1004'
     });
 
     component.submit();
@@ -186,7 +189,7 @@ describe('MemberCreateMatchPage', () => {
     });
     expect(reservationsApiMock.createPrivateInvites).toHaveBeenCalledWith({
       matchId: 99,
-      inviteeMatricules: ['G1002', 'L10001']
+      inviteeMatricules: ['G1002', 'L10001', 'G1003', 'S10001', 'G1004']
     });
     expect(component.message()).toContain('Les invitations sont en attente de paiement');
     vi.runAllTimers();
@@ -203,7 +206,7 @@ describe('MemberCreateMatchPage', () => {
 
   it('traduit le message backend de délai en message frontend compréhensible', () => {
     matchesApiMock.create.mockReturnValue(
-      throwError(() => ({ error: { message: 'Le membre SITE ne peut pas réserver plus de 14 jours à l\'avance.' } }))
+      throwError(() => ({ error: { message: 'Le participant ABONNE ne peut pas réserver plus de 15 jours à l\'avance.' } }))
     );
     const fixture = TestBed.createComponent(MemberCreateMatchPage);
     const component = fixture.componentInstance;
@@ -217,7 +220,7 @@ describe('MemberCreateMatchPage', () => {
     component.submit();
 
     expect(component.loading()).toBe(false);
-    expect(component.errorMessage()).toContain('Le profil SITE ne peut pas réserver plus de 14 jours');
+    expect(component.errorMessage()).toContain('Le profil SITE ne peut pas réserver plus de 15 jours');
     expect(component.errorMessage()).toContain(component.maxBookingDate());
   });
   it('affiche une erreur métier sans code HTTP technique', () => {
