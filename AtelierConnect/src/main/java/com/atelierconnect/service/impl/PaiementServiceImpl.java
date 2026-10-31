@@ -12,6 +12,7 @@ import com.atelierconnect.exception.ResourceNotFoundException;
 import com.atelierconnect.repository.AtelierRepository;
 import com.atelierconnect.repository.ParticipantRepository;
 import com.atelierconnect.repository.PaiementRepository;
+import com.atelierconnect.repository.ReservationRepository;
 import com.atelierconnect.service.PaiementService;
 import com.atelierconnect.service.AtelierRules;
 import com.atelierconnect.service.ReservationService;
@@ -30,6 +31,7 @@ import java.util.List;
 public class PaiementServiceImpl implements PaiementService {
 
     private final PaiementRepository paiementRepository;
+    private final ReservationRepository reservationRepository;
     private final ReservationService reservationService;
     private final ParticipantRepository membreRepository;
     private final AtelierRepository matchRepository;
@@ -37,6 +39,9 @@ public class PaiementServiceImpl implements PaiementService {
     @Override
     @Transactional
     public Paiement pay(Long reservationId, Long membreId) {
+        // Toujours verrouiller avant de lire les statuts : deux requêtes simultanées
+        // sur la même réservation ne doivent jamais confirmer deux paiements.
+        reservationRepository.lockReservationById(reservationId);
         Reservation reservation = reservationService.getById(reservationId);
         Participant membre = reservation.getMembre();
 
