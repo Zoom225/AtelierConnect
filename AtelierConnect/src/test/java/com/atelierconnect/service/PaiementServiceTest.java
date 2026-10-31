@@ -9,6 +9,7 @@ import com.atelierconnect.repository.ParticipantRepository;
 import com.atelierconnect.repository.PaiementRepository;
 import com.atelierconnect.repository.ReservationRepository;
 import com.atelierconnect.service.impl.PaiementServiceImpl;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -40,6 +41,9 @@ class PaiementServiceTest {
 
     @Mock
     private ReservationService reservationService;
+
+    @Mock
+    private EntityManager entityManager;
 
     @Mock
     private ParticipantRepository membreRepository;
@@ -265,6 +269,25 @@ class PaiementServiceTest {
             verify(reservationService).cancel(reservation.getId());
             assertThat(organisateur.getSolde()).isEqualTo(15.0);
             verify(membreRepository).save(organisateur);
+        }
+
+        @Test
+        @DisplayName("ne pénalise pas un paiement confirmé juste avant le verrou")
+        void shouldSkipPenaltyWhenPaymentWasJustConfirmed() {
+            match.setDateDebut(LocalDate.now().plusDays(1).atStartOfDay());
+            when(paiementRepository.findByStatut(StatutPaiement.EN_ATTENTE))
+                    .thenReturn(List.of(paiement));
+            doAnswer(invocation -> {
+                paiement.setStatut(StatutPaiement.PAYE);
+                reservation.setStatut(StatutReservation.CONFIRMEE);
+                return null;
+            }).when(entityManager).refresh(paiement);
+
+            paiementService.checkUnpaidBeforeMatch();
+
+            verify(reservationRepository).lockReservationById(reservation.getId());
+            verify(reservationService, never()).cancel(any());
+            verify(membreRepository, never()).save(any());
         }
 
         @Test
