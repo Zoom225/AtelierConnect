@@ -119,6 +119,37 @@ test('parcours complet : identité, atelier privé, invitation, paiement et cons
   expect(confirmation.status()).toBe(200);
   expect((await confirmation.json() as Atelier).nbJoueursActuels).toBe(2);
 
+  // Une annulation après paiement doit libérer une place et enregistrer
+  // un remboursement dans le système (sans prestataire bancaire).
+  const annulationInvite = await page.request.patch(
+    `/api/reservations/${reservationsInvite[0].id}/cancel`,
+    { headers: bearer(invite.token), data: {} }
+  );
+  expect(annulationInvite.status(), await annulationInvite.text()).toBe(204);
+
+  const reservationsApresAnnulation = await page.request.get(
+    `/api/reservations/participant/${invite.id}`,
+    { headers: bearer(invite.token) }
+  );
+  expect(reservationsApresAnnulation.status()).toBe(200);
+  const annulee = (await reservationsApresAnnulation.json() as Reservation[])
+    .find(r => r.id === reservationsInvite[0].id);
+  expect(annulee?.statut).toBe('ANNULEE');
+  expect(annulee?.paiement?.statut).toBe('REMBOURSE');
+
+  const detailApresAnnulation = await page.request.get(
+    `/api/ateliers/${atelier.id}`,
+    { headers: bearer(organisateur.token) }
+  );
+  expect(detailApresAnnulation.status()).toBe(200);
+  expect((await detailApresAnnulation.json() as Atelier).nbJoueursActuels).toBe(1);
+
+  const secondeAnnulation = await page.request.patch(
+    `/api/reservations/${reservationsInvite[0].id}/cancel`,
+    { headers: bearer(invite.token), data: {} }
+  );
+  expect([400, 409]).toContain(secondeAnnulation.status());
+
   // L'invité n'est pas l'organisateur : il ne peut pas donner son consentement.
   const accordInterdit = await page.request.patch(
     `/api/ateliers/${atelier.id}/consent-open-public`,
