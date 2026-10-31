@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -107,6 +108,7 @@ public class ReservationController {
                     content = @Content)
     })
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
     public ResponseEntity<ReservationResponse> getById(
             @Parameter(description = "ID de la réservation", required = true)
             @PathVariable Long id) {
