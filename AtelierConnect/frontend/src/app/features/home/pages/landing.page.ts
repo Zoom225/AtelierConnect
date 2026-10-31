@@ -37,17 +37,17 @@ import { LanguageService } from '../../../core/i18n/language.service';
           </div>
         </div>
 
-        <div class="court-panel" [attr.aria-label]="copy().matchPreviewLabel">
-          <div class="court-lines">
+        <div class="workshop-panel" [attr.aria-label]="copy().matchPreviewLabel">
+          <div class="workshop-layout">
             <span></span>
             <span></span>
           </div>
-          <div class="match-card live">
+          <div class="workshop-card live">
             <p>{{ copy().matchPublic }}</p>
             <strong>{{ count() ?? '--' }}</strong>
             <span>{{ copy().matchAvailable }}</span>
           </div>
-          <div class="match-card">
+          <div class="workshop-card">
             <p>{{ copy().reservation }}</p>
             <strong>{{ copy().simpleReservation }}</strong>
             <span>{{ copy().reservationBody }}</span>
@@ -168,7 +168,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
       margin-top: 2rem;
     }
 
-    .court-panel {
+    .workshop-panel {
       position: relative;
       overflow: hidden;
       min-height: 420px;
@@ -182,46 +182,46 @@ import { LanguageService } from '../../../core/i18n/language.service';
       box-shadow: 0 24px 60px rgba(4, 120, 87, 0.16);
     }
 
-    .court-lines {
+    .workshop-layout {
       position: absolute;
       inset: 42px;
-      border: 2px solid rgba(255, 255, 255, 0.72);
+      border: 2px solid rgba(255, 255, 255, 0.48);
+      border-radius: 28px;
+      transform: rotate(-6deg);
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.2) 0 27%, transparent 28%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 65%);
     }
 
-    .court-lines::before,
-    .court-lines::after {
+    .workshop-layout::before {
       content: '';
       position: absolute;
-      background: rgba(255, 255, 255, 0.72);
+      inset: 24% 22%;
+      border: 16px solid rgba(255, 255, 255, 0.17);
+      border-radius: 22px;
+      box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.07);
     }
 
-    .court-lines::before {
-      inset: 0 auto 0 50%;
-      width: 2px;
-    }
-
-    .court-lines::after {
-      inset: 50% 0 auto;
-      height: 2px;
-    }
-
-    .court-lines span {
+    .workshop-layout span {
       position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: rgba(255, 255, 255, 0.52);
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      border: 2px solid rgba(255, 255, 255, 0.68);
+      background: rgba(15, 118, 110, 0.56);
     }
 
-    .court-lines span:first-child {
-      left: 25%;
+    .workshop-layout span:first-child {
+      top: 12%;
+      left: 22%;
     }
 
-    .court-lines span:last-child {
-      right: 25%;
+    .workshop-layout span:last-child {
+      right: 22%;
+      bottom: 12%;
     }
 
-    .match-card {
+    .workshop-card {
       position: absolute;
       right: 1.2rem;
       bottom: 1.2rem;
@@ -233,14 +233,14 @@ import { LanguageService } from '../../../core/i18n/language.service';
       backdrop-filter: blur(12px);
     }
 
-    .match-card.live {
+    .workshop-card.live {
       top: 1.2rem;
       bottom: auto;
       left: 1.2rem;
       right: auto;
     }
 
-    .match-card p {
+    .workshop-card p {
       margin: 0 0 0.35rem;
       color: #64748b;
       font-size: 0.78rem;
@@ -248,14 +248,14 @@ import { LanguageService } from '../../../core/i18n/language.service';
       text-transform: uppercase;
     }
 
-    .match-card strong {
+    .workshop-card strong {
       display: block;
       color: #0f172a;
       font-size: 2rem;
       line-height: 1;
     }
 
-    .match-card span {
+    .workshop-card span {
       display: block;
       margin-top: 0.35rem;
       color: #475569;
@@ -317,7 +317,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
         grid-template-columns: 1fr;
       }
 
-      .court-panel {
+      .workshop-panel {
         min-height: 360px;
       }
     }
