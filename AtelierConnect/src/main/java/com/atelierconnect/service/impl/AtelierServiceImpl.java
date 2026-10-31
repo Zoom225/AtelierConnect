@@ -149,7 +149,14 @@ public class AtelierServiceImpl implements AtelierService {
         }
 
         Salle terrain = terrainService.getById(request.getTerrainId());
+        // Modifier un atelier ne doit pas contourner les contrôles de sa création.
+        validateBookingDelay(match.getOrganisateur(), request.getDate());
+        validateSiteAccessForOrganizer(match.getOrganisateur(), terrain);
+
         LocalDateTime dateDebut = request.getDate().atTime(request.getHeureDebut());
+        if (!dateDebut.isAfter(LocalDateTime.now())) {
+            throw new BusinessException("Un atelier ne peut pas être déplacé dans le passé.");
+        }
         LocalDateTime dateFin = dateDebut.plusMinutes(AtelierRules.DUREE_MINUTES);
 
         validateSiteNotClosed(terrain, dateDebut.toLocalDate());
