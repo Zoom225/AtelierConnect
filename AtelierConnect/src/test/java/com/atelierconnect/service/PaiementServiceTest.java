@@ -7,6 +7,7 @@ import com.atelierconnect.exception.ResourceNotFoundException;
 import com.atelierconnect.repository.AtelierRepository;
 import com.atelierconnect.repository.ParticipantRepository;
 import com.atelierconnect.repository.PaiementRepository;
+import com.atelierconnect.repository.ReservationRepository;
 import com.atelierconnect.service.impl.PaiementServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -33,6 +34,9 @@ class PaiementServiceTest {
 
     @Mock
     private PaiementRepository paiementRepository;
+
+    @Mock
+    private ReservationRepository reservationRepository;
 
     @Mock
     private ReservationService reservationService;
@@ -98,6 +102,20 @@ class PaiementServiceTest {
     @Nested
     @DisplayName("pay()")
     class PayTests {
+        @Test
+        @DisplayName("verrouille la réservation avant toute lecture du paiement")
+        void shouldLockReservationBeforeReadingItsPayment() {
+            when(reservationService.getById(1L)).thenReturn(reservation);
+            when(matchRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(match));
+
+            paiementService.pay(1L, 2L);
+
+            var order = inOrder(reservationRepository, reservationService, matchRepository);
+            order.verify(reservationRepository).lockReservationById(1L);
+            order.verify(reservationService).getById(1L);
+            order.verify(matchRepository).findByIdForUpdate(10L);
+        }
+
         @Test
         @DisplayName("✅ doit traiter le paiement et confirmer la réservation")
         void shouldProcessPayment() {
