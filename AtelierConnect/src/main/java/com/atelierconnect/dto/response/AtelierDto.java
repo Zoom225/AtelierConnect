@@ -21,8 +21,23 @@ public record AtelierDto(
         StatutAtelier statut,
         Integer nbJoueursActuels,
         Double prixParJoueur,
-        LocalDateTime dateConversionPublic
+        LocalDateTime dateConversionPublic,
+        Boolean accordOuverturePublique,
+        LocalDateTime dateAccordOuverturePublique
 ) {
+    // Constructeur transitoire : les consommateurs Java historiques continuent de compiler.
+    public AtelierDto(
+            Long id, Long terrainId, String terrainNom, String siteNom,
+            Long organisateurId, String organisateurNom,
+            LocalDate date, LocalTime heureDebut, LocalTime heureFin,
+            TypeAtelier typeMatch, StatutAtelier statut,
+            Integer nbJoueursActuels, Double prixParJoueur,
+            LocalDateTime dateConversionPublic) {
+        this(id, terrainId, terrainNom, siteNom, organisateurId, organisateurNom,
+                date, heureDebut, heureFin, typeMatch, statut, nbJoueursActuels,
+                prixParJoueur, dateConversionPublic, null, null);
+    }
+
     @JsonProperty("salleId") public Long salleId() { return terrainId; }
     @JsonProperty("salleNom") public String salleNom() { return terrainNom; }
     @JsonProperty("centreNom") public String centreNom() { return siteNom; }
