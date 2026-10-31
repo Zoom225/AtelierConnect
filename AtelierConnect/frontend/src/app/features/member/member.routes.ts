@@ -16,6 +16,18 @@ export const MEMBER_ROUTES: Routes = [
     title: () => `AtelierConnect - ${inject(LanguageService).t('nav.profile')}`
   },
   {
+    path: 'ateliers',
+    canActivate: [memberGuard],
+    loadComponent: () => import('./pages/member-public-matches.page').then((m) => m.MemberPublicMatchesPage),
+    title: () => `AtelierConnect - ${inject(LanguageService).t('nav.matches')}`
+  },
+  {
+    path: 'ateliers/nouveau',
+    canActivate: [memberGuard],
+    loadComponent: () => import('./pages/member-create-match.page').then((m) => m.MemberCreateMatchPage),
+    title: () => `AtelierConnect - ${inject(LanguageService).t('nav.create')}`
+  },
+  {
     path: 'matches',
     canActivate: [memberGuard],
     loadComponent: () => import('./pages/member-public-matches.page').then((m) => m.MemberPublicMatchesPage),
