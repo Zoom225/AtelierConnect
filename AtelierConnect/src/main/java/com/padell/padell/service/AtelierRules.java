@@ -16,10 +16,10 @@ public final class AtelierRules {
     private AtelierRules() {}
 
     public static int delaiReservation(TypeMembre type) {
-        return switch (type) {
-            case GLOBAL -> PARTENAIRE_JOURS;
-            case SITE -> ABONNE_JOURS;
-            case LIBRE -> VISITEUR_JOURS;
+        return switch (type.toCategorie()) {
+            case PARTENAIRE -> PARTENAIRE_JOURS;
+            case ABONNE -> ABONNE_JOURS;
+            case VISITEUR -> VISITEUR_JOURS;
         };
     }
 }

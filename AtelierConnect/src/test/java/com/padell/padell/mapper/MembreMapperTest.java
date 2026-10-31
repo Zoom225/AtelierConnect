@@ -5,6 +5,7 @@ import com.padell.padell.dto.response.MembreResponse;
 import com.padell.padell.entity.Membre;
 import com.padell.padell.entity.Site;
 import com.padell.padell.entity.enums.TypeMembre;
+import com.padell.padell.entity.enums.TypeParticipant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -79,10 +80,26 @@ class MembreMapperTest {
                 () -> assertEquals("Smith", response.getNom()),
                 () -> assertEquals("Jane", response.getPrenom()),
                 () -> assertEquals(TypeMembre.SITE, response.getTypeMembre()),
+                () -> assertEquals(TypeParticipant.ABONNE, response.getCategorie()),
                 () -> assertEquals(1L, response.getSiteId()),
                 () -> assertEquals("Padel Club Central", response.getSiteNom()),
                 () -> assertEquals(25.5, response.getSolde())
         );
+    }
+
+    @Test
+    void categorieAtelierConnectAccepteUnParticipantSansTypeHistorique() {
+        MembreRequest request = MembreRequest.builder()
+                .matricule("L12345")
+                .nom("Test")
+                .prenom("Visiteur")
+                .categorie(TypeParticipant.VISITEUR)
+                .build();
+
+        assertTrue(request.isCategorieValide());
+        assertEquals(TypeMembre.LIBRE, membreMapper.toEntity(request).getTypeMembre());
+        request.setTypeMembre(TypeMembre.SITE);
+        assertFalse(request.isCategorieValide());
     }
 
     @Test

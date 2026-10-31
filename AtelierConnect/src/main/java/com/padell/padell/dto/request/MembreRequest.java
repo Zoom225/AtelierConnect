@@ -1,6 +1,8 @@
 package com.padell.padell.dto.request;
 
 import com.padell.padell.entity.enums.TypeMembre;
+import com.padell.padell.entity.enums.TypeParticipant;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -25,8 +27,15 @@ public class MembreRequest {
     @Email(message = "Le format de l'e-mail est invalide.")
     private String email;
 
-    @NotNull(message = "Le type de membre est obligatoire.")
     private TypeMembre typeMembre;
+
+    private TypeParticipant categorie;
+
+    @AssertTrue(message = "La catégorie du participant est obligatoire et doit correspondre au type historique s'il est fourni.")
+    public boolean isCategorieValide() {
+        return categorie != null && (typeMembre == null || typeMembre == categorie.toLegacyType())
+                || categorie == null && typeMembre != null;
+    }
 
     private Long siteId;
 

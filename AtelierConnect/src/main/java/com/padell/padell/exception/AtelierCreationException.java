@@ -4,9 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.BAD_REQUEST)
-public class MatchCreationException extends RuntimeException {
+public class AtelierCreationException extends RuntimeException {
 
-    public MatchCreationException(String message) {
+    public AtelierCreationException(String message) {
         super(message);
     }
 }

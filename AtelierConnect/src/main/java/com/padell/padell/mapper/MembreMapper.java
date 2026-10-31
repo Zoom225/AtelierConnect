@@ -14,7 +14,8 @@ public class MembreMapper {
                 .nom(request.getNom())
                 .prenom(request.getPrenom())
                 .email(request.getEmail())
-                .typeMembre(request.getTypeMembre())
+                .typeMembre(request.getCategorie() != null
+                        ? request.getCategorie().toLegacyType() : request.getTypeMembre())
                 .build();
         // le site est résolu dans le service via siteId
     }
@@ -27,6 +28,7 @@ public class MembreMapper {
                 .prenom(membre.getPrenom())
                 .email(membre.getEmail())
                 .typeMembre(membre.getTypeMembre())
+                .categorie(membre.getTypeMembre().toCategorie())
                 .siteId(membre.getSite() != null ? membre.getSite().getId() : null)
                 .siteNom(membre.getSite() != null ? membre.getSite().getNom() : null)
                 .solde(membre.getSolde())

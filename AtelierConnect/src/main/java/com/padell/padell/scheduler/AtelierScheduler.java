@@ -10,17 +10,17 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class MatchScheduler {
+public class AtelierScheduler {
 
     private final MatchService matchService;
     private final PaiementService paiementService;
 
     // tourne tous les jours à minuit
     @Scheduled(cron = "0 0 0 * * *")
-    public void processExpiredPrivateMatches() {
-        log.info("Scheduler started : checking expired private matches...");
+    public void processExpiredPrivateAteliers() {
+        log.info("Vérification des ateliers privés avec accord d'ouverture publique");
         matchService.checkAndConvertExpiredPrivateMatches();
-        log.info("Scheduler done : expired private matches processed");
+        log.info("Vérification des ouvertures publiques terminée");
     }
 
     // tourne tous les jours à minuit cinq (après le premier)
