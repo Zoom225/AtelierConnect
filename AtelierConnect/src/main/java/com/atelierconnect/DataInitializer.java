@@ -310,9 +310,20 @@ public class DataInitializer implements CommandLineRunner {
 
     private void updateDemoMemberCredentials(String matricule, String email) {
         membreRepository.findByMatriculeIgnoreCase(matricule).ifPresent(membre -> {
-            membre.setEmail(email);
-            membre.setPasswordHash(passwordEncoder.encode(demoMemberPassword));
-            membreRepository.save(membre);
+            // Une initialisation ne doit jamais réinitialiser le mot de passe
+            // d'un compte existant à chaque redémarrage.
+            boolean modifie = false;
+            if (!StringUtils.hasText(membre.getEmail())) {
+                membre.setEmail(email);
+                modifie = true;
+            }
+            if (!StringUtils.hasText(membre.getPasswordHash())) {
+                membre.setPasswordHash(passwordEncoder.encode(demoMemberPassword));
+                modifie = true;
+            }
+            if (modifie) {
+                membreRepository.save(membre);
+            }
         });
     }
 
@@ -328,8 +339,11 @@ public class DataInitializer implements CommandLineRunner {
 
     private void updateDemoAdminCredentials(String email) {
         administrateurRepository.findByEmail(email).ifPresent(admin -> {
-            admin.setPasswordHash(passwordEncoder.encode(demoAdminPassword));
-            administrateurRepository.save(admin);
+            // Préserver les identifiants de connexion déjà personnalisés.
+            if (!StringUtils.hasText(admin.getPasswordHash())) {
+                admin.setPasswordHash(passwordEncoder.encode(demoAdminPassword));
+                administrateurRepository.save(admin);
+            }
         });
     }
 
