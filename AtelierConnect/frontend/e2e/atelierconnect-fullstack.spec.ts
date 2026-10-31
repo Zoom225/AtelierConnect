@@ -208,3 +208,57 @@ test('parcours complet : identité, atelier privé, invitation, paiement et cons
   await choisirApresActualisation.click();
   await expect(consentButton).toBeDisabled();
 });
+
+
+test('administrateur global : créer, modifier et supprimer un centre dans Angular', async ({ page }) => {
+  test.setTimeout(120_000);
+  if (!adminPassword) throw new Error('APP_DEMO_ADMIN_PASSWORD manquant pour les tests CI');
+
+  await page.goto('/admin/login');
+  await page.locator('input[formControlName="email"]').fill('admin@atelierconnect.example');
+  await page.locator('input[formControlName="password"]').fill(adminPassword);
+  await page.locator('form button[type="submit"]').click();
+  await expect(page).toHaveURL(/\/admin\/?$/, { timeout: 20_000 });
+
+  await page.goto('/admin/sites');
+  await expect(page.locator('h1.adm-site-title')).toBeVisible();
+
+  const nom = 'Centre test E2E ' + Date.now();
+  await page.locator('input[formControlName="nom"]').fill(nom);
+  await page.locator('input[formControlName="adresse"]').fill('10 rue du Test, Bruxelles');
+  await page.locator('input[formControlName="ouvertVisiteurs"]').check();
+  await page.locator('form button[type="submit"]').click();
+
+  const fiche = page.locator('.adm-site-card').filter({ hasText: nom });
+  await expect(fiche).toBeVisible({ timeout: 15_000 });
+
+  // Confirmer la persistance réelle côté Spring/PostgreSQL, et pas seulement le DOM.
+  const reponseCreation = await page.request.get('/api/centres');
+  expect(reponseCreation.status()).toBe(200);
+  const centres = await reponseCreation.json() as Array<{
+    id: number;
+    nom: string;
+    adresse: string;
+    ouvertVisiteurs: boolean;
+    dureeMatchMinutes: number;
+    dureeEntreMatchMinutes: number;
+  }>;
+  const centre = centres.find(item => item.nom === nom);
+  expect(centre).toBeDefined();
+  expect(centre!.ouvertVisiteurs).toBe(true);
+  expect(centre!.dureeMatchMinutes).toBe(120);
+  expect(centre!.dureeEntreMatchMinutes).toBe(20);
+
+  await fiche.locator('button.adm-site-action-edit').click();
+  await expect(page.locator('input[formControlName="nom"]')).toHaveValue(nom);
+  await page.locator('input[formControlName="adresse"]').fill('12 rue du Test, Bruxelles');
+  await page.locator('form button[type="submit"]').click();
+  await expect(fiche).toContainText('12 rue du Test, Bruxelles', { timeout: 15_000 });
+
+  // Suppression réservée au centre créé par ce test sur une base CI jetable.
+  page.once('dialog', dialog => dialog.accept());
+  await fiche.locator('button.adm-site-action-delete').click();
+  await expect(fiche).toHaveCount(0, { timeout: 15_000 });
+  const reponseSuppression = await page.request.get('/api/centres/' + centre!.id);
+  expect(reponseSuppression.status()).toBe(404);
+});
