@@ -180,8 +180,8 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
                 </p>
                 <button mat-stroked-button type="button"
                         (click)="consentToPublicOpening()"
-                        [disabled]="actionId() !== null || consentedMatchIds().has(selectedManagedMatch()!.id)">
-                  {{ consentedMatchIds().has(selectedManagedMatch()!.id)
+                        [disabled]="actionId() !== null || selectedManagedMatch()!.accordOuverturePublique === true">
+                  {{ selectedManagedMatch()!.accordOuverturePublique === true
                     ? language.t('member.reservations.consentSuccess')
                     : language.t('member.reservations.consentAction') }}
                 </button>
@@ -297,7 +297,6 @@ export class MemberReservationsPage {
 
   readonly loading = signal(false);
   readonly actionId = signal<number | null>(null);
-  readonly consentedMatchIds = signal<Set<number>>(new Set());
   readonly message = signal('');
   readonly errorMessage = signal('');
   readonly reservations = signal<ReservationResponse[]>([]);
@@ -487,7 +486,7 @@ export class MemberReservationsPage {
 
   consentToPublicOpening(): void {
     const atelier = this.selectedManagedMatch();
-    if (!atelier || atelier.typeMatch !== 'PRIVE' || this.actionId() !== null) {
+    if (!atelier || atelier.typeMatch !== 'PRIVE' || atelier.accordOuverturePublique === true || this.actionId() !== null) {
       return;
     }
     if (!confirm(this.language.t('member.reservations.consentConfirm'))) {
@@ -500,7 +499,10 @@ export class MemberReservationsPage {
     this.matchesApi.consentToPublicOpening(atelier.id).subscribe({
       next: () => {
         this.actionId.set(null);
-        this.consentedMatchIds.update(ids => new Set([...ids, atelier.id]));
+        // Mettre immédiatement à jour la réponse locale ; le rechargement
+        // récupérera ensuite l'accord enregistré en base via le DTO.
+        this.organisedMatches.update(matches => matches.map(match =>
+          match.id === atelier.id ? { ...match, accordOuverturePublique: true } : match));
         this.message.set(this.language.t('member.reservations.consentSuccess'));
       },
       error: (error) => {
