@@ -9,23 +9,23 @@ export class SitesApiService {
   constructor(private readonly http: HttpClient) {}
 
   getAll(): Observable<SiteResponse[]> {
-    return this.http.get<SiteResponse[]>(apiUrl('/sites'));
+    return this.http.get<SiteResponse[]>(apiUrl('/centres'));
   }
 
   getById(id: number): Observable<SiteResponse> {
-    return this.http.get<SiteResponse>(apiUrl(`/sites/${id}`));
+    return this.http.get<SiteResponse>(apiUrl(`/centres/${id}`));
   }
 
   create(payload: SiteRequest): Observable<SiteResponse> {
-    return this.http.post<SiteResponse>(apiUrl('/sites'), payload);
+    return this.http.post<SiteResponse>(apiUrl('/centres'), payload);
   }
 
   update(id: number, payload: SiteRequest): Observable<SiteResponse> {
-    return this.http.put<SiteResponse>(apiUrl(`/sites/${id}`), payload);
+    return this.http.put<SiteResponse>(apiUrl(`/centres/${id}`), payload);
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(apiUrl(`/sites/${id}`));
+    return this.http.delete<void>(apiUrl(`/centres/${id}`));
   }
 }
 
