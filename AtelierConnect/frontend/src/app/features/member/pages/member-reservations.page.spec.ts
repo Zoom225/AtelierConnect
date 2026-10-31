@@ -50,6 +50,7 @@ describe('MemberReservationsPage', () => {
     getByOrganisateur: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
     cancel: ReturnType<typeof vi.fn>;
+    consentToPublicOpening: ReturnType<typeof vi.fn>;
   };
   let reservationsApiMock: {
     getByMembre: ReturnType<typeof vi.fn>;
@@ -65,7 +66,8 @@ describe('MemberReservationsPage', () => {
       update: vi.fn().mockImplementation((id: number, payload: Partial<MatchResponse>) =>
         of({ ...organizedMatches.find((m) => m.id === id)!, ...payload } as MatchResponse)
       ),
-      cancel: vi.fn().mockReturnValue(of(void 0))
+      cancel: vi.fn().mockReturnValue(of(void 0)),
+      consentToPublicOpening: vi.fn().mockReturnValue(of(void 0))
     };
 
     reservationsApiMock = {
@@ -156,6 +158,28 @@ describe('MemberReservationsPage', () => {
       })
     );
     expect(component.message()).toContain('Atelier mis à jour');
+  });
+
+  it('enregistre uniquement un consentement explicitement confirmé', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const component = TestBed.createComponent(MemberReservationsPage).componentInstance;
+
+    component.onManagedMatchChange(2);
+    component.consentToPublicOpening();
+
+    expect(matchesApiMock.consentToPublicOpening).toHaveBeenCalledWith(2);
+    expect(component.consentedMatchIds().has(2)).toBe(true);
+    expect(component.message()).toContain('accord');
+  });
+
+  it('ne transmet aucun consentement si l’organisateur refuse de confirmer', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const component = TestBed.createComponent(MemberReservationsPage).componentInstance;
+
+    component.onManagedMatchChange(2);
+    component.consentToPublicOpening();
+
+    expect(matchesApiMock.consentToPublicOpening).not.toHaveBeenCalled();
   });
 
   it('supprime (annule) un match PRIVÉ organisé', () => {
