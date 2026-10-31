@@ -206,6 +206,9 @@ public class ReservationServiceImpl implements ReservationService {
     public void confirm(Long reservationId) {
         Reservation reservation = getById(reservationId);
         // Regle metier : impossible de confirmer deux fois la meme reservation.
+        if (reservation.getStatut() == StatutReservation.CONFIRMEE) {
+            throw new BusinessException("La réservation est déjà confirmée.");
+        }
         if (reservation.getStatut() != StatutReservation.EN_ATTENTE) {
             throw new BusinessException("Seule une réservation en attente peut être confirmée.");
         }
