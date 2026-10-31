@@ -15,6 +15,7 @@ import { SitesApiService } from '../../../core/api/sites-api.service';
 import { MemberSessionService } from '../../../core/auth/member-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { MatchResponse } from '../../../shared/models/match.model';
+import { ATELIER_CAPACITY } from '../../../shared/models/atelier-rules';
 import { SiteResponse } from '../../../shared/models/site-terrain.model';
 import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
 
@@ -103,7 +104,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
                 @if (isOrganizer(match)) {
                   <span class="ml-2 ds-badge ds-badge-info">{{ language.t('member.public.myMatch') }}</span>
                 }
-                @if (!isOrganizer(match) && match.nbJoueursActuels >= 4) {
+                @if (!isOrganizer(match) && match.nbJoueursActuels >= ATELIER_CAPACITY) {
                   <span class="ml-2 ds-badge ds-badge-danger">{{ language.t('member.public.completion') }}</span>
                 } @else if (!isOrganizer(match) && !canJoin(match)) {
                   <span class="ml-2 ds-badge ds-badge-warning">{{ language.t('member.public.none') }}</span>
@@ -119,7 +120,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
               <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.organizer') }}</span><span class="ds-data-value">{{ match.organisateurNom }}</span></div>
               <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.status') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="statusBadgeClass(match.statut)">{{ matchStatusLabel(match.statut) }}</span></span></div>
               <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.type') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="typeBadgeClass(match.typeMatch)">{{ typeLabel(match.typeMatch) }}</span></span></div>
-              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.players') }}</span><span class="ds-data-value">{{ match.nbJoueursActuels }}/4</span></div>
+              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.players') }}</span><span class="ds-data-value">{{ match.nbJoueursActuels }}/{{ ATELIER_CAPACITY }}</span></div>
               <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.price') }}</span><span class="ds-data-value">{{ match.prixParJoueur }} EUR</span></div>
             </mat-card-content>
             <mat-card-actions>
@@ -192,6 +193,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
   `
 })
 export class MemberPublicMatchesPage {
+  readonly ATELIER_CAPACITY = ATELIER_CAPACITY;
   private readonly matchesApi = inject(MatchesApiService);
   private readonly sitesApi = inject(SitesApiService);
   private readonly reservationsApi = inject(ReservationsApiService);
@@ -300,7 +302,7 @@ export class MemberPublicMatchesPage {
       return false;
     }
 
-    return match.statut === 'PLANIFIE' && match.nbJoueursActuels < 4;
+    return match.statut === 'PLANIFIE' && match.nbJoueursActuels < ATELIER_CAPACITY;
   }
 
   canModify(match: MatchResponse): boolean {
