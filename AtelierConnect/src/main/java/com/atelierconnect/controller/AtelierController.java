@@ -5,6 +5,7 @@ import com.atelierconnect.entity.Participant;
 import com.atelierconnect.dto.request.CreateAtelierRequest;
 import com.atelierconnect.dto.response.AtelierDto;
 import com.atelierconnect.entity.enums.TypeAtelier;
+import com.atelierconnect.entity.enums.StatutReservation;
 import com.atelierconnect.repository.ReservationRepository;
 import com.atelierconnect.service.AtelierService;
 import com.atelierconnect.service.impl.AdminAuthorizationService;
@@ -97,7 +98,8 @@ public class AtelierController {
         } else if (atelier.typeMatch() == TypeAtelier.PRIVE) {
             Long participantId = currentMemberService.currentMemberId();
             if (!participantId.equals(atelier.organisateurId())
-                    && !reservationRepository.existsByMatchIdAndMembreId(id, participantId)) {
+                    && !reservationRepository.existsByMatchIdAndMembreIdAndStatutNot(
+                            id, participantId, StatutReservation.ANNULEE)) {
                 throw new AccessDeniedException("Accès refusé à cet atelier privé.");
             }
         }
