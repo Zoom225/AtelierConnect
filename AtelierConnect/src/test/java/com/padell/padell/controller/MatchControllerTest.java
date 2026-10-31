@@ -120,6 +120,9 @@ class MatchControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(1))
                 .andExpect(jsonPath("$[0].id").value(matchDto.id()));
+        mockMvc.perform(get("/api/ateliers/public"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(matchDto.id()));
     }
 
     @Test
