@@ -45,7 +45,7 @@ Le workflow `.github/workflows/atelierconnect-backend.yml` valide :
   base PostgreSQL temporaire, jamais les données de production).
 
 Exécution GitHub Actions :
-https://github.com/Zoom225/AtelierConnect/actions/runs/41203648308
+https://github.com/Zoom225/AtelierConnect/actions/runs/41203981112
 
 Test : `frontend/e2e/atelierconnect-fullstack.spec.ts`, Playwright isolé
 dans `frontend/e2e/package.json`.
@@ -59,9 +59,11 @@ Parcours réellement vérifiés :
    consultation des ateliers d'un autre organisateur refusée.
 6. Paiement applicatif des deux réservations, interdiction pour un autre
    participant de payer celle de l'organisateur, compteur de places correct.
-7. Consentement explicite réservé à l'organisateur et horodaté côté backend.
-8. Conversion vers un atelier public refusée avant J−2.
-9. Connexion dans Chromium, consultation de l'atelier et maintien du consentement
+7. Annulation de l'inscription payée d'un invité : paiement marqué REMBOURSE,
+   compteur de places décrémenté et deuxième annulation refusée.
+8. Consentement explicite réservé à l'organisateur et horodaté côté backend.
+9. Conversion vers un atelier public refusée avant J−2.
+10. Connexion dans Chromium, consultation de l'atelier et maintien du consentement
    après rechargement complet de la page.
 
 ### Anomalies mises au jour par l'intégration réelle
@@ -84,6 +86,8 @@ Parcours réellement vérifiés :
 4. Finaliser le retrait des noms internes et alias transitoires sans rompre
    les clients existants.
 5. Révoquer toute ancienne clé JWT éventuellement publiée.
+
+La restitution REMBOURSE est un état comptable simulé : aucune transaction ni remboursement bancaire réel n'est effectué.
 
 Le résultat CI ne remplace pas la vérification métier par un utilisateur réel.
 La PR #2 reste en brouillon : ne pas fusionner dans `develop` avant cette revue.
