@@ -10,11 +10,11 @@
 		<relativePath/>
 	</parent>
 
-	<groupId>com.padel</groupId>
-	<artifactId>padelmultiple</artifactId>
+	<groupId>com.atelierconnect</groupId>
+	<artifactId>atelierconnect-backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>padelmultiple</name>
-	<description>Padelmultiple backend</description>
+	<name>AtelierConnect Backend</name>
+	<description>Backend de gestion des ateliers collaboratifs</description>
 
 	<properties>
 		<java.version>21</java.version>

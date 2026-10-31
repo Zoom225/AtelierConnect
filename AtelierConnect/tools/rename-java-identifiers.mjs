@@ -8,7 +8,10 @@ if (!['--dry-run', '--write'].includes(mode) || pairs.length === 0) {
 }
 const replacements = new Map(pairs.map(pair => {
   const parts = pair.split('=');
-  if (parts.length !== 2 || !/^[A-Za-z_$][\w$]*$/.test(parts[0]) || !/^[A-Za-z_$][\w$]*$/.test(parts[1])) {
+  const javaIdentifier = /^[A-Za-z_$][\w$]*$/;
+  const packageName = /^com\.[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)?$/;
+  if (parts.length !== 2 || !(javaIdentifier.test(parts[0]) && javaIdentifier.test(parts[1])
+      || packageName.test(parts[0]) && packageName.test(parts[1]))) {
     throw new Error(`Invalid Java identifier mapping: ${pair}`);
   }
   return parts;
@@ -56,6 +59,15 @@ function transform(source) {
       }
       output += source.slice(position, end);
       position = end;
+    } else if ([...replacements.keys()].some(key => key.includes('.') && remaining.startsWith(key)
+        && (position === 0 || !identifierPart.test(source[position - 1]))
+        && !identifierPart.test(source[position + key.length] ?? ''))) {
+      const key = [...replacements.keys()].find(candidate => candidate.includes('.') && remaining.startsWith(candidate)
+        && (position === 0 || !identifierPart.test(source[position - 1]))
+        && !identifierPart.test(source[position + candidate.length] ?? ''));
+      output += replacements.get(key);
+      position += key.length;
+      changes++;
     } else if (identifierStart.test(source[position])) {
       let end = position + 1;
       while (end < source.length && identifierPart.test(source[end])) end++;
