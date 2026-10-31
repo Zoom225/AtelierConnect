@@ -33,10 +33,10 @@ import { SiteResponse, TerrainResponse } from '../../../shared/models/site-terra
         </div>
 
         <div class="admin-actions">
-          <a routerLink="/admin/members">{{ language.t('nav.members') }}</a>
-          <a routerLink="/admin/matches">{{ language.t('nav.matches') }}</a>
-          <a routerLink="/admin/sites">{{ language.t('nav.sites') }}</a>
-          <a routerLink="/admin/terrains">{{ language.t('nav.courts') }}</a>
+          <a routerLink="/admin/participants">{{ language.t('nav.members') }}</a>
+          <a routerLink="/admin/ateliers">{{ language.t('nav.matches') }}</a>
+          <a routerLink="/admin/centres">{{ language.t('nav.sites') }}</a>
+          <a routerLink="/admin/salles">{{ language.t('nav.courts') }}</a>
           <a routerLink="/admin/fermetures">{{ language.t('nav.closures') }}</a>
         </div>
       </div>
