@@ -38,20 +38,20 @@ public class AtelierController {
     private final ReservationRepository reservationRepository;
 
     @Operation(
-            summary = "Créer un match",
-            description = "Crée un match PUBLIC ou PRIVÉ pour le membre connecté. " +
-                    "Les limites de réservation GLOBAL, SITE et LIBRE s'appliquent à la création du match. " +
-                    "Accessible uniquement à un membre authentifié.",
+            summary = "Créer un atelier",
+            description = "Crée un atelier PUBLIC ou PRIVÉ pour le participant connecté. " +
+                    "Les délais de réservation PARTENAIRE, ABONNE et VISITEUR s'appliquent à la création de l'atelier. " +
+                    "Accessible uniquement à un participant authentifié.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @PostMapping
     public ResponseEntity<AtelierDto> createMatch(@Valid @RequestBody CreateAtelierRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        log.info("Requête de création de match reçue de l'utilisateur '{}' pour le terrain ID {}", username, request.terrainId());
+        log.info("Requête de création d'atelier reçue de l'utilisateur '{}' pour la salle ID {}", username, request.terrainId());
 
         if (username == null || "anonymousUser".equals(username)) {
-            log.warn("Tentative de création de match par un utilisateur non authentifié.");
+            log.warn("Tentative de création d'atelier par un utilisateur non authentifié.");
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
@@ -60,9 +60,9 @@ public class AtelierController {
     }
 
     @Operation(
-            summary = "Lister tous les matchs",
-            description = "Retourne les matchs visibles pour l'administrateur connecté. " +
-                    "Un admin GLOBAL voit tous les matchs ; un admin SITE voit uniquement ceux de son site.",
+            summary = "Lister tous les ateliers",
+            description = "Retourne les ateliers visibles pour l'administrateur connecté. " +
+                    "Un administrateur global voit tous les ateliers ; un administrateur de centre voit seulement ceux de son centre.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @GetMapping
@@ -71,8 +71,8 @@ public class AtelierController {
     }
 
     @Operation(
-            summary = "Lister les matchs publics disponibles",
-            description = "Retourne les matchs PUBLICS planifiés et encore disponibles. Endpoint public."
+            summary = "Lister les ateliers publics disponibles",
+            description = "Retourne les ateliers PUBLICS planifiés et encore disponibles. Endpoint public."
     )
     @GetMapping("/public")
     public ResponseEntity<List<AtelierDto>> getPublicMatches() {
@@ -80,13 +80,13 @@ public class AtelierController {
     }
 
     @Operation(
-            summary = "Consulter un match",
-            description = "Retourne le détail d'un match. Accessible aux membres et aux administrateurs authentifiés.",
+            summary = "Consulter un atelier",
+            description = "Retourne le détail d'un atelier. Les ateliers privés sont limités aux personnes autorisées.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @GetMapping("/{id}")
     public ResponseEntity<AtelierDto> getById(
-            @Parameter(description = "ID du match", required = true)
+            @Parameter(description = "ID de l’atelier", required = true)
             @PathVariable Long id) {
         AtelierDto atelier = matchService.getMatchDtoById(id);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -105,9 +105,9 @@ public class AtelierController {
     }
 
     @Operation(
-            summary = "Lister les matchs organisés par un membre",
-            description = "Retourne les matchs organisés par le membre connecté. " +
-                    "Le membre connecté doit correspondre à l'ID fourni.",
+            summary = "Lister les ateliers organisés par un participant",
+            description = "Retourne les ateliers organisés par le participant connecté. " +
+                    "Le participant connecté doit correspondre à l'ID fourni.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @GetMapping("/organisateur/{organisateurId}")
@@ -119,26 +119,26 @@ public class AtelierController {
     }
 
     @Operation(
-            summary = "Lister les matchs d'un site",
-            description = "Retourne les matchs d'un site. Accessible à un admin GLOBAL ou à un admin SITE dans son périmètre.",
+            summary = "Lister les ateliers d'un centre",
+            description = "Retourne les ateliers d'un centre. Accessible à un administrateur autorisé pour ce centre.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @GetMapping("/site/{siteId}")
     public ResponseEntity<List<AtelierDto>> getBySite(
-            @Parameter(description = "ID du site", required = true)
+            @Parameter(description = "ID du centre", required = true)
             @PathVariable Long siteId) {
         adminAuthorizationService.checkSiteAccess(siteId);
         return ResponseEntity.ok(matchService.findBySite(siteId));
     }
 
     @Operation(
-            summary = "Modifier un match",
-            description = "Modifie un match existant. Accessible uniquement au membre organisateur.",
+            summary = "Modifier un atelier",
+            description = "Modifie un atelier existant. Accessible uniquement au participant organisateur.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @PutMapping("/{id}")
     public ResponseEntity<AtelierDto> updateMatch(
-            @Parameter(description = "ID du match", required = true)
+            @Parameter(description = "ID de l’atelier", required = true)
             @PathVariable Long id,
             @Valid @RequestBody AtelierRequest request) {
         currentMemberService.requireCurrentMember(matchService.getMatchEntityById(id).getOrganisateur().getId());
@@ -146,13 +146,13 @@ public class AtelierController {
     }
 
     @Operation(
-            summary = "Annuler un match",
-            description = "Annule un match existant. Accessible uniquement au membre organisateur.",
+            summary = "Annuler un atelier",
+            description = "Annule un atelier existant. Accessible uniquement au participant organisateur.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<Void> cancelMatch(
-            @Parameter(description = "ID du match", required = true)
+            @Parameter(description = "ID de l’atelier", required = true)
             @PathVariable Long id,
             @RequestParam(required = false) Long requesterId) {
         Participant currentMember = currentMemberService.currentMember();
@@ -164,14 +164,14 @@ public class AtelierController {
     }
 
     @Operation(
-            summary = "Convertir un match privé en public",
+            summary = "Ouvrir un atelier privé au public",
             description = "Ouvre un atelier privé au public à partir de J-2, uniquement après accord enregistré de l'organisateur. " +
                     "Accessible à un admin GLOBAL ou à un admin SITE dans son périmètre.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @PatchMapping("/{id}/convert-public")
     public ResponseEntity<Void> convertToPublic(
-            @Parameter(description = "ID du match", required = true)
+            @Parameter(description = "ID de l’atelier", required = true)
             @PathVariable Long id) {
         adminAuthorizationService.checkMatchAccess(id); // Ligne modifiée
         matchService.convertToPublic(id);
