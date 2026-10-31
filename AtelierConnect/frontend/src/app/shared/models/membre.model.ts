@@ -1,4 +1,4 @@
-import { TypeMembre } from './enums.model';
+import { TypeMembre, TypeParticipant, toParticipantCategory } from './enums.model';
 
 export interface LoginRequest {
   matricule: string;
@@ -11,6 +11,7 @@ export interface MembreRequest {
   prenom: string;
   email: string;
   typeMembre: TypeMembre;
+  categorie?: TypeParticipant;
   siteId?: number;
   password?: string;
 }
@@ -22,6 +23,7 @@ export interface MembreResponse {
   prenom: string;
   email: string;
   typeMembre: TypeMembre;
+  categorie?: TypeParticipant;
   siteId: number | null;
   siteNom: string | null;
   solde: number;
@@ -30,4 +32,9 @@ export interface MembreResponse {
 
 export interface LoginResponse extends MembreResponse {
   token: string;
+}
+
+/** Préfère la catégorie native du backend avec repli sur le champ JSON historique. */
+export function categorieParticipant(participant: Pick<MembreResponse, 'categorie' | 'typeMembre'>): TypeParticipant {
+  return participant.categorie ?? toParticipantCategory(participant.typeMembre);
 }
