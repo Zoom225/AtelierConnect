@@ -1,0 +1,70 @@
+name: AtelierConnect - Backend Java
+
+on:
+  push:
+    branches: [ "phase-2/refactoring-backend", "develop" ]
+    paths:
+      - "AtelierConnect/src/**"
+      - "AtelierConnect/pom.xml"
+      - ".github/workflows/atelierconnect-backend.yml"
+  pull_request:
+    branches: [ "develop" ]
+    paths:
+      - "AtelierConnect/src/**"
+      - "AtelierConnect/pom.xml"
+      - ".github/workflows/atelierconnect-backend.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: atelierconnect_ci
+          POSTGRES_USER: atelier_ci
+          POSTGRES_PASSWORD: ci_only_password
+        ports:
+          - 5441:5432
+        options: >-
+          --health-cmd "pg_isready -U atelier_ci -d atelierconnect_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5441/atelierconnect_ci
+      POSTGRES_USER: atelier_ci
+      POSTGRES_PASSWORD: ci_only_password
+      RUN_POSTGRES_CONCURRENCY_TEST: "true"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: AtelierConnect/pom.xml
+
+      - name: Générer une clé JWT éphémère pour les tests
+        run: echo "JWT_SECRET=$(openssl rand -hex 48)" >> "$GITHUB_ENV"
+
+      - name: Compilation et tests (dont concurrence PostgreSQL)
+        run: mvn -B -ntp -f AtelierConnect/pom.xml clean verify
+
+      - name: Conserver les rapports Surefire
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-surefire-reports
+          path: AtelierConnect/target/surefire-reports/
+          if-no-files-found: ignore
