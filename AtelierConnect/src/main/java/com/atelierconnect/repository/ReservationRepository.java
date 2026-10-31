@@ -9,7 +9,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
@@ -24,10 +23,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     // Le mapper construit des DTO après la transaction repository :
     // éviter LazyInitializationException avec open-in-view=false.
-    @Override
-    @EntityGraph(attributePaths = {"match", "membre", "paiement"})
-    Optional<Reservation> findById(Long id);
-
     @EntityGraph(attributePaths = {"match", "membre", "paiement"})
     List<Reservation> findByMatchId(Long matchId);
 
