@@ -165,12 +165,12 @@ jobs:
       - name: Compiler Spring Boot sans rejouer les tests unitaires
         run: mvn -B -ntp -f AtelierConnect/pom.xml -DskipTests package
 
-      - name: Installer Angular et Chromium
-        working-directory: AtelierConnect/frontend
+      - name: Installer Angular et Chromium de façon isolée
+        shell: bash
         run: |
-          npm ci
-          npm install --no-save --package-lock=false @playwright/test@1.56.1
-          npx playwright install --with-deps chromium
+          npm ci --prefix AtelierConnect/frontend
+          npm install --prefix AtelierConnect/frontend/e2e --no-package-lock --no-audit --no-fund
+          (cd AtelierConnect/frontend/e2e && npx playwright install --with-deps chromium)
 
       - name: Démarrer la vraie application et exécuter Chromium
         shell: bash
@@ -204,7 +204,7 @@ jobs:
           done
           curl --fail http://127.0.0.1:4200/ >/dev/null
 
-          cd AtelierConnect/frontend
+          cd AtelierConnect/frontend/e2e
           npx playwright test --config playwright.config.ts
 
       - name: Journaux de démarrage en cas d'échec
@@ -224,6 +224,6 @@ jobs:
         with:
           name: playwright-failures
           path: |
-            AtelierConnect/frontend/test-results/
+            AtelierConnect/frontend/e2e/test-results/
             AtelierConnect/frontend/playwright-report/
           if-no-files-found: ignore
