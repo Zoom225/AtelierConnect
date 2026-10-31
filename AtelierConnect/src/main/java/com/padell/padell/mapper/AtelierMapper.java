@@ -4,13 +4,13 @@ import com.padell.padell.entity.Atelier;
 import com.padell.padell.entity.Participant;
 import com.padell.padell.entity.Centre;
 import com.padell.padell.entity.Salle;
-import com.padell.padell.dto.response.MatchDto;
+import com.padell.padell.dto.response.AtelierDto;
 import org.springframework.stereotype.Service;
 
 @Service
-public class MatchMapper {
+public class AtelierMapper {
 
-    public MatchDto toMatchDto(Atelier match) {
+    public AtelierDto toAtelierDto(Atelier match) {
         if (match == null) {
             return null;
         }
@@ -27,7 +27,7 @@ public class MatchMapper {
                 ? organisateur.getPrenom() + " " + organisateur.getNom()
                 : null;
 
-        return new MatchDto(
+        return new AtelierDto(
                 match.getId(),
                 terrainId,
                 terrainNom,

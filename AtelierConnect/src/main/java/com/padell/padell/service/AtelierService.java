@@ -1,29 +1,29 @@
 package com.padell.padell.service;
 
-import com.padell.padell.dto.request.MatchRequest;
+import com.padell.padell.dto.request.AtelierRequest;
 import com.padell.padell.entity.Atelier;
-import com.padell.padell.dto.request.CreateMatchRequest;
-import com.padell.padell.dto.response.MatchDto;
+import com.padell.padell.dto.request.CreateAtelierRequest;
+import com.padell.padell.dto.response.AtelierDto;
 
 import java.util.List;
 
 public interface AtelierService {
 
-    MatchDto createMatch(CreateMatchRequest request, String username);
+    AtelierDto createMatch(CreateAtelierRequest request, String username);
 
-    List<MatchDto> findAllMatches();
+    List<AtelierDto> findAllMatches();
 
-    List<MatchDto> getPublicAvailableMatches();
+    List<AtelierDto> getPublicAvailableMatches();
 
-    List<MatchDto> findByOrganisateur(Long organisateurId);
+    List<AtelierDto> findByOrganisateur(Long organisateurId);
 
-    List<MatchDto> findBySite(Long siteId);
+    List<AtelierDto> findBySite(Long siteId);
 
     Atelier getMatchEntityById(Long id);
 
-    MatchDto getMatchDtoById(Long id);
+    AtelierDto getMatchDtoById(Long id);
 
-    MatchDto updateMatch(Long matchId, MatchRequest request);
+    AtelierDto updateMatch(Long matchId, AtelierRequest request);
 
     void cancelMatch(Long matchId, Long requesterId);
 

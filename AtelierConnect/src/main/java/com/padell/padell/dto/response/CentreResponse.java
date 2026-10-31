@@ -1,5 +1,6 @@
 package com.padell.padell.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.LocalTime;
@@ -9,7 +10,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class SiteResponse {
+public class CentreResponse {
     private Long id;
     private String nom;
     private String adresse;
@@ -19,4 +20,7 @@ public class SiteResponse {
     private Integer dureeEntreMatchMinutes;
     private Integer anneeCivile;
     private Boolean ouvertVisiteurs;
+
+    @JsonProperty("dureeAtelierMinutes") public Integer dureeAtelierMinutes() { return dureeMatchMinutes; }
+    @JsonProperty("pauseAtelierMinutes") public Integer pauseAtelierMinutes() { return dureeEntreMatchMinutes; }
 }

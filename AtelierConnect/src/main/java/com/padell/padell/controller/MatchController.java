@@ -1,9 +1,9 @@
 package com.padell.padell.controller;
 
-import com.padell.padell.dto.request.MatchRequest;
+import com.padell.padell.dto.request.AtelierRequest;
 import com.padell.padell.entity.Participant;
-import com.padell.padell.dto.request.CreateMatchRequest;
-import com.padell.padell.dto.response.MatchDto;
+import com.padell.padell.dto.request.CreateAtelierRequest;
+import com.padell.padell.dto.response.AtelierDto;
 import com.padell.padell.service.AtelierService;
 import com.padell.padell.service.impl.AdminAuthorizationService;
 import com.padell.padell.service.impl.CurrentParticipantService;
@@ -41,7 +41,7 @@ public class MatchController {
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @PostMapping
-    public ResponseEntity<MatchDto> createMatch(@Valid @RequestBody CreateMatchRequest request) {
+    public ResponseEntity<AtelierDto> createMatch(@Valid @RequestBody CreateAtelierRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         log.info("Requête de création de match reçue de l'utilisateur '{}' pour le terrain ID {}", username, request.terrainId());
@@ -51,7 +51,7 @@ public class MatchController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        MatchDto createdMatch = matchService.createMatch(request, username);
+        AtelierDto createdMatch = matchService.createMatch(request, username);
         return new ResponseEntity<>(createdMatch, HttpStatus.CREATED);
     }
 
@@ -62,7 +62,7 @@ public class MatchController {
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @GetMapping
-    public ResponseEntity<List<MatchDto>> getAllMatches() {
+    public ResponseEntity<List<AtelierDto>> getAllMatches() {
         return ResponseEntity.ok(adminAuthorizationService.filterMatchDtos(matchService.findAllMatches()));
     }
 
@@ -71,7 +71,7 @@ public class MatchController {
             description = "Retourne les matchs PUBLICS planifiés et encore disponibles. Endpoint public."
     )
     @GetMapping("/public")
-    public ResponseEntity<List<MatchDto>> getPublicMatches() {
+    public ResponseEntity<List<AtelierDto>> getPublicMatches() {
         return ResponseEntity.ok(matchService.getPublicAvailableMatches());
     }
 
@@ -81,7 +81,7 @@ public class MatchController {
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @GetMapping("/{id}")
-    public ResponseEntity<MatchDto> getById(
+    public ResponseEntity<AtelierDto> getById(
             @Parameter(description = "ID du match", required = true)
             @PathVariable Long id) {
         return ResponseEntity.ok(matchService.getMatchDtoById(id));
@@ -94,7 +94,7 @@ public class MatchController {
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @GetMapping("/organisateur/{organisateurId}")
-    public ResponseEntity<List<MatchDto>> getByOrganisateur(
+    public ResponseEntity<List<AtelierDto>> getByOrganisateur(
             @Parameter(description = "ID de l'organisateur", required = true)
             @PathVariable Long organisateurId) {
         currentMemberService.requireCurrentMember(organisateurId);
@@ -107,7 +107,7 @@ public class MatchController {
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @GetMapping("/site/{siteId}")
-    public ResponseEntity<List<MatchDto>> getBySite(
+    public ResponseEntity<List<AtelierDto>> getBySite(
             @Parameter(description = "ID du site", required = true)
             @PathVariable Long siteId) {
         adminAuthorizationService.checkSiteAccess(siteId);
@@ -120,10 +120,10 @@ public class MatchController {
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @PutMapping("/{id}")
-    public ResponseEntity<MatchDto> updateMatch(
+    public ResponseEntity<AtelierDto> updateMatch(
             @Parameter(description = "ID du match", required = true)
             @PathVariable Long id,
-            @Valid @RequestBody MatchRequest request) {
+            @Valid @RequestBody AtelierRequest request) {
         currentMemberService.requireCurrentMember(request.getOrganisateurId());
         return ResponseEntity.ok(matchService.updateMatch(id, request));
     }

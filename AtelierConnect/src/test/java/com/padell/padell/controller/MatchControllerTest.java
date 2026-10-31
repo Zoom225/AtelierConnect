@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.padell.padell.config.JwtConfig;
 import com.padell.padell.entity.enums.StatutAtelier;
 import com.padell.padell.entity.enums.TypeAtelier;
-import com.padell.padell.dto.request.CreateMatchRequest;
-import com.padell.padell.dto.response.MatchDto;
+import com.padell.padell.dto.request.CreateAtelierRequest;
+import com.padell.padell.dto.response.AtelierDto;
 import com.padell.padell.repository.AdministrateurRepository;
 import com.padell.padell.repository.ParticipantRepository;
 import com.padell.padell.service.AtelierService;
@@ -68,15 +68,15 @@ class MatchControllerTest {
     private ParticipantRepository membreRepository;
 
 
-    private CreateMatchRequest validCreateMatchRequest;
-    private MatchDto matchDto;
+    private CreateAtelierRequest validCreateMatchRequest;
+    private AtelierDto matchDto;
 
     @BeforeEach
     void setUp() {
         LocalDateTime startTime = LocalDateTime.now().plusDays(10).withNano(0);
-        validCreateMatchRequest = new CreateMatchRequest(1L, startTime, "PUBLIC");
+        validCreateMatchRequest = new CreateAtelierRequest(1L, startTime, "PUBLIC");
 
-        matchDto = new MatchDto(
+        matchDto = new AtelierDto(
                 1L,                                        // id
                 1L,                                        // terrainId
                 "Court Central",                           // terrainNom
@@ -98,7 +98,7 @@ class MatchControllerTest {
     @WithMockUser(username = "membre.test", roles = "LIBRE")
     @DisplayName("POST /api/matches - Doit créer un match pour un rôle autorisé")
     void createMatch_WithAuthorizedRole_ShouldReturnCreated() throws Exception {
-        when(matchService.createMatch(any(CreateMatchRequest.class), anyString())).thenReturn(matchDto);
+        when(matchService.createMatch(any(CreateAtelierRequest.class), anyString())).thenReturn(matchDto);
 
         mockMvc.perform(post("/api/matches")
                         .with(csrf())

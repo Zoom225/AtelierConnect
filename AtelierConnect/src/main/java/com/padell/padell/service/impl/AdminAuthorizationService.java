@@ -1,6 +1,6 @@
 package com.padell.padell.service.impl;
 
-import com.padell.padell.dto.response.MatchDto;
+import com.padell.padell.dto.response.AtelierDto;
 import com.padell.padell.entity.Administrateur;
 import com.padell.padell.entity.Atelier;
 import com.padell.padell.entity.Participant;
@@ -117,7 +117,7 @@ public class AdminAuthorizationService {
                 .toList();
     }
 
-    public List<MatchDto> filterMatchDtos(List<MatchDto> matches) {
+    public List<AtelierDto> filterMatchDtos(List<AtelierDto> matches) {
         Administrateur admin = currentAdmin();
         if (admin.getTypeAdministrateur() == TypeAdministrateur.GLOBAL) {
             return matches;

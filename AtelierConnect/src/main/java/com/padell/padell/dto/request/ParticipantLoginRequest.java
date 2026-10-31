@@ -12,7 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MembreLoginRequest {
+public class ParticipantLoginRequest {
 
     @NotBlank(message = "Le matricule est obligatoire.")
     private String matricule;

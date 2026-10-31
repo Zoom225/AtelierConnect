@@ -8,9 +8,9 @@ import com.padell.padell.entity.enums.TypeAtelier;
 import com.padell.padell.entity.enums.TypeParticipant;
 import com.padell.padell.exception.BusinessException;
 import com.padell.padell.exception.ResourceNotFoundException;
-import com.padell.padell.mapper.MatchMapper;
-import com.padell.padell.dto.request.CreateMatchRequest;
-import com.padell.padell.dto.response.MatchDto;
+import com.padell.padell.mapper.AtelierMapper;
+import com.padell.padell.dto.request.CreateAtelierRequest;
+import com.padell.padell.dto.response.AtelierDto;
 import com.padell.padell.repository.*;
 import com.padell.padell.service.impl.AtelierServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,7 +54,7 @@ class AtelierServiceTest {
     @Mock
     private ParticipantService membreService;
     @Mock
-    private MatchMapper matchMapper;
+    private AtelierMapper matchMapper;
 
     @InjectMocks
     private AtelierServiceImpl matchService;
@@ -62,8 +62,8 @@ class AtelierServiceTest {
     private Participant organisateur;
     private Salle terrain;
     private Centre site;
-    private CreateMatchRequest createMatchRequest;
-    private MatchDto matchDto;
+    private CreateAtelierRequest createMatchRequest;
+    private AtelierDto matchDto;
 
     @BeforeEach
     void setUp() {
@@ -88,13 +88,13 @@ class AtelierServiceTest {
         terrain.setPrix(20.0);
         terrain.setSite(site);
 
-        createMatchRequest = new CreateMatchRequest(
+        createMatchRequest = new CreateAtelierRequest(
                 terrain.getId(),
                 LocalDate.now().plusDays(5).atTime(10, 0),
                 "PUBLIC"
         );
 
-        matchDto = new MatchDto(
+        matchDto = new AtelierDto(
                 1L,
                 terrain.getId(),
                 terrain.getNom(),
@@ -157,10 +157,10 @@ class AtelierServiceTest {
         when(matchRepository.save(any(Atelier.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(reservationRepository.save(any(Reservation.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(paiementRepository.save(any(Paiement.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(matchMapper.toMatchDto(any(Atelier.class))).thenReturn(matchDto); // Utiliser le DTO corrigé
+        when(matchMapper.toAtelierDto(any(Atelier.class))).thenReturn(matchDto); // Utiliser le DTO corrigé
 
         // Act
-        MatchDto result = matchService.createMatch(createMatchRequest, "user123");
+        AtelierDto result = matchService.createMatch(createMatchRequest, "user123");
 
         // Assert
         assertNotNull(result);
@@ -214,7 +214,7 @@ class AtelierServiceTest {
     @DisplayName("createMatch - Échoue si le délai de réservation n'est pas respecté")
     void createMatch_ShouldFail_WhenBookingDelayIsNotMet() {
         // Arrange
-        CreateMatchRequest tooFarRequest = new CreateMatchRequest(terrain.getId(), LocalDateTime.now().plusDays(8), "PUBLIC");
+        CreateAtelierRequest tooFarRequest = new CreateAtelierRequest(terrain.getId(), LocalDateTime.now().plusDays(8), "PUBLIC");
         when(membreRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
         when(terrainService.getById(terrain.getId())).thenReturn(terrain);
 
@@ -233,7 +233,7 @@ class AtelierServiceTest {
         for (TypeParticipant type : TypeParticipant.values()) {
             organisateur.setTypeMembre(type);
             int delai = AtelierRules.delaiReservation(type);
-            CreateMatchRequest demande = new CreateMatchRequest(
+            CreateAtelierRequest demande = new CreateAtelierRequest(
                     terrain.getId(), LocalDate.now().plusDays(delai + 1).atTime(10, 0), "PUBLIC");
             BusinessException erreur = assertThrows(BusinessException.class,
                     () -> matchService.createMatch(demande, "user123"));

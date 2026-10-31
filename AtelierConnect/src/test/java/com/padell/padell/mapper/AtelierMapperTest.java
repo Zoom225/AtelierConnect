@@ -6,7 +6,7 @@ import com.padell.padell.entity.Centre;
 import com.padell.padell.entity.Salle;
 import com.padell.padell.entity.enums.StatutAtelier;
 import com.padell.padell.entity.enums.TypeAtelier;
-import com.padell.padell.dto.response.MatchDto;
+import com.padell.padell.dto.response.AtelierDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,9 +17,9 @@ import java.time.LocalTime;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Tests de MatchMapper")
-class MatchMapperTest {
+class AtelierMapperTest {
 
-    private MatchMapper matchMapper;
+    private AtelierMapper matchMapper;
 
     private Atelier match;
     private Participant organisateur;
@@ -30,7 +30,7 @@ class MatchMapperTest {
 
     @BeforeEach
     void setUp() {
-        matchMapper = new MatchMapper();
+        matchMapper = new AtelierMapper();
 
         site = new Centre();
         site.setId(1L);
@@ -65,7 +65,7 @@ class MatchMapperTest {
     @Test
     @DisplayName("toMatchDto - Doit mapper correctement Match vers MatchDto")
     void toMatchDto_shouldMapMatchToMatchDto() {
-        MatchDto resultDto = matchMapper.toMatchDto(match);
+        AtelierDto resultDto = matchMapper.toAtelierDto(match);
 
         assertNotNull(resultDto);
         assertAll("Vérification des propriétés de MatchDto",
@@ -89,7 +89,7 @@ class MatchMapperTest {
     @Test
     @DisplayName("toMatchDto - Doit retourner null si le Match est null")
     void toMatchDto_shouldReturnNull_whenMatchIsNull() {
-        MatchDto resultDto = matchMapper.toMatchDto(null);
+        AtelierDto resultDto = matchMapper.toAtelierDto(null);
 
         assertNull(resultDto, "Le DTO résultant doit être null quand l'entité source est null");
     }
@@ -105,7 +105,7 @@ class MatchMapperTest {
         matchWithNulls.setDateFin(FIXED_DATE.plusMinutes(90));
         matchWithNulls.setNbJoueursActuels(0);
 
-        MatchDto resultDto = matchMapper.toMatchDto(matchWithNulls);
+        AtelierDto resultDto = matchMapper.toAtelierDto(matchWithNulls);
 
         assertNotNull(resultDto);
         assertAll("Vérification du mapping avec des propriétés nulles",

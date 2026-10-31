@@ -1,14 +1,14 @@
 package com.padell.padell.mapper;
 
-import com.padell.padell.dto.request.SiteRequest;
-import com.padell.padell.dto.response.SiteResponse;
+import com.padell.padell.dto.request.CentreRequest;
+import com.padell.padell.dto.response.CentreResponse;
 import com.padell.padell.entity.Centre;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SiteMapper {
+public class CentreMapper {
 
-    public Centre toEntity(SiteRequest request) {
+    public Centre toEntity(CentreRequest request) {
         if (request == null) {
             return null;
         }
@@ -24,7 +24,7 @@ public class SiteMapper {
                 .build();
     }
 
-    public SiteResponse toResponse(Centre site) {
+    public CentreResponse toResponse(Centre site) {
         if (site == null) {
             return null;
         }
@@ -32,7 +32,7 @@ public class SiteMapper {
         // avec des champs null ne lèvera pas de NullPointerException.
         // L'erreur venait probablement d'une entité Site elle-même nulle dans la liste.
         // Ajouter cette vérification de nullité pour l'entité entière est la clé.
-        return SiteResponse.builder()
+        return CentreResponse.builder()
                 .id(site.getId())
                 .nom(site.getNom())
                 .adresse(site.getAdresse())

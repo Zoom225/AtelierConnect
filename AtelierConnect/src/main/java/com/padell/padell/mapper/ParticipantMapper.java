@@ -1,14 +1,14 @@
 package com.padell.padell.mapper;
 
-import com.padell.padell.dto.request.MembreRequest;
-import com.padell.padell.dto.response.MembreResponse;
+import com.padell.padell.dto.request.ParticipantRequest;
+import com.padell.padell.dto.response.ParticipantResponse;
 import com.padell.padell.entity.Participant;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MembreMapper {
+public class ParticipantMapper {
 
-    public Participant toEntity(MembreRequest request) {
+    public Participant toEntity(ParticipantRequest request) {
         return Participant.builder()
                 .matricule(request.getMatricule())
                 .nom(request.getNom())
@@ -20,8 +20,8 @@ public class MembreMapper {
         // le site est résolu dans le service via siteId
     }
 
-    public MembreResponse toResponse(Participant membre) {
-        return MembreResponse.builder()
+    public ParticipantResponse toResponse(Participant membre) {
+        return ParticipantResponse.builder()
                 .id(membre.getId())
                 .matricule(membre.getMatricule())
                 .nom(membre.getNom())

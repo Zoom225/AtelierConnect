@@ -1,5 +1,6 @@
 package com.padell.padell.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.padell.padell.entity.enums.TypeParticipant;
 import com.padell.padell.entity.enums.TypeParticipantLegacy;
 import lombok.*;
@@ -9,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MembreResponse {
+public class ParticipantResponse {
     private Long id;
     private String matricule;
     private String nom;
@@ -21,4 +22,7 @@ public class MembreResponse {
     private String siteNom;
     private Double solde;
     private String token;
+
+    @JsonProperty("centreId") public Long centreId() { return siteId; }
+    @JsonProperty("centreNom") public String centreNom() { return siteNom; }
 }

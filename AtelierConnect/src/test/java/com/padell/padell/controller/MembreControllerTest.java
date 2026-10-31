@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.padell.padell.config.JwtConfig;
 import com.padell.padell.config.SecurityConfig;
 import com.padell.test.TestSecurityConfig;
-import com.padell.padell.dto.request.MembreLoginRequest;
-import com.padell.padell.dto.request.MembreRequest;
-import com.padell.padell.dto.response.MembreResponse;
+import com.padell.padell.dto.request.ParticipantLoginRequest;
+import com.padell.padell.dto.request.ParticipantRequest;
+import com.padell.padell.dto.response.ParticipantResponse;
 import com.padell.padell.entity.Participant;
-import com.padell.padell.mapper.MembreMapper;
+import com.padell.padell.mapper.ParticipantMapper;
 import com.padell.padell.repository.AdministrateurRepository;
 import com.padell.padell.repository.ParticipantRepository;
 import com.padell.padell.service.ParticipantService;
@@ -51,7 +51,7 @@ class MembreControllerTest {
     @MockitoBean
     private ParticipantService membreService;
     @MockitoBean
-    private MembreMapper membreMapper;
+    private ParticipantMapper membreMapper;
     @MockitoBean(name = "membreAccessService")
     private ParticipantAccessService membreAccessService;
     @MockitoBean
@@ -66,13 +66,13 @@ class MembreControllerTest {
     @MockitoBean
     private ParticipantRepository membreRepository;
 
-    private MembreRequest membreRequest;
-    private MembreResponse membreResponse;
+    private ParticipantRequest membreRequest;
+    private ParticipantResponse membreResponse;
     private Participant membreEntity; // Added for authenticate mock
 
     @BeforeEach
     void setUp() {
-        membreRequest = new MembreRequest();
+        membreRequest = new ParticipantRequest();
         membreRequest.setMatricule("L12345");
         membreRequest.setNom("Doe");
         membreRequest.setPrenom("John");
@@ -83,7 +83,7 @@ class MembreControllerTest {
         when(membreAccessService.canReadById(anyLong())).thenReturn(true);
         when(membreAccessService.canReadByMatricule(anyString())).thenReturn(true);
 
-        membreResponse = new MembreResponse();
+        membreResponse = new ParticipantResponse();
         membreResponse.setId(1L);
         membreResponse.setMatricule("L12345");
 
@@ -118,7 +118,7 @@ class MembreControllerTest {
     @WithMockUser(roles = "ADMIN")
     @DisplayName("POST /api/membres - Doit creer un membre avec un role admin")
     void createMember_WithAdminRole_ShouldReturnCreated() throws Exception {
-        when(membreCreationService.create(any(MembreRequest.class))).thenReturn(membreEntity);
+        when(membreCreationService.create(any(ParticipantRequest.class))).thenReturn(membreEntity);
         when(membreMapper.toResponse(any(Participant.class))).thenReturn(membreResponse);
 
         mockMvc.perform(post("/api/membres")
@@ -134,7 +134,7 @@ class MembreControllerTest {
     @DisplayName("PUT /api/membres/{id} - Doit mettre à jour un membre avec un rôle autorisé")
     void updateMember_WithAuthorizedRole_ShouldReturnOk() throws Exception {
         when(membreService.update(anyLong(), any(Participant.class))).thenReturn(new Participant());
-        when(membreMapper.toEntity(any(MembreRequest.class))).thenReturn(new Participant());
+        when(membreMapper.toEntity(any(ParticipantRequest.class))).thenReturn(new Participant());
         when(membreMapper.toResponse(any(Participant.class))).thenReturn(membreResponse);
 
         mockMvc.perform(put("/api/membres/1")
@@ -169,7 +169,7 @@ class MembreControllerTest {
     @Test
     @DisplayName("POST /api/membres/login - Doit authentifier un membre et retourner un token")
     void loginMembre_ShouldAuthenticateAndReturnToken() throws Exception {
-        MembreLoginRequest loginRequest = new MembreLoginRequest("L12345", "Membre1234!");
+        ParticipantLoginRequest loginRequest = new ParticipantLoginRequest("L12345", "Membre1234!");
         when(membreService.authenticate("L12345", "Membre1234!")).thenReturn(membreEntity);
         when(membreMapper.toResponse(any(Participant.class))).thenReturn(membreResponse);
         when(jwtConfig.generateToken(anyString(), anyString(), anyString())).thenReturn("mocked-jwt-token");

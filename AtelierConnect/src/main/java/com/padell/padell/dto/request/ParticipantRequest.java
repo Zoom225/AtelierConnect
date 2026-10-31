@@ -1,5 +1,6 @@
 package com.padell.padell.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.padell.padell.entity.enums.TypeParticipant;
 import com.padell.padell.entity.enums.TypeParticipantLegacy;
 import jakarta.validation.constraints.AssertTrue;
@@ -13,7 +14,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MembreRequest {
+public class ParticipantRequest {
 
     @NotBlank(message = "Le matricule est obligatoire.")
     private String matricule;
@@ -37,6 +38,7 @@ public class MembreRequest {
                 || categorie == null && typeMembre != null;
     }
 
+    @JsonAlias("centreId")
     private Long siteId;
 
     private String password;

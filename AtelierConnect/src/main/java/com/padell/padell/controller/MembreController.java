@@ -1,11 +1,11 @@
 package com.padell.padell.controller;
 
 import com.padell.padell.config.JwtConfig;
-import com.padell.padell.dto.request.MembreLoginRequest;
-import com.padell.padell.dto.request.MembreRequest;
-import com.padell.padell.dto.response.MembreResponse;
+import com.padell.padell.dto.request.ParticipantLoginRequest;
+import com.padell.padell.dto.request.ParticipantRequest;
+import com.padell.padell.dto.response.ParticipantResponse;
 import com.padell.padell.entity.Participant;
-import com.padell.padell.mapper.MembreMapper;
+import com.padell.padell.mapper.ParticipantMapper;
 import com.padell.padell.service.ParticipantService;
 import com.padell.padell.service.impl.CurrentParticipantService;
 import com.padell.padell.service.impl.ParticipantCreationService;
@@ -35,7 +35,7 @@ import java.util.List;
 public class MembreController {
 
     private final ParticipantService membreService;
-    private final MembreMapper membreMapper;
+    private final ParticipantMapper membreMapper;
     private final JwtConfig jwtConfig;
     private final ParticipantAccessService membreAccessService;
     private final ParticipantCreationService membreCreationService;
@@ -50,7 +50,7 @@ public class MembreController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Membre créé",
-                    content = @Content(schema = @Schema(implementation = MembreResponse.class))),
+                    content = @Content(schema = @Schema(implementation = ParticipantResponse.class))),
             @ApiResponse(responseCode = "400", description = "Requête invalide, format de matricule incorrect ou matricule déjà existant",
                     content = @Content),
             @ApiResponse(responseCode = "404", description = "Site introuvable lorsque siteId est fourni",
@@ -58,7 +58,7 @@ public class MembreController {
     })
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') and @membreAccessService.canCreate(#request.siteId)")
-    public ResponseEntity<MembreResponse> create(@Valid @RequestBody MembreRequest request) {
+    public ResponseEntity<ParticipantResponse> create(@Valid @RequestBody ParticipantRequest request) {
         Participant saved = membreCreationService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(membreMapper.toResponse(saved));
     }
@@ -70,12 +70,12 @@ public class MembreController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Liste des membres retournée",
-                    content = @Content(schema = @Schema(implementation = MembreResponse.class)))
+                    content = @Content(schema = @Schema(implementation = ParticipantResponse.class)))
     })
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<MembreResponse>> getAll() {
-        List<MembreResponse> membres = membreAccessService.filterMembres(membreService.getAll())
+    public ResponseEntity<List<ParticipantResponse>> getAll() {
+        List<ParticipantResponse> membres = membreAccessService.filterMembres(membreService.getAll())
                 .stream()
                 .map(membreMapper::toResponse)
                 .toList();
@@ -90,13 +90,13 @@ public class MembreController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Membre trouvé",
-                    content = @Content(schema = @Schema(implementation = MembreResponse.class))),
+                    content = @Content(schema = @Schema(implementation = ParticipantResponse.class))),
             @ApiResponse(responseCode = "404", description = "Membre introuvable",
                     content = @Content)
     })
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN') and @membreAccessService.canReadById(#id)")
-    public ResponseEntity<MembreResponse> getById(
+    public ResponseEntity<ParticipantResponse> getById(
             @Parameter(description = "ID interne du membre", required = true)
             @PathVariable Long id) {
         Participant membre = membreService.getById(id);
@@ -111,13 +111,13 @@ public class MembreController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Membre trouvé",
-                    content = @Content(schema = @Schema(implementation = MembreResponse.class))),
+                    content = @Content(schema = @Schema(implementation = ParticipantResponse.class))),
             @ApiResponse(responseCode = "404", description = "Membre introuvable avec ce matricule",
                     content = @Content)
     })
     @GetMapping("/matricule/{matricule}")
     @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN') and @membreAccessService.canReadByMatricule(#matricule)")
-    public ResponseEntity<MembreResponse> getByMatricule(
+    public ResponseEntity<ParticipantResponse> getByMatricule(
             @Parameter(description = "Matricule unique du membre", required = true)
             @PathVariable String matricule) {
         Participant membre = membreService.getByMatricule(matricule);
@@ -132,13 +132,13 @@ public class MembreController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Membre connecté trouvé",
-                    content = @Content(schema = @Schema(implementation = MembreResponse.class))),
+                    content = @Content(schema = @Schema(implementation = ParticipantResponse.class))),
             @ApiResponse(responseCode = "404", description = "Membre connecté introuvable",
                     content = @Content)
     })
     @GetMapping("/me")
     @PreAuthorize("hasRole('MEMBER')")
-    public ResponseEntity<MembreResponse> me() {
+    public ResponseEntity<ParticipantResponse> me() {
         Participant membre = currentMemberService.currentMember();
         return ResponseEntity.ok(membreMapper.toResponse(membre));
     }
@@ -202,7 +202,7 @@ public class MembreController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Membre modifié",
-                    content = @Content(schema = @Schema(implementation = MembreResponse.class))),
+                    content = @Content(schema = @Schema(implementation = ParticipantResponse.class))),
             @ApiResponse(responseCode = "400", description = "Requête invalide ou erreur de validation",
                     content = @Content),
             @ApiResponse(responseCode = "403", description = "Accès refusé : token administrateur requis",
@@ -212,10 +212,10 @@ public class MembreController {
     })
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') and @membreAccessService.canManageById(#id)")
-    public ResponseEntity<MembreResponse> update(
+    public ResponseEntity<ParticipantResponse> update(
             @Parameter(description = "ID du membre à modifier", required = true)
             @PathVariable Long id,
-            @Valid @RequestBody MembreRequest request) {
+            @Valid @RequestBody ParticipantRequest request) {
         Participant membre = membreMapper.toEntity(request);
         Participant updated = membreService.update(id, membre);
         return ResponseEntity.ok(membreMapper.toResponse(updated));
@@ -249,14 +249,14 @@ public class MembreController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Connexion réussie : JWT retourné",
-                    content = @Content(schema = @Schema(implementation = MembreResponse.class))),
+                    content = @Content(schema = @Schema(implementation = ParticipantResponse.class))),
             @ApiResponse(responseCode = "404", description = "Membre introuvable avec ce matricule",
                     content = @Content)
     })
     @PostMapping("/login")
-    public ResponseEntity<MembreResponse> login(@Valid @RequestBody MembreLoginRequest request) {
+    public ResponseEntity<ParticipantResponse> login(@Valid @RequestBody ParticipantLoginRequest request) {
         Participant membre = membreService.authenticate(request.getMatricule(), request.getPassword());
-        MembreResponse response = membreMapper.toResponse(membre);
+        ParticipantResponse response = membreMapper.toResponse(membre);
         String token = jwtConfig.generateToken(membre.getMatricule(), membre.getTypeMembre().name(), "MEMBER");
         response.setToken(token);
         return ResponseEntity.ok(response);

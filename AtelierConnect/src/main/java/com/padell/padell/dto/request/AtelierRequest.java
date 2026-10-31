@@ -1,5 +1,6 @@
 package com.padell.padell.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.padell.padell.entity.enums.TypeAtelier;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
@@ -13,9 +14,10 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MatchRequest {
+public class AtelierRequest {
 
     @NotNull(message = "L'ID du terrain est obligatoire.")
+    @JsonAlias("salleId")
     private Long terrainId;
 
     @NotNull(message = "L'ID de l'organisateur est obligatoire.")
@@ -29,5 +31,6 @@ public class MatchRequest {
     private LocalTime heureDebut;
 
     @NotNull(message = "Le type de match est obligatoire.")
+    @JsonAlias("typeAtelier")
     private TypeAtelier typeMatch;
 }

@@ -1,5 +1,6 @@
 package com.padell.padell.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 @Getter
@@ -7,10 +8,13 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TerrainResponse {
+public class SalleResponse {
     private Long id;
     private String nom;
     private Long siteId;
     private String siteNom;
     private Double prix;
+
+    @JsonProperty("centreId") public Long centreId() { return siteId; }
+    @JsonProperty("centreNom") public String centreNom() { return siteNom; }
 }

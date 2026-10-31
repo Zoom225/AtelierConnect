@@ -1,7 +1,7 @@
 package com.padell.padell.mapper;
 
-import com.padell.padell.dto.request.MembreRequest;
-import com.padell.padell.dto.response.MembreResponse;
+import com.padell.padell.dto.request.ParticipantRequest;
+import com.padell.padell.dto.response.ParticipantResponse;
 import com.padell.padell.entity.Participant;
 import com.padell.padell.entity.Centre;
 import com.padell.padell.entity.enums.TypeParticipant;
@@ -14,20 +14,20 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Tests de MembreMapper")
-class MembreMapperTest {
+class ParticipantMapperTest {
 
-    private MembreMapper membreMapper;
+    private ParticipantMapper membreMapper;
 
     @BeforeEach
     void setUp() {
-        membreMapper = new MembreMapper();
+        membreMapper = new ParticipantMapper();
     }
 
     @Test
     @DisplayName("Doit mapper MembreRequest vers Membre Entity")
     void shouldMapMembreRequestToMembreEntity() {
         // Arrange
-        MembreRequest request = MembreRequest.builder()
+        ParticipantRequest request = ParticipantRequest.builder()
                 .matricule("L12345")
                 .nom("Doe")
                 .prenom("John")
@@ -71,7 +71,7 @@ class MembreMapperTest {
         membre.setId(1L); // Simule l'ID généré par la base de données
 
         // Act
-        MembreResponse response = membreMapper.toResponse(membre);
+        ParticipantResponse response = membreMapper.toResponse(membre);
 
         // Assert
         assertNotNull(response);
@@ -90,7 +90,7 @@ class MembreMapperTest {
 
     @Test
     void categorieAtelierConnectAccepteUnParticipantSansTypeHistorique() {
-        MembreRequest request = MembreRequest.builder()
+        ParticipantRequest request = ParticipantRequest.builder()
                 .matricule("L12345")
                 .nom("Test")
                 .prenom("Visiteur")
@@ -117,7 +117,7 @@ class MembreMapperTest {
         membre.setId(2L);
 
         // Act
-        MembreResponse response = membreMapper.toResponse(membre);
+        ParticipantResponse response = membreMapper.toResponse(membre);
 
         // Assert
         assertNotNull(response);

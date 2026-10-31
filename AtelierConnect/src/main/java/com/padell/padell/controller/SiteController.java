@@ -1,9 +1,9 @@
 package com.padell.padell.controller;
 
-import com.padell.padell.dto.request.SiteRequest;
-import com.padell.padell.dto.response.SiteResponse;
+import com.padell.padell.dto.request.CentreRequest;
+import com.padell.padell.dto.response.CentreResponse;
 import com.padell.padell.entity.Centre;
-import com.padell.padell.mapper.SiteMapper;
+import com.padell.padell.mapper.CentreMapper;
 import com.padell.padell.service.CentreService;
 import com.padell.padell.service.impl.AdminAuthorizationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,7 +29,7 @@ import java.util.List;
 public class SiteController {
 
     private final CentreService siteService;
-    private final SiteMapper siteMapper;
+    private final CentreMapper siteMapper;
     private final AdminAuthorizationService adminAuthorizationService;
 
     @Operation(
@@ -40,14 +40,14 @@ public class SiteController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Site créé",
-                    content = @Content(schema = @Schema(implementation = SiteResponse.class))),
+                    content = @Content(schema = @Schema(implementation = CentreResponse.class))),
             @ApiResponse(responseCode = "400", description = "Requête invalide ou erreur de validation",
                     content = @Content),
             @ApiResponse(responseCode = "403", description = "Accès refusé",
                     content = @Content)
     })
     @PostMapping
-    public ResponseEntity<SiteResponse> create(@Valid @RequestBody SiteRequest request) {
+    public ResponseEntity<CentreResponse> create(@Valid @RequestBody CentreRequest request) {
         adminAuthorizationService.requireGlobalAdmin();
         Centre site = siteMapper.toEntity(request);
         Centre saved = siteService.create(site);
@@ -60,11 +60,11 @@ public class SiteController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Liste des sites retournée",
-                    content = @Content(schema = @Schema(implementation = SiteResponse.class)))
+                    content = @Content(schema = @Schema(implementation = CentreResponse.class)))
     })
     @GetMapping
-    public ResponseEntity<List<SiteResponse>> getAll() {
-        List<SiteResponse> sites = siteService.getAll()
+    public ResponseEntity<List<CentreResponse>> getAll() {
+        List<CentreResponse> sites = siteService.getAll()
                 .stream()
                 .map(siteMapper::toResponse)
                 .toList();
@@ -77,12 +77,12 @@ public class SiteController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Site trouvé",
-                    content = @Content(schema = @Schema(implementation = SiteResponse.class))),
+                    content = @Content(schema = @Schema(implementation = CentreResponse.class))),
             @ApiResponse(responseCode = "404", description = "Site introuvable",
                     content = @Content)
     })
     @GetMapping("/{id}")
-    public ResponseEntity<SiteResponse> getById(
+    public ResponseEntity<CentreResponse> getById(
             @Parameter(description = "ID du site", required = true)
             @PathVariable Long id) {
         return ResponseEntity.ok(siteMapper.toResponse(siteService.getById(id)));
@@ -95,7 +95,7 @@ public class SiteController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Site modifié",
-                    content = @Content(schema = @Schema(implementation = SiteResponse.class))),
+                    content = @Content(schema = @Schema(implementation = CentreResponse.class))),
             @ApiResponse(responseCode = "400", description = "Requête invalide ou erreur de validation",
                     content = @Content),
             @ApiResponse(responseCode = "403", description = "Accès refusé",
@@ -104,10 +104,10 @@ public class SiteController {
                     content = @Content)
     })
     @PutMapping("/{id}")
-    public ResponseEntity<SiteResponse> update(
+    public ResponseEntity<CentreResponse> update(
             @Parameter(description = "ID du site à modifier", required = true)
             @PathVariable Long id,
-            @Valid @RequestBody SiteRequest request) {
+            @Valid @RequestBody CentreRequest request) {
         adminAuthorizationService.requireGlobalAdmin();
         Centre site = siteMapper.toEntity(request);
         Centre updated = siteService.update(id, site);

@@ -1,5 +1,6 @@
 package com.padell.padell.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.padell.padell.entity.enums.StatutReservation;
 import lombok.*;
 
@@ -18,4 +19,9 @@ public class ReservationResponse {
     private String membreNom;
     private StatutReservation statut;
     private PaiementResponse paiement;
+
+    @JsonProperty("atelierId") public Long atelierId() { return matchId; }
+    @JsonProperty("atelierDateTime") public LocalDateTime atelierDateTime() { return matchDateTime; }
+    @JsonProperty("participantId") public Long participantId() { return membreId; }
+    @JsonProperty("participantNom") public String participantNom() { return membreNom; }
 }

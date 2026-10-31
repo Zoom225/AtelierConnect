@@ -1,13 +1,13 @@
 package com.padell.padell.service.impl;
 
-import com.padell.padell.dto.request.MatchRequest;
+import com.padell.padell.dto.request.AtelierRequest;
 import com.padell.padell.entity.*;
 import com.padell.padell.entity.enums.*;
 import com.padell.padell.exception.BusinessException;
 import com.padell.padell.exception.ResourceNotFoundException;
-import com.padell.padell.mapper.MatchMapper;
-import com.padell.padell.dto.request.CreateMatchRequest;
-import com.padell.padell.dto.response.MatchDto;
+import com.padell.padell.mapper.AtelierMapper;
+import com.padell.padell.dto.request.CreateAtelierRequest;
+import com.padell.padell.dto.response.AtelierDto;
 import com.padell.padell.repository.*;
 import com.padell.padell.service.AtelierService;
 import com.padell.padell.service.ParticipantService;
@@ -37,11 +37,11 @@ public class AtelierServiceImpl implements AtelierService {
     private final JourFermetureRepository jourFermetureRepository;
     private final SalleService terrainService;
     private final ParticipantService membreService;
-    private final MatchMapper matchMapper;
+    private final AtelierMapper matchMapper;
 
     @Override
     @Transactional
-    public MatchDto createMatch(CreateMatchRequest request, String username) {
+    public AtelierDto createMatch(CreateAtelierRequest request, String username) {
         Participant organisateur = membreRepository.findByMatriculeIgnoreCase(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Membre non trouvé pour l'utilisateur: " + username));
 
@@ -89,37 +89,37 @@ public class AtelierServiceImpl implements AtelierService {
         createPendingReservationForOrganizer(savedMatch, organisateur);
         log.info("Match créé avec succès (ID: {}) par l'utilisateur {}", savedMatch.getId(), username);
 
-        return matchMapper.toMatchDto(savedMatch);
+        return matchMapper.toAtelierDto(savedMatch);
     }
 
     @Override
-    public List<MatchDto> findAllMatches() {
+    public List<AtelierDto> findAllMatches() {
         return matchRepository.findAll().stream()
-                .map(matchMapper::toMatchDto)
+                .map(matchMapper::toAtelierDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<MatchDto> getPublicAvailableMatches() {
+    public List<AtelierDto> getPublicAvailableMatches() {
         return matchRepository.findByTypeAtelierAndStatut(TypeAtelier.PUBLIC, StatutAtelier.PLANIFIE)
                 .stream()
-                .map(matchMapper::toMatchDto)
+                .map(matchMapper::toAtelierDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<MatchDto> findByOrganisateur(Long organisateurId) {
+    public List<AtelierDto> findByOrganisateur(Long organisateurId) {
         return matchRepository.findByOrganisateurId(organisateurId)
                 .stream()
-                .map(matchMapper::toMatchDto)
+                .map(matchMapper::toAtelierDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<MatchDto> findBySite(Long siteId) {
+    public List<AtelierDto> findBySite(Long siteId) {
         return matchRepository.findBySalleCentreId(siteId)
                 .stream()
-                .map(matchMapper::toMatchDto)
+                .map(matchMapper::toAtelierDto)
                 .collect(Collectors.toList());
     }
 
@@ -130,13 +130,13 @@ public class AtelierServiceImpl implements AtelierService {
     }
 
     @Override
-    public MatchDto getMatchDtoById(Long id) {
-        return matchMapper.toMatchDto(getMatchEntityById(id));
+    public AtelierDto getMatchDtoById(Long id) {
+        return matchMapper.toAtelierDto(getMatchEntityById(id));
     }
 
     @Override
     @Transactional
-    public MatchDto updateMatch(Long matchId, MatchRequest request) {
+    public AtelierDto updateMatch(Long matchId, AtelierRequest request) {
         Atelier match = getMatchEntityById(matchId);
 
         // Regle metier : un match annule ne peut plus etre modifie.
@@ -165,7 +165,7 @@ public class AtelierServiceImpl implements AtelierService {
         match.setDateFin(dateFin);
         match.setTypeMatch(request.getTypeMatch());
 
-        return matchMapper.toMatchDto(matchRepository.save(match));
+        return matchMapper.toAtelierDto(matchRepository.save(match));
     }
 
     @Override

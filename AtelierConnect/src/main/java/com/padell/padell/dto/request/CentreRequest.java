@@ -12,7 +12,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class SiteRequest {
+public class CentreRequest {
 
     @NotBlank(message = "Le nom est obligatoire.")
     private String nom;
