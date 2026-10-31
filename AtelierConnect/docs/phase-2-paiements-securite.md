@@ -38,15 +38,17 @@ contenant des données métier réelles.
 Workflow : `.github/workflows/atelierconnect-backend.yml`.
 
 Exécution de référence :
-https://github.com/Zoom225/AtelierConnect/actions/runs/41198701529
+https://github.com/Zoom225/AtelierConnect/actions/runs/41199513604
 
 - Environnement : Java 21 et PostgreSQL 15, base éphémère `atelierconnect_ci`.
 - Commande : `mvn -B -ntp -f AtelierConnect/pom.xml clean verify`.
-- Résultat : **136 tests, 0 échec, 0 erreur, 0 ignoré — BUILD SUCCESS**.
-- Les 2 tests de concurrence PostgreSQL ont réussi.
+- Résultat : **139 tests backend, 0 échec, 0 erreur, 0 ignoré — BUILD SUCCESS**.
+- Les 3 tests de concurrence PostgreSQL ont réussi, y compris paiement contre annulation.
+- Le frontend Angular 21 conserve 61 tests Vitest réussis, et son build est validé dans le même workflow.
+- Les données de démonstration d'une base neuve utilisent les centres Bruxelles/Namur ; les anciennes données ne sont pas renommées automatiquement.
+- Le redémarrage du backend ne réinitialise plus les mots de passe existants.
 
-La validation ci-dessus concerne le commit `08e181a1`. Les commits publiés
-après ce point doivent disposer d'un nouveau résultat CI vert avant intégration.
+La validation ci-dessus concerne le commit `e25f6c1f`. Les commits de documentation ultérieurs ne changent pas la logique exécutée.
 
 ## Éléments à valider avant la fusion dans develop
 
