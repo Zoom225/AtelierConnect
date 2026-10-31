@@ -3,6 +3,7 @@ package com.atelierconnect.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.atelierconnect.config.JwtConfig;
 import com.atelierconnect.entity.enums.StatutAtelier;
+import com.atelierconnect.entity.enums.StatutReservation;
 import com.atelierconnect.entity.enums.TypeAtelier;
 import com.atelierconnect.dto.request.CreateAtelierRequest;
 import com.atelierconnect.dto.response.AtelierDto;
@@ -31,6 +32,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -151,10 +153,28 @@ class AtelierControllerTest {
                 matchDto.statut(), matchDto.nbJoueursActuels(), matchDto.prixParJoueur(), null);
         when(matchService.getMatchDtoById(1L)).thenReturn(privateDto);
         when(currentMemberService.currentMemberId()).thenReturn(99L);
-        when(reservationRepository.existsByMatchIdAndMembreId(1L, 99L)).thenReturn(true);
+        when(reservationRepository.existsByMatchIdAndMembreIdAndStatutNot(1L, 99L, StatutReservation.ANNULEE))
+                .thenReturn(true);
 
         mockMvc.perform(get("/api/ateliers/1"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "MEMBER")
+    void atelierPriveRefuseApresAnnulationDeLInvitation() throws Exception {
+        AtelierDto privateDto = new AtelierDto(matchDto.id(), matchDto.terrainId(), matchDto.terrainNom(),
+                matchDto.siteNom(), matchDto.organisateurId(), matchDto.organisateurNom(),
+                matchDto.date(), matchDto.heureDebut(), matchDto.heureFin(), TypeAtelier.PRIVE,
+                matchDto.statut(), matchDto.nbJoueursActuels(), matchDto.prixParJoueur(), null);
+        when(matchService.getMatchDtoById(1L)).thenReturn(privateDto);
+        when(currentMemberService.currentMemberId()).thenReturn(99L);
+
+        mockMvc.perform(get("/api/ateliers/1"))
+                .andExpect(status().isForbidden());
+
+        verify(reservationRepository).existsByMatchIdAndMembreIdAndStatutNot(
+                1L, 99L, StatutReservation.ANNULEE);
     }
 
     @Test
