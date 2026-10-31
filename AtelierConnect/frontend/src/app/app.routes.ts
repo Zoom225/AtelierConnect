@@ -6,7 +6,7 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () => import('./features/home/pages/landing.page').then((m) => m.LandingPage),
-    title: () => `PadelPlay - ${inject(LanguageService).t('nav.home')}`
+    title: () => `AtelierConnect - ${inject(LanguageService).t('nav.home')}`
   },
   {
     path: 'member',
