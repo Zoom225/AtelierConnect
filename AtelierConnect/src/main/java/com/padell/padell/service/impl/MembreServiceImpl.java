@@ -11,6 +11,7 @@ import com.padell.padell.repository.PenaliteRepository;
 import com.padell.padell.service.MembreService;
 import com.padell.padell.service.SiteService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -23,7 +24,8 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class MembreServiceImpl implements MembreService {
 
-    private static final String DEFAULT_MEMBER_PASSWORD = "Membre1234!";
+    @Value("${APP_DEMO_MEMBER_PASSWORD}")
+    private String defaultMemberPassword;
 
     private final MembreRepository membreRepository;
     private final PenaliteRepository penaliteRepository;
@@ -43,7 +45,7 @@ public class MembreServiceImpl implements MembreService {
             membre.setSite(site);
         }
 
-        String password = StringUtils.hasText(rawPassword) ? rawPassword : DEFAULT_MEMBER_PASSWORD;
+        String password = StringUtils.hasText(rawPassword) ? rawPassword : defaultMemberPassword;
         membre.setPasswordHash(passwordEncoder.encode(password));
         return membre;
     }

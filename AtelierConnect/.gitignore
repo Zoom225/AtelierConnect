@@ -31,3 +31,14 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Local runtime output and credentials
+*.log
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/

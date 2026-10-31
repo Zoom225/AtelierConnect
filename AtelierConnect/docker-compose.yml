@@ -1,21 +1,21 @@
 services:
   postgres:
     image: postgres:15
-    container_name: padel-db
+    container_name: atelierconnect-db
     environment:
-      POSTGRES_DB: padelService
-      POSTGRES_USER: padel
-      POSTGRES_PASSWORD: padel
+      POSTGRES_DB: atelierconnect_db
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
     ports:
-      - "5440:5432"
+      - "5441:5432"
     volumes:
-      - padel-db-data:/var/lib/postgresql/data
+      - atelierconnect-postgres-data:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U padel -d padelService"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d atelierconnect_db"]
       interval: 10s
       timeout: 5s
       retries: 5
 
 volumes:
-  padel-db-data:
+  atelierconnect-postgres-data:

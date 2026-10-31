@@ -15,7 +15,7 @@ import java.util.Date;
 @Component
 public class JwtConfig {
 
-    @Value("${jwt.secret:default-jwt-secret-default-jwt-secret-default-jwt-secret-default-jwt-secret-123456}")
+    @Value("${jwt.secret}")
     private String secret;
 
     @Value("${jwt.expiration:86400000}")

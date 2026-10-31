@@ -13,6 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +41,12 @@ class DataInitializerTest {
 
     @InjectMocks
     private DataInitializer dataInitializer;
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(dataInitializer, "demoMemberPassword", "Membre1234!");
+        ReflectionTestUtils.setField(dataInitializer, "demoAdminPassword", "Admin1234!");
+    }
 
     @Test
     void run_shouldBackfillLegacyMemberPasswordHashes() {

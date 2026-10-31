@@ -1,424 +1,86 @@
-# PadelPlay
+﻿# AtelierConnect
 
-Projet fullstack de gestion de matchs de padel.
+Application Spring Boot (Java 21) et Angular 21. La phase 1 conserve les noms métier et les routes API existants.
 
-- Backend : Spring Boot 3.5, Java 21, Maven
-- Frontend : Angular 21, Angular Material, Tailwind, Vitest
-- Base de donnees : PostgreSQL 15 via Docker Compose
+## Prérequis
 
-## Vue d'ensemble
+Java 21, Docker Desktop, Node.js compatible Angular 21 et npm. Exécuter les commandes ci-dessous depuis `AtelierConnect/` dans Windows PowerShell.
 
-Le projet est compose de deux applications :
+## Configuration locale
 
-- un backend Spring Boot expose sur `http://localhost:8082`
-- un frontend Angular expose en developpement sur `http://localhost:4200`
+Variables requises :
 
-Le frontend appelle le backend via un proxy `/api`.
+| Variable | Usage |
+| --- | --- |
+| `POSTGRES_USER` | Utilisateur PostgreSQL, commun à Docker Compose et Spring Boot |
+| `POSTGRES_PASSWORD` | Mot de passe PostgreSQL, commun à Docker Compose et Spring Boot |
+| `JWT_SECRET` | Clé de signature JWT, aléatoire, au moins 32 octets |
+| `APP_DEMO_MEMBER_PASSWORD` | Mot de passe initial des membres créés par le jeu de démonstration et des membres créés sans mot de passe explicite |
+| `APP_DEMO_ADMIN_PASSWORD` | Mot de passe initial des administrateurs du jeu de démonstration |
+| `SPRING_DATASOURCE_URL` | Facultatif ; défaut `jdbc:postgresql://localhost:5441/atelierconnect_db` |
 
-## Structure du projet
+Définir les variables dans chaque terminal qui lance Docker Compose ou le backend. Les commandes ci-dessous demandent les valeurs sans les afficher. Conserver les mêmes valeurs lors des redémarrages : le volume PostgreSQL conserve son mot de passe initial, et changer la clé JWT invalide les jetons existants. Garder ces valeurs dans un gestionnaire de secrets, jamais dans Git.
 
-```text
-padellAout/
-  src/                       Backend Spring Boot
-  frontend/                  Frontend Angular
-  docker-compose.yml         PostgreSQL local
-  pom.xml                    Build Maven backend
-  README.md                  Documentation projet
+```powershell
+$env:POSTGRES_USER = 'atelierconnect'
+$secure = Read-Host 'POSTGRES_PASSWORD' -AsSecureString
+$ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+try { $env:POSTGRES_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
+$secure = Read-Host 'JWT_SECRET (au moins 32 octets)' -AsSecureString
+$ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+try { $env:JWT_SECRET = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
+$secure = Read-Host 'APP_DEMO_MEMBER_PASSWORD' -AsSecureString
+$ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+try { $env:APP_DEMO_MEMBER_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
+$secure = Read-Host 'APP_DEMO_ADMIN_PASSWORD' -AsSecureString
+$ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+try { $env:APP_DEMO_ADMIN_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
 ```
 
-### Backend
+Pour créer une nouvelle clé JWT aléatoire, la générer localement et la stocker dans le gestionnaire de secrets avant de fermer le terminal :
 
-Organisation principale du backend :
-
-```text
-src/main/java/com/padell/padell/
-  config/                    Securite, JWT, CORS, Swagger
-  controller/                Endpoints REST
-  dto/                       Requetes et reponses
-  entity/                    Entites JPA
-  mapper/                    Mapping DTO <-> entites
-  repository/                Acces base de donnees
-  service/                   Contrats de services
-  service/impl/              Implementations metier
+```powershell
+$bytes = New-Object byte[] 64
+$rng = [Security.Cryptography.RandomNumberGenerator]::Create()
+try { $rng.GetBytes($bytes) } finally { $rng.Dispose() }
+$env:JWT_SECRET = [Convert]::ToBase64String($bytes)
 ```
 
-Points notables de l'architecture actuelle :
+La clé JWT précédemment publiée dans l'historique Git doit être révoquée/remplacée partout où elle a été utilisée. Les anciens mots de passe de démonstration publiés doivent aussi être remplacés pour les comptes déjà créés ; changer les variables ne met pas automatiquement à jour tous les comptes existants.
 
-- `SecurityConfig` definit les acces par route
-- `JwtAuthenticationFilter` reconstruit l'authentification depuis le JWT
-- `JwtConfig` gere la generation et la lecture des claims JWT
-- `MembreAccessService` centralise les controles d'acces sur les membres
-- `MembreCreationService` sort la logique de creation hors du controller
-- `CurrentMemberService` et `AdminAuthorizationService` se partagent les regles d'acces membre/admin
+## PostgreSQL
 
-### Frontend
+`docker-compose.yml` crée la base `atelierconnect_db`, le conteneur `atelierconnect-db` et le volume distinct `atelierconnect-postgres-data`. Le port hôte est `5441`. Aucun ancien volume n'est supprimé.
 
-Organisation principale du frontend :
-
-```text
-frontend/src/app/
-  core/
-    api/                     Services HTTP
-    auth/                    Session, login, stockage
-    guards/                  Protections de routes
-    interceptors/            Injection du token JWT
-    i18n/                    Traductions FR/EN
-  features/
-    admin/                   Ecrans administrateur
-    member/                  Ecrans membre
-    home/                    Landing page
-  shared/                    Modeles, composants, utilitaires
+```powershell
+docker compose config --quiet
+docker compose up -d postgres
+docker compose ps
 ```
 
-Points notables de l'architecture actuelle :
+Pour arrêter le conteneur en conservant les données : `docker compose down`. Ne pas utiliser `down -v` si les données doivent être conservées.
 
-- `AuthSessionService` est la source centrale de verite pour les sessions frontend
-- `AdminSessionService` et `MemberSessionService` sont des facades legeres au-dessus de cette session unifiee
-- le projet est bilingue FR / EN via `core/i18n/translations.ts`
-- l'interceptor HTTP ajoute automatiquement le token JWT sur les appels API proteges
+## Backend
 
-## Prerequis
+`spring.jpa.hibernate.ddl-auto=update` reste actif. Depuis un terminal configuré avec les variables ci-dessus :
 
-Installer sur la machine :
-
-- Java 21
-- Node.js compatible Angular 21
-- npm
-- Docker Desktop
-
-Verifier les versions :
-
-```bash
-java -version
-node -v
-npm -v
-docker --version
-```
-
-## Base de donnees PostgreSQL
-
-Le projet utilise PostgreSQL via Docker Compose.
-
-Configuration actuelle :
-
-```text
-Base        : padelService
-Utilisateur : padel
-Mot de passe: padel
-Port local  : 5440
-Port Docker : 5432
-Conteneur   : padel-db
-```
-
-Demarrer PostgreSQL :
-
-```bash
-docker compose up -d
-```
-
-Verifier que le conteneur tourne :
-
-```bash
-docker ps
-```
-
-Arreter PostgreSQL :
-
-```bash
-docker compose down
-```
-
-Supprimer aussi les donnees :
-
-```bash
-docker compose down -v
-```
-
-Voir les logs PostgreSQL :
-
-```bash
-docker logs padel-db
-```
-
-## Backend Spring Boot
-
-Le backend se trouve a la racine du projet.
-
-Configuration principale :
-
-```text
-src/main/resources/application.properties
-```
-
-Configuration runtime actuelle :
-
-```properties
-spring.datasource.url=${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5440/padelService}
-spring.datasource.username=${SPRING_DATASOURCE_USERNAME:padel}
-spring.datasource.password=${SPRING_DATASOURCE_PASSWORD:padel}
-spring.datasource.driver-class-name=org.postgresql.Driver
-server.port=8082
-springdoc.swagger-ui.path=/swagger-ui.html
-```
-
-Base principale : PostgreSQL.
-Host local : `localhost`
-Port externe : `5440`
-Port PostgreSQL dans Docker : `5432`
-
-### Compiler le backend
-
-Depuis la racine du projet :
-
-```bash
-.\mvnw.cmd clean compile
-ou
-a la racine du projet : padellApplication avec la fleche droite
-```
-
-### Lancer les tests backend
-
-```bash
+```powershell
 .\mvnw.cmd test
-```
-
-### Builder le backend
-
-```bash
 .\mvnw.cmd clean package
-```
-
-Le jar genere se trouve dans :
-
-```text
-target/
-```
-
-### Lancer le backend
-
-Avec Maven :
-
-```bash
 .\mvnw.cmd spring-boot:run
 ```
 
-Ou apres packaging :
+Backend : `http://localhost:8082` ; Swagger : `http://localhost:8082/swagger-ui.html`.
 
-```bash
-java -jar target/padelmultiple-0.0.1-SNAPSHOT.jar
-```
+## Frontend
 
-## API et securite
+Depuis `AtelierConnect/frontend/` :
 
-Le backend utilise des JWT pour l'authentification.
-
-Points utiles :
-
-- login admin via `/api/auth/login`
-- login membre via `/api/membres/login`
-- les roles sont appliques a deux niveaux :
-  - filtrage des routes dans `SecurityConfig`
-  - verification metier fine dans les services d'autorisation
-- le JWT contient un `principalType` pour distinguer explicitement admin et membre
-
-## Swagger / OpenAPI
-
-Quand le backend tourne :
-
-```text
-http://localhost:8082/swagger-ui.html
-```
-
-OpenAPI JSON :
-
-```text
-http://localhost:8082/v3/api-docs
-```
-
-## Frontend Angular
-
-Le frontend se trouve dans :
-
-```text
-frontend/
-```
-
-Le proxy Angular redirige les appels `/api` vers le backend :
-
-```text
-frontend/proxy.conf.json
-```
-
-Configuration proxy :
-
-```json
-{
-  "/api": {
-"target": "http://localhost:8082",
-    "secure": false,
-    "changeOrigin": true
-  }
-}
-```
-
-### Installer les dependances frontend
-
-Depuis le dossier `frontend` :
-
-```bash
-cd frontend
-npm install
-```
-
-### Lancer le frontend en developpement
-
-```bash
-npm start
-```
-
-Ou explicitement sur le port 4200 :
-
-```bash
-npm run start:4200
-```
-
-### Compiler le frontend
-
-```bash
-npm run build
-```
-
-Le build est genere dans :
-
-```text
-frontend/dist/
-```
-
-### Lancer les tests frontend
-
-```bash
-npm test
-```
-
-Mode watch :
-
-```bash
-npm run test:watch
-```
-
-## Internationalisation
-
-Le frontend gere actuellement deux langues :
-
-- `fr`
-- `en`
-
-Les traductions se trouvent dans :
-
-```text
-frontend/src/app/core/i18n/translations.ts
-```
-
-Le service de langue se trouve dans :
-
-```text
-frontend/src/app/core/i18n/language.service.ts
-```
-
-## Compilation complete du projet
-
-Depuis la racine :
-
-```bash
-docker compose up -d
-.\mvnw.cmd clean test
-cd frontend
-npm install
+```powershell
+npm ci
 npm test
 npm run build
-```
-
-## Lancement complet en local
-
-Terminal 1 : base de donnees
-
-```bash
-docker compose up -d
-```
-
-Terminal 2 : backend
-
-```bash
-.\mvnw.cmd spring-boot:run
-```
-
-Terminal 3 : frontend
-
-```bash
-cd frontend
 npm start
 ```
 
-URLs :
-
-```text
-Frontend : http://localhost:4200
-Backend  : http://localhost:8082
-Swagger  : http://localhost:8082/swagger-ui.html
-Postgres : localhost:5440
-```
-
-## Commandes utiles
-
-Relancer proprement la base :
-
-```bash
-docker compose down
-docker compose up -d
-```
-
-Nettoyer le build backend :
-
-```bash
-.\mvnw.cmd clean
-```
-
-Nettoyer le build frontend :
-
-```bash
-cd frontend
-Remove-Item -Recurse -Force dist
-```
-
-## Ordre conseille pour une demo
-
-1. Demarrer PostgreSQL
-
-```bash
-docker compose up -d
-```
-
-2. Lancer le backend
-
-```bash
-.\mvnw.cmd spring-boot:run
-```
-
-3. Lancer le frontend
-
-```bash
-cd frontend
-npm start
-```
-
-4. Ouvrir l'application
-
-```text
-http://localhost:4200
-```
-
-5. Verifier l'API si besoin
-
-```text
-http://localhost:8082/swagger-ui.html
-```
+Frontend : `http://localhost:4200`. Le proxy de développement redirige `/api` vers le backend sur le port `8082`.

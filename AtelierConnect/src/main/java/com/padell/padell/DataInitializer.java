@@ -27,6 +27,7 @@ import com.padell.padell.repository.TerrainRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -41,7 +42,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
-    private static final String DEMO_MEMBER_PASSWORD = "Membre1234!";
+    @Value("${APP_DEMO_MEMBER_PASSWORD}")
+    private String demoMemberPassword;
+    @Value("${APP_DEMO_ADMIN_PASSWORD}")
+    private String demoAdminPassword;
     private final SiteRepository siteRepository;
     private final TerrainRepository terrainRepository;
     private final MembreRepository membreRepository;
@@ -124,7 +128,7 @@ public class DataInitializer implements CommandLineRunner {
 
         log.info("DataInitializer : jours de fermeture crees");
 //-----------------------Membres--------------------//
-        String defaultMemberPasswordHash = passwordEncoder.encode(DEMO_MEMBER_PASSWORD);
+        String defaultMemberPasswordHash = passwordEncoder.encode(demoMemberPassword);
 
         Membre lucas = membreRepository.save(Membre.builder()
                 .matricule("G1001")
@@ -202,7 +206,7 @@ public class DataInitializer implements CommandLineRunner {
                 .nom("Admin")
                 .prenom("Global")
                 .email("admin@padel.com")
-                .passwordHash(passwordEncoder.encode("Admin1234!"))
+                .passwordHash(passwordEncoder.encode(demoAdminPassword))
                 .typeAdministrateur(TypeAdministrateur.GLOBAL)
                 .site(null)
                 .build());
@@ -212,7 +216,7 @@ public class DataInitializer implements CommandLineRunner {
                 .nom("Admin")
                 .prenom("Lyon")
                 .email("admin.lyon@padel.com")
-                .passwordHash(passwordEncoder.encode("Admin1234!"))
+                .passwordHash(passwordEncoder.encode(demoAdminPassword))
                 .typeAdministrateur(TypeAdministrateur.SITE)
                 .site(siteLyon)
                 .build());
@@ -222,7 +226,7 @@ public class DataInitializer implements CommandLineRunner {
                 .nom("Admin")
                 .prenom("Paris")
                 .email("admin.paris@padel.com")
-                .passwordHash(passwordEncoder.encode("Admin1234!"))
+                .passwordHash(passwordEncoder.encode(demoAdminPassword))
                 .typeAdministrateur(TypeAdministrateur.SITE)
                 .site(siteParis)
                 .build());
@@ -240,7 +244,7 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
 
-        legacyMembers.forEach(member -> member.setPasswordHash(passwordEncoder.encode(DEMO_MEMBER_PASSWORD)));
+        legacyMembers.forEach(member -> member.setPasswordHash(passwordEncoder.encode(demoMemberPassword)));
         membreRepository.saveAll(legacyMembers);
 
         log.warn("DataInitializer : {} compte(s) membre legacy ont recu le mot de passe par defaut", legacyMembers.size());
@@ -283,7 +287,7 @@ public class DataInitializer implements CommandLineRunner {
                         .typeMembre(TypeMembre.LIBRE)
                         .solde(0.0)
                         .site(null)
-                        .passwordHash(passwordEncoder.encode(DEMO_MEMBER_PASSWORD))
+                        .passwordHash(passwordEncoder.encode(demoMemberPassword))
                         .build()));
 
         seedActivePenalty(membre);
@@ -301,7 +305,7 @@ public class DataInitializer implements CommandLineRunner {
     private void updateDemoMemberCredentials(String matricule, String email) {
         membreRepository.findByMatriculeIgnoreCase(matricule).ifPresent(membre -> {
             membre.setEmail(email);
-            membre.setPasswordHash(passwordEncoder.encode(DEMO_MEMBER_PASSWORD));
+            membre.setPasswordHash(passwordEncoder.encode(demoMemberPassword));
             membreRepository.save(membre);
         });
     }
@@ -314,7 +318,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private void updateDemoAdminCredentials(String email) {
         administrateurRepository.findByEmail(email).ifPresent(admin -> {
-            admin.setPasswordHash(passwordEncoder.encode("Admin1234!"));
+            admin.setPasswordHash(passwordEncoder.encode(demoAdminPassword));
             administrateurRepository.save(admin);
         });
     }

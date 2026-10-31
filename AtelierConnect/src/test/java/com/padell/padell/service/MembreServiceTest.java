@@ -18,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder; // Added import
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -53,6 +54,7 @@ class MembreServiceTest {
 
     @BeforeEach
     void setUp() {
+        ReflectionTestUtils.setField(membreService, "defaultMemberPassword", "Membre1234!");
         site = Site.builder()
                 .nom("Padel Club Lyon")
                 .build();
