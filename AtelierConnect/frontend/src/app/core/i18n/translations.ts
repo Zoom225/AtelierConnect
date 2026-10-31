@@ -325,6 +325,7 @@ export type TranslationKey =
   | 'admin.sites.matchDuration'
   | 'admin.sites.breakDuration'
   | 'admin.sites.civilYear'
+  | 'admin.sites.openVisitors'
   | 'admin.sites.hours'
   | 'admin.sites.duration'
   | 'admin.sites.break'
@@ -730,7 +731,8 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'admin.sites.closing': 'Fermeture',
     'admin.sites.matchDuration': 'Duree atelier (min)',
     'admin.sites.breakDuration': 'Pause entre ateliers (min)',
-    'admin.sites.civilYear': 'Annee civile',
+    'admin.sites.civilYear': 'Année civile',
+    'admin.sites.openVisitors': 'Centre ouvert aux visiteurs (réservation à 7 jours)',
     'admin.sites.hours': 'Horaires',
     'admin.sites.duration': 'Duree atelier',
     'admin.sites.break': 'Pause',
@@ -1135,6 +1137,7 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'admin.sites.matchDuration': 'Workshop duration (min)',
     'admin.sites.breakDuration': 'Break between workshops (min)',
     'admin.sites.civilYear': 'Calendar year',
+    'admin.sites.openVisitors': 'Center open to visitors (booking up to 7 days ahead)',
     'admin.sites.hours': 'Hours',
     'admin.sites.duration': 'Workshop duration',
     'admin.sites.break': 'Break',
