@@ -108,7 +108,7 @@ describe('MemberPublicMatchesPage', () => {
     fixture.detectChanges();
 
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
-    expect(text).toContain('Mon match');
+    expect(text).toContain('Mon atelier');
   });
 
   it('met à jour un match organisé depuis la liste publique', () => {
