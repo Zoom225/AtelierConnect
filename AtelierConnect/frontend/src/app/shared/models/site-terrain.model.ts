@@ -6,6 +6,7 @@ export interface SiteRequest {
   dureeMatchMinutes: number;
   dureeEntreMatchMinutes: number;
   anneeCivile: number;
+  ouvertVisiteurs?: boolean | null;
 }
 
 export interface SiteResponse {
@@ -17,6 +18,7 @@ export interface SiteResponse {
   dureeMatchMinutes: number;
   dureeEntreMatchMinutes: number;
   anneeCivile: number;
+  ouvertVisiteurs?: boolean | null;
 }
 
 export interface TerrainRequest {
