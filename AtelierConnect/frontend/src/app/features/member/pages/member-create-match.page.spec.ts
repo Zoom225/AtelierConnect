@@ -220,7 +220,7 @@ describe('MemberCreateMatchPage', () => {
     component.submit();
 
     expect(component.loading()).toBe(false);
-    expect(component.errorMessage()).toContain('Le profil SITE ne peut pas réserver plus de 15 jours');
+    expect(component.errorMessage()).toContain('Le profil ABONNE ne peut pas réserver plus de 15 jours');
     expect(component.errorMessage()).toContain(component.maxBookingDate());
   });
   it('affiche une erreur métier sans code HTTP technique', () => {
