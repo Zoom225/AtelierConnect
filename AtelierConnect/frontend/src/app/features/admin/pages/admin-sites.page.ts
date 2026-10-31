@@ -11,6 +11,7 @@ import { SitesApiService } from '../../../core/api/sites-api.service';
 import { AdminSessionService } from '../../../core/auth/admin-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { SiteRequest, SiteResponse } from '../../../shared/models/site-terrain.model';
+import { ATELIER_DURATION_MINUTES, ATELIER_BREAK_MINUTES } from '../../../shared/models/atelier-rules';
 import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
 
 @Component({
@@ -56,6 +57,10 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
           <mat-form-field appearance="outline"><mat-label>{{ language.t('admin.sites.matchDuration') }}</mat-label><input matInput type="number" formControlName="dureeMatchMinutes" /></mat-form-field>
           <mat-form-field appearance="outline"><mat-label>{{ language.t('admin.sites.breakDuration') }}</mat-label><input matInput type="number" formControlName="dureeEntreMatchMinutes" /></mat-form-field>
           <mat-form-field appearance="outline"><mat-label>{{ language.t('admin.sites.civilYear') }}</mat-label><input matInput type="number" formControlName="anneeCivile" /></mat-form-field>
+          <label class="flex items-center gap-3 text-sm font-medium text-slate-700 md:col-span-2">
+            <input type="checkbox" formControlName="ouvertVisiteurs" class="h-4 w-4 accent-teal-700" />
+            {{ language.t('admin.sites.openVisitors') }}
+          </label>
 
           @if (message()) {
             <div class="status-success md:col-span-2">✅ {{ message() }}</div>
@@ -223,9 +228,10 @@ export class AdminSitesPage {
     adresse: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     heureOuverture: new FormControl('08:00', { nonNullable: true, validators: [Validators.required] }),
     heureFermeture: new FormControl('22:00', { nonNullable: true, validators: [Validators.required] }),
-    dureeMatchMinutes: new FormControl(90, { nonNullable: true, validators: [Validators.required] }),
-    dureeEntreMatchMinutes: new FormControl(15, { nonNullable: true, validators: [Validators.required] }),
-    anneeCivile: new FormControl(new Date().getFullYear(), { nonNullable: true, validators: [Validators.required] })
+    dureeMatchMinutes: new FormControl(ATELIER_DURATION_MINUTES, { nonNullable: true, validators: [Validators.required] }),
+    dureeEntreMatchMinutes: new FormControl(ATELIER_BREAK_MINUTES, { nonNullable: true, validators: [Validators.required] }),
+    anneeCivile: new FormControl(new Date().getFullYear(), { nonNullable: true, validators: [Validators.required] }),
+    ouvertVisiteurs: new FormControl(false, { nonNullable: true })
   });
 
   constructor() {
@@ -245,7 +251,7 @@ export class AdminSitesPage {
 
   edit(site: SiteResponse): void {
     this.editingId.set(site.id);
-    this.form.patchValue({ ...site });
+    this.form.patchValue({ ...site, ouvertVisiteurs: site.ouvertVisiteurs ?? false });
   }
 
   resetForm(): void {
@@ -255,9 +261,10 @@ export class AdminSitesPage {
       adresse: '',
       heureOuverture: '08:00',
       heureFermeture: '22:00',
-      dureeMatchMinutes: 90,
-      dureeEntreMatchMinutes: 15,
-      anneeCivile: new Date().getFullYear()
+      dureeMatchMinutes: ATELIER_DURATION_MINUTES,
+      dureeEntreMatchMinutes: ATELIER_BREAK_MINUTES,
+      anneeCivile: new Date().getFullYear(),
+      ouvertVisiteurs: false
     });
   }
 
