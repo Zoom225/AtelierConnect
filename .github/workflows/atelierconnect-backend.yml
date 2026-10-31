@@ -2,7 +2,7 @@ name: AtelierConnect - Vérification full-stack
 
 on:
   push:
-    branches: [ "phase-2/refactoring-backend", "develop" ]
+    branches: [ "phase-2/refactoring-backend", "phase-3/refactoring-frontend", "develop" ]
     paths:
       - "AtelierConnect/src/**"
       - "AtelierConnect/pom.xml"
