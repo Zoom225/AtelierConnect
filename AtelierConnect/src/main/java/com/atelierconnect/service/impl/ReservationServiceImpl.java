@@ -168,6 +168,9 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public void cancel(Long reservationId) {
+        // Même ordre de verrouillage que le paiement : réservation, puis atelier.
+        // Empêche l'annulation et la confirmation simultanées d'une même place.
+        reservationRepository.lockReservationById(reservationId);
         Reservation reservation = getById(reservationId);
         boolean wasConfirmed = reservation.getStatut() == StatutReservation.CONFIRMEE;
 
@@ -191,9 +194,7 @@ public class ReservationServiceImpl implements ReservationService {
         }
 
         // Regle metier : seule une reservation confirmee libere une place.
-        if (wasConfirmed
-                && reservation.getMatch().getNbJoueursActuels() != null
-                && reservation.getMatch().getNbJoueursActuels() > 0) {
+        if (wasConfirmed) {
             matchService.decrementPlayers(reservation.getMatch().getId());
         }
 
@@ -205,8 +206,8 @@ public class ReservationServiceImpl implements ReservationService {
     public void confirm(Long reservationId) {
         Reservation reservation = getById(reservationId);
         // Regle metier : impossible de confirmer deux fois la meme reservation.
-        if (reservation.getStatut() == StatutReservation.CONFIRMEE) {
-            throw new BusinessException("La réservation est déjà confirmée.");
+        if (reservation.getStatut() != StatutReservation.EN_ATTENTE) {
+            throw new BusinessException("Seule une réservation en attente peut être confirmée.");
         }
 
         reservation.setStatut(StatutReservation.CONFIRMEE);
