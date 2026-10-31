@@ -168,7 +168,7 @@ describe('MemberReservationsPage', () => {
     component.consentToPublicOpening();
 
     expect(matchesApiMock.consentToPublicOpening).toHaveBeenCalledWith(2);
-    expect(component.consentedMatchIds().has(2)).toBe(true);
+    expect(component.selectedManagedMatch()?.accordOuverturePublique).toBe(true);
     expect(component.message()).toContain('accord');
   });
 
@@ -179,6 +179,29 @@ describe('MemberReservationsPage', () => {
     component.onManagedMatchChange(2);
     component.consentToPublicOpening();
 
+    expect(matchesApiMock.consentToPublicOpening).not.toHaveBeenCalled();
+  });
+
+  it('restaure l’accord depuis le DTO après rechargement et empêche son renvoi', () => {
+    const matchesWithPersistedConsent: MatchResponse[] = organizedMatches.map(match =>
+      match.id === 2
+        ? { ...match, accordOuverturePublique: true, dateAccordOuverturePublique: '2026-10-31T12:00:00' }
+        : match
+    );
+    matchesApiMock.getByOrganisateur.mockReturnValue(of(matchesWithPersistedConsent));
+
+    const fixture = TestBed.createComponent(MemberReservationsPage);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    expect(component.selectedManagedMatch()?.accordOuverturePublique).toBe(true);
+    const consentButton = Array.from(
+      fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>
+    ).find(button => button.textContent?.includes('accord pour une éventuelle ouverture'));
+    expect(consentButton).toBeDefined();
+    expect(consentButton?.disabled).toBe(true);
+
+    component.consentToPublicOpening();
     expect(matchesApiMock.consentToPublicOpening).not.toHaveBeenCalled();
   });
 
