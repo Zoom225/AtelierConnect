@@ -67,7 +67,7 @@ const createMaxBookingDateValidator = (getMaxDate: () => string): ValidatorFn =>
           </span>
         </div>
         <div class="toolbar-actions">
-          <a mat-stroked-button routerLink="/member/matches">{{ language.t('member.public.title') }}</a>
+          <a mat-stroked-button routerLink="/member/ateliers">{{ language.t('member.public.title') }}</a>
         </div>
       </div>
 
