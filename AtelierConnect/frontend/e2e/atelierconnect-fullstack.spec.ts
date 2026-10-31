@@ -220,7 +220,7 @@ test('administrateur global : créer, modifier et supprimer un centre dans Angul
   await page.locator('form button[type="submit"]').click();
   await expect(page).toHaveURL(/\/admin\/?$/, { timeout: 20_000 });
 
-  await page.goto('/admin/sites');
+  await page.goto('/admin/centres');
   await expect(page.locator('h1.adm-site-title')).toBeVisible();
 
   const nom = 'Centre test E2E ' + Date.now();
