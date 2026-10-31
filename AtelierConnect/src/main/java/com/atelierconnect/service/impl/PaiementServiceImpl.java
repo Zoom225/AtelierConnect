@@ -42,7 +42,7 @@ public class PaiementServiceImpl implements PaiementService {
 
         // Regle metier : seul le membre lié a la reservation peut payer.
         if (!membre.getId().equals(membreId)) {
-            throw new BusinessException("Seul le membre associé à cette réservation peut payer.");
+            throw new BusinessException("Seul le participant associé à cette réservation peut payer.");
         }
 
         // Regle metier : une reservation annulee ne peut pas etre payee.
@@ -70,13 +70,13 @@ public class PaiementServiceImpl implements PaiementService {
         }
         // La place est attribuee uniquement au moment du paiement, apres verification du match sous verrou.
         Atelier match = matchRepository.findByIdForUpdate(reservation.getMatch().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Match introuvable avec l'ID : " + reservation.getMatch().getId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Atelier introuvable avec l'ID : " + reservation.getMatch().getId()));
         // Regle metier : le match doit toujours etre valide une fois verrouille.
         if (match.getStatut() == StatutAtelier.ANNULE) {
-            throw new BusinessException("Le match est annulé.");
+            throw new BusinessException("Cet atelier est annulé.");
         }
         if (match.getNbJoueursActuels() != null && match.getNbJoueursActuels() >= AtelierRules.CAPACITE) {
-            throw new BusinessException("Le match est déjà complet.");
+            throw new BusinessException("Cet atelier est déjà complet.");
         }
         double montantFinal = paiement.getMontant();
         if (membre.getSolde() > 0.0) {
@@ -102,7 +102,7 @@ public class PaiementServiceImpl implements PaiementService {
         }
         matchRepository.save(match);
 
-        log.info("Paiement effectué pour la réservation {} par le membre {}", reservationId, membreId);
+        log.info("Paiement effectué pour la réservation {} par le participant {}", reservationId, membreId);
 
         return paiement;
     }
