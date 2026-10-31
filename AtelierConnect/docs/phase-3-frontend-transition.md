@@ -37,20 +37,56 @@ transmettent les deux valeurs correspondantes.
 - `master` n'est pas modifiée ; la branche ne se fusionne que dans `develop`
   après tests et revue.
 
-## Tests et limites
-Le workflow `.github/workflows/atelierconnect-backend.yml` exécute Java 21,
-PostgreSQL 15, tests Spring Boot, tests Vitest et compilation Angular.
-Une compilation verte ne constitue pas un test navigateur de bout en bout.
+## Preuves de validation — 31 octobre 2026
+Le workflow `.github/workflows/atelierconnect-backend.yml` valide :
+- **143 tests Java** réussis, 0 échec (Java 21, PostgreSQL 15).
+- **70 tests Angular/Vitest** réussis, 0 échec, build Angular réussi.
+- **1 parcours navigateur Chromium** réussi (vrai Spring Boot + Angular,
+  base PostgreSQL temporaire, jamais les données de production).
 
-À valider avant fusion :
-1. Parcours sur un vrai navigateur : connexion, catégories, création, invitation,
-   paiement simulé, annulation, autorisations et conversion à J−2.
-2. Compatibilité de tous les champs DTO pendant la suppression progressive
-   des anciennes appellations et des imports Angular historiques.
-3. Exposer en lecture seule le consentement enregistré dans le DTO atelier,
-   afin que le bouton d'accord reste désactivé après rafraîchissement.
-4. Vérifier les messages et l'accessibilité des écrans en français et en anglais.
-5. L'ancienne clé JWT éventuellement exposée doit être révoquée séparément.
+Exécution GitHub Actions :
+https://github.com/Zoom225/AtelierConnect/actions/runs/41203648308
 
-Important : le statut PAYE correspond à la validation applicative du paiement ;
-il ne prouve pas une transaction avec un prestataire de paiement externe.
+Test : `frontend/e2e/atelierconnect-fullstack.spec.ts`, Playwright isolé
+dans `frontend/e2e/package.json`.
+
+Parcours réellement vérifiés :
+1. Liste publique des ateliers et refus d'accès anonyme aux routes protégées.
+2. Authentification de deux participants (PARTENAIRE et ABONNÉ).
+3. Création d'un atelier PRIVÉ dans un centre de Bruxelles.
+4. Invitation d'un autre participant par matricule.
+5. Contrôle des permissions : accès privé d'un non-invité refusé,
+   consultation des ateliers d'un autre organisateur refusée.
+6. Paiement applicatif des deux réservations, interdiction pour un autre
+   participant de payer celle de l'organisateur, compteur de places correct.
+7. Consentement explicite réservé à l'organisateur et horodaté côté backend.
+8. Conversion vers un atelier public refusée avant J−2.
+9. Connexion dans Chromium, consultation de l'atelier et maintien du consentement
+   après rechargement complet de la page.
+
+### Anomalies mises au jour par l'intégration réelle
+- HTTP 500 `GET /api/salles` : `LazyInitializationException` corrigée par
+  `@EntityGraph(site)` sur les lectures de `SalleRepository`.
+- HTTP 500 `GET /api/reservations/participant/{id}` : associations chargées
+  explicitement dans les requêtes de liste ; transaction de lecture limitée
+  à l'endpoint de détail.
+- Concurrence sur la sixième place : le chargement JPA anticipé rendait possible
+  la lecture d'un ancien compteur. La transaction recharge désormais le compteur
+  après le verrou `FOR UPDATE`. Les 3 tests PostgreSQL concurrents sont verts.
+
+### Restant avant validation finale de la phase 3
+1. Tester manuellement l'ensemble des interfaces administrateur, l'édition des
+   ateliers et la fermeture des centres dans un navigateur.
+2. Tester le passage effectif PRIVE → PUBLIC à J−2 avec le scheduler et
+   le consentement, ainsi que les annulations et remboursements.
+3. Vérifier l'accessibilité clavier, les messages d'erreur et les traductions
+   françaises/anglaises.
+4. Finaliser le retrait des noms internes et alias transitoires sans rompre
+   les clients existants.
+5. Révoquer toute ancienne clé JWT éventuellement publiée.
+
+Le résultat CI ne remplace pas la vérification métier par un utilisateur réel.
+La PR #2 reste en brouillon : ne pas fusionner dans `develop` avant cette revue.
+
+Important : le statut `PAYE` correspond à la **validation applicative** du
+paiement ; il ne démontre pas une transaction avec un prestataire réel.
