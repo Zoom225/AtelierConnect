@@ -226,6 +226,11 @@ export type TranslationKey =
   | 'member.reservations.organizedSub'
   | 'member.reservations.chooseMatch'
   | 'member.reservations.inviteMatricule'
+  | 'member.reservations.consentInfo'
+  | 'member.reservations.consentAction'
+  | 'member.reservations.consentConfirm'
+  | 'member.reservations.consentSuccess'
+  | 'member.reservations.consentError'
   | 'member.reservations.noPlayer'
   | 'member.reservations.reservationLabel'
   | 'member.reservations.paymentLabel'
@@ -632,7 +637,12 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'member.reservations.organizedTitle': 'Mes ateliers organises',
     'member.reservations.organizedSub': 'Modifier, supprimer ou gerer les participants de vos ateliers.',
     'member.reservations.chooseMatch': '-- Choisir un atelier --',
-    'member.reservations.inviteMatricule': 'Matricule participant a ajouter',
+    'member.reservations.inviteMatricule': 'Matricule du participant à inviter',
+    'member.reservations.consentInfo': 'Si cet atelier privé reste incomplet, il ne pourra être ouvert au public à J−2 qu’avec votre accord explicite.',
+    'member.reservations.consentAction': 'J’autorise l’ouverture au public à J−2',
+    'member.reservations.consentConfirm': 'Confirmez-vous votre accord pour ouvrir cet atelier au public à partir de J−2 s’il reste incomplet ? Cette décision sera enregistrée.',
+    'member.reservations.consentSuccess': 'Votre accord pour une éventuelle ouverture au public est enregistré.',
+    'member.reservations.consentError': 'Impossible d’enregistrer votre accord.'
     'member.reservations.noPlayer': 'Aucun participant inscrit sur ce atelier.',
     'member.reservations.reservationLabel': 'Reservation',
     'member.reservations.paymentLabel': 'Paiement',
@@ -691,7 +701,7 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'admin.matches.noReservations': 'Aucune reservation.',
     'admin.matches.hideDetails': 'Masquer',
     'admin.matches.showDetails': 'Voir details',
-    'admin.matches.convert': 'Convertir en public',
+    'admin.matches.convert': 'Ouvrir au public (accord requis, J−2)',
     'admin.matches.convertSuccess': 'Atelier converti en public.',
     'admin.matches.loadError': 'Impossible de charger les ateliers admin.',
     'admin.matches.reservationsError': 'Impossible de charger les reservations du atelier.',
@@ -1037,7 +1047,12 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'member.reservations.organizedTitle': 'My organized workshops',
     'member.reservations.organizedSub': 'Edit, delete, or manage participants for your workshops.',
     'member.reservations.chooseMatch': '-- Choose a workshop --',
-    'member.reservations.inviteMatricule': 'Participant participant ID to add',
+    'member.reservations.inviteMatricule': 'Participant ID to invite',
+    'member.reservations.consentInfo': 'If this private workshop is not full, it can open to the public at D−2 only with your explicit consent.',
+    'member.reservations.consentAction': 'I authorize public opening at D−2',
+    'member.reservations.consentConfirm': 'Do you agree to open this workshop to the public from D−2 if it remains incomplete? Your decision will be recorded.',
+    'member.reservations.consentSuccess': 'Your consent to possible public opening has been recorded.',
+    'member.reservations.consentError': 'Unable to record your consent.'
     'member.reservations.noPlayer': 'No participant registered for this workshop.',
     'member.reservations.reservationLabel': 'Reservation',
     'member.reservations.paymentLabel': 'Payment',
@@ -1096,7 +1111,7 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'admin.matches.noReservations': 'No reservations.',
     'admin.matches.hideDetails': 'Hide',
     'admin.matches.showDetails': 'View details',
-    'admin.matches.convert': 'Convert to public',
+    'admin.matches.convert': 'Open to public (consent required, D−2)',
     'admin.matches.convertSuccess': 'Workshop converted to public.',
     'admin.matches.loadError': 'Unable to load admin workshops.',
     'admin.matches.reservationsError': 'Unable to load workshop reservations.',
