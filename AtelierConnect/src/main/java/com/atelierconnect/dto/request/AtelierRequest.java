@@ -16,7 +16,7 @@ import java.time.LocalTime;
 @Builder
 public class AtelierRequest {
 
-    @NotNull(message = "L'ID du terrain est obligatoire.")
+    @NotNull(message = "L'identifiant de la salle est obligatoire.")
     @JsonAlias("salleId")
     private Long terrainId;
 
@@ -24,13 +24,13 @@ public class AtelierRequest {
     private Long organisateurId;
 
     @NotNull(message = "La date est obligatoire.")
-    @Future(message = "La date du match doit être dans le futur.")
+    @Future(message = "La date de l'atelier doit être dans le futur.")
     private LocalDate date;
 
     @NotNull(message = "L'heure de début est obligatoire.")
     private LocalTime heureDebut;
 
-    @NotNull(message = "Le type de match est obligatoire.")
+    @NotNull(message = "Le type d'atelier est obligatoire.")
     @JsonAlias("typeAtelier")
     private TypeAtelier typeMatch;
 }
