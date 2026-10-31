@@ -13,7 +13,7 @@ import { AdminMembersPage } from './admin-members.page';
 describe('AdminMembersPage', () => {
   const members: MembreResponse[] = [
 	{ id: 1, matricule: 'G1001', nom: 'Martin', prenom: 'Lucas', email: 'lucas@email.com', typeMembre: 'GLOBAL', siteId: null, siteNom: null, solde: 0 },
-	{ id: 2, matricule: 'S10001', nom: 'Bernard', prenom: 'Tom', email: 'tom@email.com', typeMembre: 'SITE', siteId: 1, siteNom: 'Padel Club Lyon', solde: 5 },
+	{ id: 2, matricule: 'S10001', nom: 'Bernard', prenom: 'Tom', email: 'tom@email.com', typeMembre: 'SITE', categorie: 'ABONNE', siteId: 1, siteNom: 'Padel Club Lyon', solde: 5 },
 	{ id: 3, matricule: 'S10002', nom: 'Leroy', prenom: 'Sarah', email: 'sarah@email.com', typeMembre: 'SITE', siteId: 2, siteNom: 'Padel Club Paris', solde: 0 }
   ];
 
@@ -97,6 +97,15 @@ describe('AdminMembersPage', () => {
 	expect(component.countByType('SITE')).toBe(2);
   });
 
+  it('utilise la catégorie native et conserve les anciens codes pour les filtres', () => {
+    const fixture = TestBed.createComponent(AdminMembersPage);
+    const component = fixture.componentInstance;
+    expect(component.categorieParticipant(members[1])).toBe('ABONNE');
+    expect(component.categorieParticipant(members[0])).toBe('PARTENAIRE');
+    component.typeFilter.set('SITE');
+    expect(component.displayedMembers()).toHaveLength(1);
+  });
+
   it('affiche le statut de penalite active d un membre', () => {
 	const fixture = TestBed.createComponent(AdminMembersPage);
 	const component = fixture.componentInstance;
@@ -123,9 +132,9 @@ describe('AdminMembersPage', () => {
 
 	expect(membresApiMock.update).toHaveBeenCalledWith(
 	  2,
-	  expect.objectContaining({ matricule: 'S10001', nom: 'Bernard-Modifie', typeMembre: 'SITE', siteId: 1 })
+	  expect.objectContaining({ matricule: 'S10001', nom: 'Bernard-Modifie', typeMembre: 'SITE', categorie: 'ABONNE', siteId: 1 })
 	);
-	expect(component.message()).toContain('Membre mis à jour');
+	expect(component.message()).toContain('Participant mis à jour');
 	expect(component.editingId()).toBeNull();
   });
 
@@ -137,6 +146,6 @@ describe('AdminMembersPage', () => {
 	component.remove(2);
 
 	expect(membresApiMock.delete).toHaveBeenCalledWith(2);
-	expect(component.message()).toContain('Membre supprimé');
+	expect(component.message()).toContain('Participant supprimé');
   });
 });
