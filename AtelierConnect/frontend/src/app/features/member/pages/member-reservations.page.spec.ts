@@ -133,7 +133,7 @@ describe('MemberReservationsPage', () => {
     component.onManagedMatchChange(1);
 
     expect(component.managedMatchId()).toBeNull();
-    expect(component.errorMessage()).toContain('réservée aux matchs PRIVÉS');
+    expect(component.errorMessage()).toContain('réservée aux ateliers PRIVÉS');
     expect(reservationsApiMock.getByMatch).not.toHaveBeenCalled();
   });
 
@@ -155,7 +155,7 @@ describe('MemberReservationsPage', () => {
         typeMatch: 'PRIVE'
       })
     );
-    expect(component.message()).toContain('Match mis à jour');
+    expect(component.message()).toContain('Atelier mis à jour');
   });
 
   it('supprime (annule) un match PRIVÉ organisé', () => {
