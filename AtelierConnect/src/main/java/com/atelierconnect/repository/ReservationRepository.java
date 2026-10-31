@@ -1,6 +1,7 @@
 package com.atelierconnect.repository;
 
 import com.atelierconnect.entity.Reservation;
+import com.atelierconnect.entity.enums.StatutReservation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,4 +23,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findByMatchId(Long matchId);
     List<Reservation> findByMembreId(Long membreId);
     boolean existsByMatchIdAndMembreId(Long matchId, Long membreId);
+    boolean existsByMatchIdAndMembreIdAndStatutNot(
+            Long matchId, Long membreId, StatutReservation statut);
 }
