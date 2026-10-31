@@ -25,7 +25,7 @@ import java.util.List;
 @RestController
 @RequestMapping({"/api/centres", "/api/sites"})
 @RequiredArgsConstructor
-@Tag(name = "Sites", description = "Endpoints de gestion des sites de padel.")
+@Tag(name = "Centres", description = "Gestion des centres accueillant les ateliers collaboratifs.")
 public class CentreController {
 
     private final CentreService siteService;
@@ -33,13 +33,13 @@ public class CentreController {
     private final AdminAuthorizationService adminAuthorizationService;
 
     @Operation(
-            summary = "Créer un site",
-            description = "Crée un nouveau site de padel avec ses horaires, sa durée de match et sa durée de pause. " +
+            summary = "Créer un centre",
+            description = "Crée un centre avec ses horaires, la durée des ateliers et la durée des pauses. " +
                     "Accessible uniquement à un admin GLOBAL.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Site créé",
+            @ApiResponse(responseCode = "201", description = "Centre créé",
                     content = @Content(schema = @Schema(implementation = CentreResponse.class))),
             @ApiResponse(responseCode = "400", description = "Requête invalide ou erreur de validation",
                     content = @Content),
@@ -55,11 +55,11 @@ public class CentreController {
     }
 
     @Operation(
-            summary = "Lister les sites",
-            description = "Retourne la liste des sites de padel. Endpoint public."
+            summary = "Lister les centres",
+            description = "Retourne la liste des centres. Endpoint public."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Liste des sites retournée",
+            @ApiResponse(responseCode = "200", description = "Liste des centres retournée",
                     content = @Content(schema = @Schema(implementation = CentreResponse.class)))
     })
     @GetMapping
@@ -72,35 +72,35 @@ public class CentreController {
     }
 
     @Operation(
-            summary = "Consulter un site",
-            description = "Retourne un site par son ID. Endpoint public."
+            summary = "Consulter un centre",
+            description = "Retourne un centre par son identifiant. Endpoint public."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Site trouvé",
+            @ApiResponse(responseCode = "200", description = "Centre trouvé",
                     content = @Content(schema = @Schema(implementation = CentreResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Site introuvable",
+            @ApiResponse(responseCode = "404", description = "Centre introuvable",
                     content = @Content)
     })
     @GetMapping("/{id}")
     public ResponseEntity<CentreResponse> getById(
-            @Parameter(description = "ID du site", required = true)
+            @Parameter(description = "Identifiant du centre", required = true)
             @PathVariable Long id) {
         return ResponseEntity.ok(siteMapper.toResponse(siteService.getById(id)));
     }
 
     @Operation(
-            summary = "Modifier un site",
-            description = "Modifie un site existant. Accessible uniquement à un admin GLOBAL.",
+            summary = "Modifier un centre",
+            description = "Modifie un centre existant. Accessible uniquement à un administrateur global.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Site modifié",
+            @ApiResponse(responseCode = "200", description = "Centre modifié",
                     content = @Content(schema = @Schema(implementation = CentreResponse.class))),
             @ApiResponse(responseCode = "400", description = "Requête invalide ou erreur de validation",
                     content = @Content),
             @ApiResponse(responseCode = "403", description = "Accès refusé",
                     content = @Content),
-            @ApiResponse(responseCode = "404", description = "Site introuvable",
+            @ApiResponse(responseCode = "404", description = "Centre introuvable",
                     content = @Content)
     })
     @PutMapping("/{id}")
@@ -115,15 +115,15 @@ public class CentreController {
     }
 
     @Operation(
-            summary = "Supprimer un site",
-            description = "Supprime définitivement un site et ses données associées. Accessible uniquement à un admin GLOBAL.",
+            summary = "Supprimer un centre",
+            description = "Supprime définitivement un centre et ses données associées. Accessible uniquement à un administrateur global.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Site supprimé"),
+            @ApiResponse(responseCode = "204", description = "Centre supprimé"),
             @ApiResponse(responseCode = "403", description = "Accès refusé",
                     content = @Content),
-            @ApiResponse(responseCode = "404", description = "Site introuvable",
+            @ApiResponse(responseCode = "404", description = "Centre introuvable",
                     content = @Content)
     })
     @DeleteMapping("/{id}")
