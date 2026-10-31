@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PaiementConcurrencyPostgresTest {
 
     @Autowired private PaiementService paiementService;
+    @Autowired private ReservationService reservationService;
     @Autowired private CentreRepository centreRepository;
     @Autowired private SalleRepository salleRepository;
     @Autowired private ParticipantRepository participantRepository;
@@ -82,6 +83,27 @@ class PaiementConcurrencyPostgresTest {
                 .isEqualTo(StatutReservation.CONFIRMEE);
         assertThat(paiementRepository.findByReservationId(reservationId).orElseThrow().getStatut())
                 .isEqualTo(StatutPaiement.PAYE);
+    }
+
+    @Test
+    void annulationConcurrenteEtPaiementNeLaissentPasDePlaceOccupee() throws Exception {
+        JeuEssai jeu = creerJeuEssai();
+        long reservationId = creerReservation(jeu.atelier(), jeu.participantA());
+
+        List<Boolean> resultats = executerSimultanement(
+                () -> payerOuRefuser(reservationId, jeu.participantA().getId()),
+                () -> {
+                    reservationService.cancel(reservationId);
+                    return true;
+                });
+
+        assertThat(resultats).contains(true);
+        assertThat(reservationRepository.findById(reservationId).orElseThrow().getStatut())
+                .isEqualTo(StatutReservation.ANNULEE);
+        assertThat(atelierRepository.findById(atelierId).orElseThrow().getNbJoueursActuels())
+                .isEqualTo(5);
+        assertThat(paiementRepository.findByReservationId(reservationId).orElseThrow().getStatut())
+                .isIn(StatutPaiement.ANNULE, StatutPaiement.REMBOURSE);
     }
 
     private boolean payerOuRefuser(long reservationId, long participantId) {
