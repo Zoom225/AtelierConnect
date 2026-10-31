@@ -147,7 +147,7 @@ public class MatchController {
 
     @Operation(
             summary = "Convertir un match privé en public",
-            description = "Convertit un match PRIVÉ en PUBLIC et applique une pénalité à l'organisateur. " +
+            description = "Ouvre un atelier privé au public à partir de J-2, uniquement après accord enregistré de l'organisateur. " +
                     "Accessible à un admin GLOBAL ou à un admin SITE dans son périmètre.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
@@ -157,6 +157,15 @@ public class MatchController {
             @PathVariable Long id) {
         adminAuthorizationService.checkMatchAccess(id); // Ligne modifiée
         matchService.convertToPublic(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Autoriser l'ouverture publique d'un atelier privé",
+            description = "Enregistre l'accord explicite et daté de l'organisateur. L'ouverture effective est possible à partir de J-2.",
+            security = @SecurityRequirement(name = "Bearer Auth"))
+    @PatchMapping("/{id}/consent-open-public")
+    public ResponseEntity<Void> consentToPublicOpening(@PathVariable Long id) {
+        matchService.consentToPublicOpening(id, currentMemberService.currentMemberId());
         return ResponseEntity.noContent().build();
     }
 }

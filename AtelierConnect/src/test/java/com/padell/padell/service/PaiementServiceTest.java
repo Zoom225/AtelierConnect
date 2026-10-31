@@ -151,7 +151,7 @@ class PaiementServiceTest {
         @Test
         @DisplayName("✅ doit faire passer le match à COMPLET au quatrième paiement")
         void shouldCompleteMatchOnFourthPayment() {
-            match.setNbJoueursActuels(3);
+            match.setNbJoueursActuels(5);
             when(reservationService.getById(1L)).thenReturn(reservation);
             when(matchRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(match));
             when(paiementRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -165,7 +165,7 @@ class PaiementServiceTest {
 
             assertThat(result.getStatut()).isEqualTo(StatutPaiement.PAYE);
             assertThat(reservation.getStatut()).isEqualTo(StatutReservation.CONFIRMEE);
-            assertThat(match.getNbJoueursActuels()).isEqualTo(4);
+            assertThat(match.getNbJoueursActuels()).isEqualTo(6);
             assertThat(match.getStatut()).isEqualTo(StatutMatch.COMPLET);
             verify(reservationService).confirm(1L);
             verify(matchRepository).findByIdForUpdate(10L);
@@ -175,7 +175,7 @@ class PaiementServiceTest {
         @Test
         @DisplayName("❌ doit refuser le paiement quand le match est déjà complet")
         void shouldThrowWhenMatchIsAlreadyFull() {
-            match.setNbJoueursActuels(4);
+            match.setNbJoueursActuels(6);
             match.setStatut(StatutMatch.COMPLET);
             when(reservationService.getById(1L)).thenReturn(reservation);
             when(matchRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(match));
@@ -184,7 +184,7 @@ class PaiementServiceTest {
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("déjà complet");
 
-            assertThat(match.getNbJoueursActuels()).isEqualTo(4);
+            assertThat(match.getNbJoueursActuels()).isEqualTo(6);
             assertThat(reservation.getStatut()).isEqualTo(StatutReservation.EN_ATTENTE);
             assertThat(paiement.getStatut()).isEqualTo(StatutPaiement.EN_ATTENTE);
             verify(matchRepository).findByIdForUpdate(10L);

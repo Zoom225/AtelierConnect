@@ -13,6 +13,7 @@ import com.padell.padell.repository.MatchRepository;
 import com.padell.padell.repository.MembreRepository;
 import com.padell.padell.repository.PaiementRepository;
 import com.padell.padell.service.PaiementService;
+import com.padell.padell.service.AtelierRules;
 import com.padell.padell.service.ReservationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -74,7 +75,7 @@ public class PaiementServiceImpl implements PaiementService {
         if (match.getStatut() == StatutMatch.ANNULE) {
             throw new BusinessException("Le match est annulé.");
         }
-        if (match.getNbJoueursActuels() != null && match.getNbJoueursActuels() >= 4) {
+        if (match.getNbJoueursActuels() != null && match.getNbJoueursActuels() >= AtelierRules.CAPACITE) {
             throw new BusinessException("Le match est déjà complet.");
         }
         double montantFinal = paiement.getMontant();
@@ -96,7 +97,7 @@ public class PaiementServiceImpl implements PaiementService {
         int nbJoueursActuels = match.getNbJoueursActuels() == null ? 0 : match.getNbJoueursActuels();
         nbJoueursActuels++;
         match.setNbJoueursActuels(nbJoueursActuels);
-        if (nbJoueursActuels == 4) {
+        if (nbJoueursActuels == AtelierRules.CAPACITE) {
             match.setStatut(StatutMatch.COMPLET);
         }
         matchRepository.save(match);

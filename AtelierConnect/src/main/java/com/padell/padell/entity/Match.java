@@ -53,6 +53,12 @@ public class Match extends BaseEntity {
 
     private LocalDateTime dateConversionPublic;
 
+    @Column(name = "accord_ouverture_publique")
+    private Boolean accordOuverturePublique;
+
+    @Column(name = "date_accord_ouverture_publique")
+    private LocalDateTime dateAccordOuverturePublique;
+
     @OneToMany(mappedBy = "match", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("match-reservations")
     private List<Reservation> reservations;

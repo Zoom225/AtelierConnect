@@ -24,6 +24,7 @@ import com.padell.padell.repository.PenaliteRepository;
 import com.padell.padell.repository.ReservationRepository;
 import com.padell.padell.repository.SiteRepository;
 import com.padell.padell.repository.TerrainRepository;
+import com.padell.padell.service.AtelierRules;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -80,8 +81,8 @@ public class DataInitializer implements CommandLineRunner {
                 .adresse("12 rue de la Republique, Lyon")
                 .heureOuverture(LocalTime.of(8, 0))
                 .heureFermeture(LocalTime.of(22, 0))
-                .dureeMatchMinutes(90)
-                .dureeEntreMatchMinutes(15)
+                .dureeMatchMinutes(AtelierRules.DUREE_MINUTES)
+                .dureeEntreMatchMinutes(AtelierRules.PAUSE_MINUTES)
                 .anneeCivile(2025)
                 .build());
 
@@ -90,18 +91,18 @@ public class DataInitializer implements CommandLineRunner {
                 .adresse("45 avenue des Champs, Paris")
                 .heureOuverture(LocalTime.of(7, 0))
                 .heureFermeture(LocalTime.of(23, 0))
-                .dureeMatchMinutes(90)
-                .dureeEntreMatchMinutes(15)
+                .dureeMatchMinutes(AtelierRules.DUREE_MINUTES)
+                .dureeEntreMatchMinutes(AtelierRules.PAUSE_MINUTES)
                 .anneeCivile(2025)
                 .build());
 
         log.info("DataInitializer : {} sites crees", siteRepository.count());
 ////-------------------Terrains--------------------//
-        Terrain courtA = terrainRepository.save(Terrain.builder().nom("Court A").site(siteLyon).prix(60.0).build());
-        Terrain courtB = terrainRepository.save(Terrain.builder().nom("Court B").site(siteLyon).prix(60.0).build());
-        Terrain courtC = terrainRepository.save(Terrain.builder().nom("Court C").site(siteLyon).prix(60.0).build());
-        Terrain court1 = terrainRepository.save(Terrain.builder().nom("Court 1").site(siteParis).prix(60.0).build());
-        terrainRepository.save(Terrain.builder().nom("Court 2").site(siteParis).prix(60.0).build());
+        Terrain courtA = terrainRepository.save(Terrain.builder().nom("Court A").site(siteLyon).prix(AtelierRules.PRIX_TOTAL).build());
+        Terrain courtB = terrainRepository.save(Terrain.builder().nom("Court B").site(siteLyon).prix(AtelierRules.PRIX_TOTAL).build());
+        Terrain courtC = terrainRepository.save(Terrain.builder().nom("Court C").site(siteLyon).prix(AtelierRules.PRIX_TOTAL).build());
+        Terrain court1 = terrainRepository.save(Terrain.builder().nom("Court 1").site(siteParis).prix(AtelierRules.PRIX_TOTAL).build());
+        terrainRepository.save(Terrain.builder().nom("Court 2").site(siteParis).prix(AtelierRules.PRIX_TOTAL).build());
 
         log.info("DataInitializer : {} terrains crees", terrainRepository.count());
 //-----------------------Jours de fermeture--------------------//
@@ -360,7 +361,7 @@ public class DataInitializer implements CommandLineRunner {
         createSeedReservation(publicParis, emma, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
 
         Match completeLyon = createSeedMatch(courtC, lucas, LocalDate.now().plusDays(5).atTime(16, 0),
-                TypeMatch.PUBLIC, StatutMatch.COMPLET, 4);
+                TypeMatch.PUBLIC, StatutMatch.PLANIFIE, 4);
         createSeedReservation(completeLyon, lucas, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
         createSeedReservation(completeLyon, emma, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
         createSeedReservation(completeLyon, tom, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
@@ -381,12 +382,12 @@ public class DataInitializer implements CommandLineRunner {
                 .terrain(terrain)
                 .organisateur(organisateur)
                 .dateDebut(dateDebut)
-                .dateFin(dateDebut.plusMinutes(90))
+                .dateFin(dateDebut.plusMinutes(AtelierRules.DUREE_MINUTES))
                 .typeMatch(typeMatch)
                 .statut(statut)
                 .nbJoueursActuels(nbJoueursActuels)
-                .prixTotal(60.0)
-                .prixParJoueur(15.0)
+                .prixTotal(AtelierRules.PRIX_TOTAL)
+                .prixParJoueur(AtelierRules.PRIX_PARTICIPANT)
                 .build());
     }
 

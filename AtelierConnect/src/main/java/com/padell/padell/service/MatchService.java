@@ -9,9 +9,6 @@ import java.util.List;
 
 public interface MatchService {
 
-    // Regle metier : un match de padel se joue obligatoirement avec 4 joueurs.
-    int REQUIRED_PLAYERS_PER_MATCH = 4;
-
     MatchDto createMatch(CreateMatchRequest request, String username);
 
     List<MatchDto> findAllMatches();
@@ -31,6 +28,8 @@ public interface MatchService {
     void cancelMatch(Long matchId, Long requesterId);
 
     void convertToPublic(Long matchId);
+
+    void consentToPublicOpening(Long matchId, Long requesterId);
 
     void incrementPlayers(Long matchId);
 

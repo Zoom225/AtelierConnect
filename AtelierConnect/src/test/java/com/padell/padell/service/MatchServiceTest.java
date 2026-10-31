@@ -69,8 +69,8 @@ class MatchServiceTest {
     void setUp() {
         site = new Site();
         site.setId(1L);
-        site.setDureeMatchMinutes(90);
-        site.setDureeEntreMatchMinutes(15);
+        site.setDureeMatchMinutes(AtelierRules.DUREE_MINUTES);
+        site.setDureeEntreMatchMinutes(AtelierRules.PAUSE_MINUTES);
         site.setHeureOuverture(LocalTime.of(9, 0));
         site.setHeureFermeture(LocalTime.of(22, 0));
 
@@ -102,13 +102,46 @@ class MatchServiceTest {
                 organisateur.getPrenom() + " " + organisateur.getNom(),
                 createMatchRequest.matchDate().toLocalDate(),
                 createMatchRequest.matchDate().toLocalTime(),
-                createMatchRequest.matchDate().plusMinutes(90).toLocalTime(),
+                createMatchRequest.matchDate().plusMinutes(AtelierRules.DUREE_MINUTES).toLocalTime(),
                 TypeMatch.PUBLIC,
                 StatutMatch.PLANIFIE,
                 0,
                 15.0,
                 null  // dateConversionPublic
         );
+    }
+
+    @Test
+    void ouverturePubliqueExigeAccordExplicite() {
+        Match prive = new Match();
+        prive.setId(10L);
+        prive.setOrganisateur(organisateur);
+        prive.setTypeMatch(TypeMatch.PRIVE);
+        prive.setStatut(StatutMatch.PLANIFIE);
+        prive.setNbJoueursActuels(1);
+        prive.setDateDebut(LocalDate.now().plusDays(AtelierRules.OUVERTURE_PUBLIQUE_JOURS).atTime(10, 0));
+        when(matchRepository.findById(10L)).thenReturn(Optional.of(prive));
+
+        assertThrows(BusinessException.class, () -> matchService.convertToPublic(10L));
+        verify(matchRepository, never()).save(any());
+
+        matchService.consentToPublicOpening(10L, organisateur.getId());
+        assertNotNull(prive.getDateAccordOuverturePublique());
+        matchService.convertToPublic(10L);
+        assertEquals(TypeMatch.PUBLIC, prive.getTypeMatch());
+        assertNotNull(prive.getDateConversionPublic());
+        verify(membreService, never()).addPenalty(any());
+    }
+
+    @Test
+    void refusAccordParUnAutreParticipant() {
+        Match prive = new Match();
+        prive.setId(10L);
+        prive.setOrganisateur(organisateur);
+        when(matchRepository.findById(10L)).thenReturn(Optional.of(prive));
+
+        assertThrows(BusinessException.class, () -> matchService.consentToPublicOpening(10L, 999L));
+        verify(matchRepository, never()).save(any());
     }
 
     @Test
@@ -180,7 +213,7 @@ class MatchServiceTest {
     @DisplayName("createMatch - Échoue si le délai de réservation n'est pas respecté")
     void createMatch_ShouldFail_WhenBookingDelayIsNotMet() {
         // Arrange
-        CreateMatchRequest tooFarRequest = new CreateMatchRequest(terrain.getId(), LocalDateTime.now().plusDays(6), "PUBLIC");
+        CreateMatchRequest tooFarRequest = new CreateMatchRequest(terrain.getId(), LocalDateTime.now().plusDays(8), "PUBLIC");
         when(membreRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
         when(terrainService.getById(terrain.getId())).thenReturn(terrain);
 
@@ -188,7 +221,7 @@ class MatchServiceTest {
         BusinessException exception = assertThrows(BusinessException.class, () -> {
             matchService.createMatch(tooFarRequest, "user123");
         });
-        assertTrue(exception.getMessage().contains("ne peut pas réserver plus de 5 jours à l'avance"));
+        assertTrue(exception.getMessage().contains("ne peut pas réserver plus de 7 jours à l'avance"));
     }
 
     @Test

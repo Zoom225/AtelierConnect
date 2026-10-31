@@ -12,6 +12,7 @@ import com.padell.padell.repository.*;
 import com.padell.padell.service.MatchService;
 import com.padell.padell.service.MembreService;
 import com.padell.padell.service.TerrainService;
+import com.padell.padell.service.AtelierRules;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,8 +39,6 @@ public class MatchServiceImpl implements MatchService {
     private final MembreService membreService;
     private final MatchMapper matchMapper;
 
-    private static final double MATCH_PRICE = 60.0;
-
     @Override
     @Transactional
     public MatchDto createMatch(CreateMatchRequest request, String username) {
@@ -61,7 +60,7 @@ public class MatchServiceImpl implements MatchService {
         validateSiteAccessForOrganizer(organisateur, terrain);
         //Service metier debut et fin match
         LocalDateTime dateDebut = request.matchDate();
-        LocalDateTime dateFin = dateDebut.plusMinutes(terrain.getSite().getDureeMatchMinutes());
+        LocalDateTime dateFin = dateDebut.plusMinutes(AtelierRules.DUREE_MINUTES);
 
         validateSiteNotClosed(terrain, dateDebut.toLocalDate());
         validateSiteOpeningHours(terrain, dateDebut.toLocalTime(), dateFin.toLocalTime());
@@ -79,8 +78,8 @@ public class MatchServiceImpl implements MatchService {
         match.setTypeMatch(TypeMatch.valueOf(request.matchType()));
         match.setStatut(StatutMatch.PLANIFIE);
         match.setNbJoueursActuels(0);
-        match.setPrixTotal(MATCH_PRICE);
-        match.setPrixParJoueur(MATCH_PRICE / REQUIRED_PLAYERS_PER_MATCH);
+        match.setPrixTotal(AtelierRules.PRIX_TOTAL);
+        match.setPrixParJoueur(AtelierRules.PRIX_PARTICIPANT);
 
         Match savedMatch = matchRepository.save(match);
         // Regle metier : l'organisateur commence avec une reservation en attente et un paiement associe.
@@ -148,7 +147,7 @@ public class MatchServiceImpl implements MatchService {
 
         Terrain terrain = terrainService.getById(request.getTerrainId());
         LocalDateTime dateDebut = request.getDate().atTime(request.getHeureDebut());
-        LocalDateTime dateFin = dateDebut.plusMinutes(terrain.getSite().getDureeMatchMinutes());
+        LocalDateTime dateFin = dateDebut.plusMinutes(AtelierRules.DUREE_MINUTES);
 
         validateSiteNotClosed(terrain, dateDebut.toLocalDate());
         validateSiteOpeningHours(terrain, dateDebut.toLocalTime(), dateFin.toLocalTime());
@@ -188,15 +187,17 @@ public class MatchServiceImpl implements MatchService {
     @Override
     @Transactional
     public void checkAndConvertExpiredPrivateMatches() {
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
-        LocalDateTime startOfDay = tomorrow.atStartOfDay();
-        LocalDateTime endOfDay = tomorrow.atTime(LocalTime.MAX);
+        LocalDate openingDay = LocalDate.now().plusDays(AtelierRules.OUVERTURE_PUBLIQUE_JOURS);
+        LocalDateTime startOfDay = openingDay.atStartOfDay();
+        LocalDateTime endOfDay = openingDay.atTime(LocalTime.MAX);
 
         // Regle metier : a J-1, un match prive incomplet redevient public et penalise son organisateur.
         List<Match> expiredMatches = matchRepository
                 .findByDateDebutBetweenAndStatut(startOfDay, endOfDay, StatutMatch.PLANIFIE)
                 .stream()
-                .filter(m -> m.getTypeMatch() == TypeMatch.PRIVE && m.getNbJoueursActuels() < REQUIRED_PLAYERS_PER_MATCH)
+                .filter(m -> m.getTypeMatch() == TypeMatch.PRIVE
+                        && Boolean.TRUE.equals(m.getAccordOuverturePublique())
+                        && m.getNbJoueursActuels() < AtelierRules.CAPACITE)
                 .toList();
         //sheduler active converti en public la veille
         if (!expiredMatches.isEmpty()) {
@@ -214,11 +215,38 @@ public class MatchServiceImpl implements MatchService {
         if (match.getTypeMatch() == TypeMatch.PUBLIC) {
             throw new BusinessException("Le match est déjà public.");
         }
+        if (!Boolean.TRUE.equals(match.getAccordOuverturePublique())) {
+            throw new BusinessException("L'accord explicite de l'organisateur est requis pour ouvrir cet atelier au public.");
+        }
+        if (match.getStatut() != StatutMatch.PLANIFIE || !match.getDateDebut().isAfter(LocalDateTime.now())) {
+            throw new BusinessException("Seul un atelier privé planifié à venir peut être ouvert au public.");
+        }
+        if (match.getDateDebut().toLocalDate().isAfter(LocalDate.now().plusDays(AtelierRules.OUVERTURE_PUBLIQUE_JOURS))) {
+            throw new BusinessException("L'ouverture au public est possible à partir de J-2.");
+        }
         match.setTypeMatch(TypeMatch.PUBLIC);
         match.setDateConversionPublic(LocalDateTime.now());
         matchRepository.save(match);
-        membreService.addPenalty(match.getOrganisateur().getId());
-        log.info("Match {} converti en public, pénalité appliquée à l'organisateur {}", matchId, match.getOrganisateur().getId());
+        log.info("Atelier {} ouvert au public après accord de l'organisateur", matchId);
+    }
+
+    @Override
+    @Transactional
+    public void consentToPublicOpening(Long matchId, Long requesterId) {
+        Match match = getMatchEntityById(matchId);
+        if (!match.getOrganisateur().getId().equals(requesterId)) {
+            throw new BusinessException("Seul l'organisateur peut autoriser l'ouverture au public.");
+        }
+        if (match.getTypeMatch() != TypeMatch.PRIVE || match.getStatut() != StatutMatch.PLANIFIE
+                || !match.getDateDebut().isAfter(LocalDateTime.now())) {
+            throw new BusinessException("Cet atelier ne peut pas recevoir un accord d'ouverture au public.");
+        }
+        if (Boolean.TRUE.equals(match.getAccordOuverturePublique())) {
+            throw new BusinessException("L'accord d'ouverture au public est déjà enregistré.");
+        }
+        match.setAccordOuverturePublique(true);
+        match.setDateAccordOuverturePublique(LocalDateTime.now());
+        matchRepository.save(match);
     }
 
     @Override
@@ -231,11 +259,11 @@ public class MatchServiceImpl implements MatchService {
     private void incrementPlayersForMatch(Match match, boolean save) {
         // Regle metier : un match de padel doit contenir exactement 4 joueurs.
         // Des que les 4 places sont occupees, le match devient complet.
-        if (match.getNbJoueursActuels() >= REQUIRED_PLAYERS_PER_MATCH) {
+        if (match.getNbJoueursActuels() >= AtelierRules.CAPACITE) {
             throw new BusinessException("Le match est déjà complet.");
         }
         match.setNbJoueursActuels(match.getNbJoueursActuels() + 1);
-        if (match.getNbJoueursActuels() == REQUIRED_PLAYERS_PER_MATCH) {
+        if (match.getNbJoueursActuels() == AtelierRules.CAPACITE) {
             match.setStatut(StatutMatch.COMPLET);
         }
         if (save) {
@@ -259,7 +287,7 @@ public class MatchServiceImpl implements MatchService {
     }
     //la règle des 15 minutes entre deux matchs
     private boolean isSlotAvailable(Terrain terrain, LocalDateTime start, LocalDateTime end) {
-        int breakMinutes = terrain.getSite().getDureeEntreMatchMinutes();
+        int breakMinutes = AtelierRules.PAUSE_MINUTES;
         List<Match> existingMatches = matchRepository.findOverlappingMatches(
                 terrain.getId(),
                 start.minusMinutes(breakMinutes),
@@ -270,7 +298,7 @@ public class MatchServiceImpl implements MatchService {
     }
 
     private boolean isSlotAvailableExcluding(Terrain terrain, LocalDateTime start, LocalDateTime end, Long excludedMatchId) {
-        int breakMinutes = terrain.getSite().getDureeEntreMatchMinutes();
+        int breakMinutes = AtelierRules.PAUSE_MINUTES;
         List<Match> existingMatches = matchRepository.findOverlappingMatches(
                 terrain.getId(),
                 start.minusMinutes(breakMinutes),
@@ -282,11 +310,7 @@ public class MatchServiceImpl implements MatchService {
 
     private void validateBookingDelay(Membre membre, LocalDate matchDate) {
         long daysUntilMatch = ChronoUnit.DAYS.between(LocalDate.now(), matchDate);
-        int maxDaysAhead = switch (membre.getTypeMembre()) {
-            case GLOBAL -> 21;
-            case SITE -> 14;
-            case LIBRE -> 5;
-        };
+        int maxDaysAhead = AtelierRules.delaiReservation(membre.getTypeMembre());
 
         // Regle metier : la date du match ne peut pas etre dans le passe.
         if (daysUntilMatch < 0) {
