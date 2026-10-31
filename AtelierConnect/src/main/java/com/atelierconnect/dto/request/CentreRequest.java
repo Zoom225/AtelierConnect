@@ -26,8 +26,8 @@ public class CentreRequest {
     @NotNull(message = "L'heure de fermeture est obligatoire.")
     private LocalTime heureFermeture;
 
-    @NotNull(message = "La durée du match est obligatoire.")
-    @Min(value = 1, message = "La durée du match doit être d'au moins 1 minute.")
+    @NotNull(message = "La durée de l’atelier est obligatoire.")
+    @Min(value = 1, message = "La durée de l’atelier doit être d’au moins 1 minute.")
     private Integer dureeMatchMinutes;
 
     @NotNull(message = "La durée de pause est obligatoire.")
