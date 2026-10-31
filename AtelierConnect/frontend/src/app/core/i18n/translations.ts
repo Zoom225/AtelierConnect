@@ -642,8 +642,8 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'member.reservations.consentAction': 'J’autorise l’ouverture au public à J−2',
     'member.reservations.consentConfirm': 'Confirmez-vous votre accord pour ouvrir cet atelier au public à partir de J−2 s’il reste incomplet ? Cette décision sera enregistrée.',
     'member.reservations.consentSuccess': 'Votre accord pour une éventuelle ouverture au public est enregistré.',
-    'member.reservations.consentError': 'Impossible d’enregistrer votre accord.'
-    'member.reservations.noPlayer': 'Aucun participant inscrit sur ce atelier.',
+    'member.reservations.consentError': 'Impossible d’enregistrer votre accord.',
+    'member.reservations.noPlayer': 'Aucun participant inscrit à cet atelier.',
     'member.reservations.reservationLabel': 'Reservation',
     'member.reservations.paymentLabel': 'Paiement',
     'member.reservations.removePlayer': 'Retirer',
@@ -1052,7 +1052,7 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'member.reservations.consentAction': 'I authorize public opening at D−2',
     'member.reservations.consentConfirm': 'Do you agree to open this workshop to the public from D−2 if it remains incomplete? Your decision will be recorded.',
     'member.reservations.consentSuccess': 'Your consent to possible public opening has been recorded.',
-    'member.reservations.consentError': 'Unable to record your consent.'
+    'member.reservations.consentError': 'Unable to record your consent.',
     'member.reservations.noPlayer': 'No participant registered for this workshop.',
     'member.reservations.reservationLabel': 'Reservation',
     'member.reservations.paymentLabel': 'Payment',
