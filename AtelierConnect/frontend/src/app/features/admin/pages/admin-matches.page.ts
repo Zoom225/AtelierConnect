@@ -11,6 +11,7 @@ import { SitesApiService } from '../../../core/api/sites-api.service';
 import { AdminSessionService } from '../../../core/auth/admin-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { MatchResponse } from '../../../shared/models/match.model';
+import { ATELIER_CAPACITY } from '../../../shared/models/atelier-rules';
 import { ReservationResponse } from '../../../shared/models/reservation.model';
 import { SiteResponse } from '../../../shared/models/site-terrain.model';
 import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
@@ -20,11 +21,11 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
   standalone: true,
   imports: [CommonModule, RouterLink, MatCardModule, MatButtonModule, MatProgressSpinnerModule],
   template: `
-    <!-- En-tête matchs -->
+    <!-- Administration des ateliers -->
     <div class="adm-match-header">
       <div class="adm-match-header-inner">
         <div class="adm-match-title-block">
-<span class="adm-match-icon">🎾</span>
+<span class="adm-match-icon">🧩</span>
           <div>
             <h1 class="adm-match-title">{{ language.t('admin.matches.title') }}</h1>
             <p class="adm-match-sub">{{ language.t('admin.matches.subtitle') }}</p>
@@ -75,8 +76,8 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
                 <div class="adm-info-item adm-players-item">
 <span class="adm-info-label">{{ language.t('admin.matches.players') }}</span>
                   <div class="adm-players-bar">
-                    <div class="adm-players-fill" [style.width.%]="(match.nbJoueursActuels / 4) * 100">
-                      <span>{{ match.nbJoueursActuels }}/4</span>
+                    <div class="adm-players-fill" [style.width.%]="(match.nbJoueursActuels / ATELIER_CAPACITY) * 100">
+                      <span>{{ match.nbJoueursActuels }}/{{ ATELIER_CAPACITY }}</span>
                     </div>
                   </div>
                 </div>
@@ -219,6 +220,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
   `
 })
 export class AdminMatchesPage {
+  readonly ATELIER_CAPACITY = ATELIER_CAPACITY;
   private readonly matchesApi = inject(MatchesApiService);
   private readonly reservationsApi = inject(ReservationsApiService);
   private readonly sitesApi = inject(SitesApiService);
