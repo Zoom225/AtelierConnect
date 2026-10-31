@@ -7,7 +7,7 @@ import com.padell.padell.config.SecurityConfig;
 import com.padell.test.TestSecurityConfig;
 import com.padell.padell.dto.request.ReservationRequest;
 import com.padell.padell.dto.response.ReservationResponse;
-import com.padell.padell.entity.Membre;
+import com.padell.padell.entity.Participant;
 import com.padell.padell.entity.Reservation;
 import com.padell.padell.mapper.ReservationMapper;
 import com.padell.padell.repository.AdministrateurRepository;
@@ -65,7 +65,7 @@ class ReservationControllerTest {
     private JwtAuthenticationFilter jwtAuthenticationFilter;
     private ReservationRequest reservationRequest;
     private ReservationResponse reservationResponse;
-    private Membre currentMember;
+    private Participant currentMember;
     private Reservation reservation;
 
     @BeforeEach
@@ -85,7 +85,7 @@ class ReservationControllerTest {
         reservationResponse = new ReservationResponse();
         reservationResponse.setId(1L);
 
-        currentMember = Membre.builder().matricule("G1001").nom("Martin").prenom("Lucas").build();
+        currentMember = Participant.builder().matricule("G1001").nom("Martin").prenom("Lucas").build();
         currentMember.setId(1L);
 
         reservation = Reservation.builder().membre(currentMember).build();

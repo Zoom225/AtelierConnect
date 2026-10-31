@@ -1,8 +1,8 @@
 package com.padell.padell.service;
 
-import com.padell.padell.entity.Membre;
-import com.padell.padell.entity.Site;
-import com.padell.padell.entity.enums.TypeMembre;
+import com.padell.padell.entity.Participant;
+import com.padell.padell.entity.Centre;
+import com.padell.padell.entity.enums.TypeParticipant;
 import com.padell.padell.exception.BusinessException;
 import com.padell.padell.exception.ResourceNotFoundException;
 import com.padell.padell.repository.MembreRepository;
@@ -47,46 +47,46 @@ class MembreServiceTest {
     @InjectMocks
     private MembreServiceImpl membreService;
 
-    private Membre membreGlobal;
-    private Membre membreSite;
-    private Membre membreLibre;
-    private Site site;
+    private Participant membreGlobal;
+    private Participant membreSite;
+    private Participant membreLibre;
+    private Centre site;
 
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(membreService, "defaultMemberPassword", "Membre1234!");
-        site = Site.builder()
+        site = Centre.builder()
                 .nom("Padel Club Lyon")
                 .build();
         site.setId(1L); // pas de setter via Builder car id vient de BaseEntity
 
-        membreGlobal = Membre.builder()
+        membreGlobal = Participant.builder()
                 .matricule("G1001")
                 .nom("Martin")
                 .prenom("Lucas")
                 .email("lucas@email.com")
-                .typeMembre(TypeMembre.GLOBAL)
+                .typeMembre(TypeParticipant.GLOBAL)
                 .solde(0.0)
                 .passwordHash("$2a$10$somehashedpassword") // Added a password hash for tests
                 .build();
 
-        membreSite = Membre.builder()
+        membreSite = Participant.builder()
                 .matricule("S10001")
                 .nom("Bernard")
                 .prenom("Tom")
                 .email("tom@email.com")
-                .typeMembre(TypeMembre.SITE)
+                .typeMembre(TypeParticipant.SITE)
                 .solde(0.0)
                 .site(site)
                 .passwordHash("$2a$10$somehashedpassword") // Added a password hash for tests
                 .build();
 
-        membreLibre = Membre.builder()
+        membreLibre = Participant.builder()
                 .matricule("L10001")
                 .nom("Petit")
                 .prenom("Alex")
                 .email("alex@email.com")
-                .typeMembre(TypeMembre.LIBRE)
+                .typeMembre(TypeParticipant.LIBRE)
                 .solde(0.0)
                 .passwordHash("$2a$10$somehashedpassword") // Added a password hash for tests
                 .build();
@@ -106,11 +106,11 @@ class MembreServiceTest {
             when(membreRepository.existsByEmail(anyString())).thenReturn(false);
             when(membreRepository.save(any())).thenReturn(membreGlobal);
 
-            Membre result = membreService.create(membreGlobal);
+            Participant result = membreService.create(membreGlobal);
 
             assertThat(result).isNotNull();
             assertThat(result.getMatricule()).isEqualTo("G1001");
-            assertThat(result.getTypeMembre()).isEqualTo(TypeMembre.GLOBAL);
+            assertThat(result.getTypeMembre()).isEqualTo(TypeParticipant.GLOBAL);
             assertThat(result.getSolde()).isEqualTo(0.0);
             verify(membreRepository, times(1)).save(membreGlobal);
         }
@@ -118,12 +118,12 @@ class MembreServiceTest {
         @Test
         @DisplayName("âœ… doit normaliser le matricule en majuscules lors de la création")
         void shouldNormalizeMatriculeOnCreate() {
-            Membre membre = Membre.builder()
+            Participant membre = Participant.builder()
                     .matricule("g1001")
                     .nom("Martin")
                     .prenom("Lucas")
                     .email("lucas@email.com")
-                    .typeMembre(TypeMembre.GLOBAL)
+                    .typeMembre(TypeParticipant.GLOBAL)
                     .solde(0.0)
                     .passwordHash("$2a$10$somehashedpassword")
                     .build();
@@ -132,7 +132,7 @@ class MembreServiceTest {
             when(membreRepository.existsByEmail(anyString())).thenReturn(false);
             when(membreRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-            Membre result = membreService.create(membre);
+            Participant result = membreService.create(membre);
 
             assertThat(result.getMatricule()).isEqualTo("G1001");
             verify(membreRepository).existsByMatricule("G1001");
@@ -146,9 +146,9 @@ class MembreServiceTest {
             when(membreRepository.existsByEmail(anyString())).thenReturn(false);
             when(membreRepository.save(any())).thenReturn(membreSite);
 
-            Membre result = membreService.create(membreSite);
+            Participant result = membreService.create(membreSite);
 
-            assertThat(result.getTypeMembre()).isEqualTo(TypeMembre.SITE);
+            assertThat(result.getTypeMembre()).isEqualTo(TypeParticipant.SITE);
             assertThat(result.getSite()).isNotNull();
             assertThat(result.getSite().getNom()).isEqualTo("Padel Club Lyon");
         }
@@ -160,9 +160,9 @@ class MembreServiceTest {
             when(membreRepository.existsByEmail(anyString())).thenReturn(false);
             when(membreRepository.save(any())).thenReturn(membreLibre);
 
-            Membre result = membreService.create(membreLibre);
+            Participant result = membreService.create(membreLibre);
 
-            assertThat(result.getTypeMembre()).isEqualTo(TypeMembre.LIBRE);
+            assertThat(result.getTypeMembre()).isEqualTo(TypeParticipant.LIBRE);
         }
 
         @Test
@@ -193,11 +193,11 @@ class MembreServiceTest {
         @Test
         @DisplayName("❌ doit lever une BusinessException quand un membre SITE n'a pas de site")
         void shouldThrowWhenSiteMemberHasNoSite() {
-            Membre membreSansSite = Membre.builder()
+            Participant membreSansSite = Participant.builder()
                     .matricule("S10002")
                     .nom("Test")
                     .prenom("Test")
-                    .typeMembre(TypeMembre.SITE)
+                    .typeMembre(TypeParticipant.SITE)
                     .solde(0.0)
                     .site(null) // ← pas de site
                     .build();
@@ -212,9 +212,9 @@ class MembreServiceTest {
         @Test
         @DisplayName("❌ doit lever une BusinessException quand le format du matricule GLOBAL est incorrect")
         void shouldThrowWhenGlobalMatriculeFormatIsWrong() {
-            Membre badMembre = Membre.builder()
+            Participant badMembre = Participant.builder()
                     .matricule("G12") // ← trop court, doit être G + 4 chiffres
-                    .typeMembre(TypeMembre.GLOBAL)
+                    .typeMembre(TypeParticipant.GLOBAL)
                     .solde(0.0)
                     .build();
 
@@ -226,9 +226,9 @@ class MembreServiceTest {
         @Test
         @DisplayName("❌ doit lever une BusinessException quand le format du matricule SITE est incorrect")
         void shouldThrowWhenSiteMatriculeFormatIsWrong() {
-            Membre badMembre = Membre.builder()
+            Participant badMembre = Participant.builder()
                     .matricule("S123") // ← doit être S + 5 chiffres
-                    .typeMembre(TypeMembre.SITE)
+                    .typeMembre(TypeParticipant.SITE)
                     .solde(0.0)
                     .site(site)
                     .build();
@@ -241,9 +241,9 @@ class MembreServiceTest {
         @Test
         @DisplayName("❌ doit lever une BusinessException quand le matricule LIBRE commence par la mauvaise lettre")
         void shouldThrowWhenLibreMatriculeStartsWithWrongLetter() {
-            Membre badMembre = Membre.builder()
+            Participant badMembre = Participant.builder()
                     .matricule("X10001") // ← doit commencer par L
-                    .typeMembre(TypeMembre.LIBRE)
+                    .typeMembre(TypeParticipant.LIBRE)
                     .solde(0.0)
                     .build();
 
@@ -260,7 +260,7 @@ class MembreServiceTest {
             when(membreRepository.existsByEmail(any())).thenReturn(false);
             when(membreRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-            Membre result = membreService.create(membreGlobal);
+            Participant result = membreService.create(membreGlobal);
 
             assertThat(result.getSolde()).isEqualTo(0.0);
         }
@@ -278,7 +278,7 @@ class MembreServiceTest {
         void shouldReturnMemberById() {
             when(membreRepository.findById(1L)).thenReturn(Optional.of(membreGlobal));
 
-            Membre result = membreService.getById(1L);
+            Participant result = membreService.getById(1L);
 
             assertThat(result).isNotNull();
             assertThat(result.getMatricule()).isEqualTo("G1001");
@@ -299,7 +299,7 @@ class MembreServiceTest {
         void shouldReturnMemberByMatricule() {
             when(membreRepository.findByMatriculeIgnoreCase("G1001")).thenReturn(Optional.of(membreGlobal));
 
-            Membre result = membreService.getByMatricule("G1001");
+            Participant result = membreService.getByMatricule("G1001");
 
             assertThat(result.getMatricule()).isEqualTo("G1001");
         }
@@ -309,7 +309,7 @@ class MembreServiceTest {
         void shouldNormalizeMatriculeBeforeLookup() {
             when(membreRepository.findByMatriculeIgnoreCase("G1001")).thenReturn(Optional.of(membreGlobal));
 
-            Membre result = membreService.getByMatricule("g1001");
+            Participant result = membreService.getByMatricule("g1001");
 
             assertThat(result.getMatricule()).isEqualTo("G1001");
             verify(membreRepository).findByMatriculeIgnoreCase("G1001");
@@ -339,7 +339,7 @@ class MembreServiceTest {
             when(membreRepository.findByMatriculeIgnoreCase("G1001")).thenReturn(Optional.of(membreGlobal));
             when(passwordEncoder.matches("Membre1234!", membreGlobal.getPasswordHash())).thenReturn(true);
 
-            Membre result = membreService.authenticate("G1001", "Membre1234!");
+            Participant result = membreService.authenticate("G1001", "Membre1234!");
 
             assertThat(result).isEqualTo(membreGlobal);
         }
@@ -475,13 +475,13 @@ class MembreServiceTest {
             when(membreRepository.findById(1L)).thenReturn(Optional.of(membreGlobal));
             when(membreRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-            Membre updated = Membre.builder()
+            Participant updated = Participant.builder()
                     .nom("Nouveau")
                     .prenom("Nom")
                     .email("nouveau@email.com")
                     .build();
 
-            Membre result = membreService.update(1L, updated);
+            Participant result = membreService.update(1L, updated);
 
             assertThat(result.getNom()).isEqualTo("Nouveau");
             assertThat(result.getPrenom()).isEqualTo("Nom");

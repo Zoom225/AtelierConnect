@@ -1,6 +1,6 @@
 package com.padell.padell.service.impl;
 
-import com.padell.padell.entity.Membre;
+import com.padell.padell.entity.Participant;
 import com.padell.padell.exception.BusinessException;
 import com.padell.padell.repository.MembreRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ public class CurrentMemberService {
 
     private final MembreRepository membreRepository;
 
-    public Membre currentMember() {
+    public Participant currentMember() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication.getName() == null || "anonymousUser".equals(authentication.getName())) {
             throw new BusinessException("Authentification membre requise.");

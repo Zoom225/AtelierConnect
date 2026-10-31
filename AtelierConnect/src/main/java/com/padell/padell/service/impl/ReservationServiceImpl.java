@@ -1,7 +1,7 @@
 package com.padell.padell.service.impl;
 
-import com.padell.padell.entity.Match;
-import com.padell.padell.entity.Membre;
+import com.padell.padell.entity.Atelier;
+import com.padell.padell.entity.Participant;
 import com.padell.padell.entity.Paiement;
 import com.padell.padell.entity.Reservation;
 import com.padell.padell.entity.enums.*;
@@ -37,15 +37,15 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public Reservation create(Long matchId, Long membreId, Long requesterId) {
-        Match match = matchService.getMatchEntityById(matchId);
-        Membre membre = membreService.getById(membreId);
+        Atelier match = matchService.getMatchEntityById(matchId);
+        Participant membre = membreService.getById(membreId);
 
         // Regle metier : impossible de reserver un match deja complet.
-        if (match.getStatut() == StatutMatch.COMPLET) {
+        if (match.getStatut() == StatutAtelier.COMPLET) {
             throw new BusinessException("Le match est déjà complet.");
         }
         // Regle metier : impossible de reserver un match annule.
-        if (match.getStatut() == StatutMatch.ANNULE) {
+        if (match.getStatut() == StatutAtelier.ANNULE) {
             throw new BusinessException("Le match est annulé.");
         }
         if (!match.getDateDebut().isAfter(LocalDateTime.now())) {
@@ -73,17 +73,17 @@ public class ReservationServiceImpl implements ReservationService {
 
         // Le requesterId est l'ID de la personne qui initie la demande de reservation.
         // Regle metier : seul l'organisateur peut inviter des joueurs sur un match prive.
-        if (match.getTypeMatch() == TypeMatch.PRIVE
+        if (match.getTypeMatch() == TypeAtelier.PRIVE
                 && !match.getOrganisateur().getId().equals(requesterId)) {
             throw new BusinessException("Pour un match privé, seul l'organisateur peut ajouter des joueurs.");
         }
 
         // Regle metier : un membre reserve un match public uniquement pour lui-meme.
-        if (match.getTypeMatch() == TypeMatch.PUBLIC && !membreId.equals(requesterId)) {
+        if (match.getTypeMatch() == TypeAtelier.PUBLIC && !membreId.equals(requesterId)) {
             throw new BusinessException("Un membre ne peut réserver un match public que pour lui-même.");
         }
 
-        if (membre.getTypeMembre() == TypeMembre.SITE) {
+        if (membre.getTypeMembre() == TypeParticipant.SITE) {
             Long membreSiteId = membre.getSite().getId();
             Long matchSiteId = match.getTerrain().getSite().getId();
             // Regle metier : un membre SITE ne reserve que sur son site.
@@ -91,7 +91,7 @@ public class ReservationServiceImpl implements ReservationService {
                 throw new BusinessException("Un membre SITE ne peut réserver que sur son propre site.");
             }
         }
-        if (membre.getTypeMembre() == TypeMembre.LIBRE
+        if (membre.getTypeMembre() == TypeParticipant.LIBRE
                 && !Boolean.TRUE.equals(match.getTerrain().getSite().getOuvertVisiteurs())) {
             throw new BusinessException("Ce centre n'est pas ouvert aux visiteurs.");
         }
@@ -133,7 +133,7 @@ public class ReservationServiceImpl implements ReservationService {
                 continue;
             }
 
-            Membre membre = membreService.getByMatricule(normalizedMatricule);
+            Participant membre = membreService.getByMatricule(normalizedMatricule);
             createdReservations.add(create(matchId, membre.getId(), requesterId));
         }
 

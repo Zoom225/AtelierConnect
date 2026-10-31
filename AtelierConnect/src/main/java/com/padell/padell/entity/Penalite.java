@@ -16,7 +16,7 @@ public class Penalite extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "membre_id", nullable = false)
-    private Membre membre;
+    private Participant membre;
 
     @Column(nullable = false)
     private LocalDate dateFin;

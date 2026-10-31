@@ -1,9 +1,9 @@
 package com.padell.padell.service;
 
 import com.padell.padell.entity.Administrateur;
-import com.padell.padell.entity.Membre;
-import com.padell.padell.entity.Site;
-import com.padell.padell.entity.Terrain;
+import com.padell.padell.entity.Participant;
+import com.padell.padell.entity.Centre;
+import com.padell.padell.entity.Salle;
 import com.padell.padell.entity.enums.TypeAdministrateur;
 import com.padell.padell.exception.BusinessException;
 import com.padell.padell.repository.AdministrateurRepository;
@@ -34,15 +34,15 @@ class AdminAuthorizationServiceTest {
     private MatchRepository matchRepository;
 
     private AdminAuthorizationService adminAuthorizationService;
-    private Site siteLyon;
-    private Site siteParis;
+    private Centre siteLyon;
+    private Centre siteParis;
 
     @BeforeEach
     void setUp() {
         adminAuthorizationService = new AdminAuthorizationService(administrateurRepository, matchRepository);
-        siteLyon = Site.builder().nom("Padel Club Lyon").build();
+        siteLyon = Centre.builder().nom("Padel Club Lyon").build();
         siteLyon.setId(1L);
-        siteParis = Site.builder().nom("Padel Club Paris").build();
+        siteParis = Centre.builder().nom("Padel Club Paris").build();
         siteParis.setId(2L);
     }
 
@@ -99,7 +99,7 @@ class AdminAuthorizationServiceTest {
         when(administrateurRepository.findByEmail(adminEmail))
                 .thenReturn(Optional.of(admin(adminEmail, TypeAdministrateur.SITE, siteLyon)));
 
-        Membre membreParis = Membre.builder().site(siteParis).build();
+        Participant membreParis = Participant.builder().site(siteParis).build();
 
         assertThatThrownBy(() -> adminAuthorizationService.checkMembreAccess(membreParis))
                 .isInstanceOf(BusinessException.class)
@@ -114,7 +114,7 @@ class AdminAuthorizationServiceTest {
         when(administrateurRepository.findByEmail(adminEmail))
                 .thenReturn(Optional.of(admin(adminEmail, TypeAdministrateur.SITE, siteLyon)));
 
-        Terrain terrainParis = Terrain.builder().site(siteParis).build();
+        Salle terrainParis = Salle.builder().site(siteParis).build();
 
         assertThatThrownBy(() -> adminAuthorizationService.checkTerrainAccess(terrainParis))
                 .isInstanceOf(BusinessException.class)
@@ -128,7 +128,7 @@ class AdminAuthorizationServiceTest {
     }
 
     // Méthode admin modifiée pour accepter l'email
-    private Administrateur admin(String email, TypeAdministrateur type, Site site) {
+    private Administrateur admin(String email, TypeAdministrateur type, Centre site) {
         return Administrateur.builder()
                 .email(email) // Utilise l'email passé en paramètre
                 .typeAdministrateur(type)

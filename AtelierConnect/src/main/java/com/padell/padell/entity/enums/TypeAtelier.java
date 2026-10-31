@@ -1,6 +1,6 @@
 package com.padell.padell.entity.enums;
 
-public enum TypeMatch {
+public enum TypeAtelier {
     PRIVE,
     PUBLIC
 }

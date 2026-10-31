@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Terrain extends BaseEntity {
+public class Salle extends BaseEntity {
 
     @Column(nullable = false)
     private String nom;
@@ -25,11 +25,11 @@ public class Terrain extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id", nullable = false)
     @JsonBackReference("site-terrains")
-    private Site site;
+    private Centre site;
 
     @OneToMany(mappedBy = "terrain", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("terrain-matches")
-    private List<Match> matches;
+    private List<Atelier> matches;
 
     public Double getPrix() {
         return prix;

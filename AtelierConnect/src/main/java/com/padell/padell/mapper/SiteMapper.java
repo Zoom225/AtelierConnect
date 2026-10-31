@@ -2,17 +2,17 @@ package com.padell.padell.mapper;
 
 import com.padell.padell.dto.request.SiteRequest;
 import com.padell.padell.dto.response.SiteResponse;
-import com.padell.padell.entity.Site;
+import com.padell.padell.entity.Centre;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SiteMapper {
 
-    public Site toEntity(SiteRequest request) {
+    public Centre toEntity(SiteRequest request) {
         if (request == null) {
             return null;
         }
-        return Site.builder()
+        return Centre.builder()
                 .nom(request.getNom())
                 .adresse(request.getAdresse())
                 .heureOuverture(request.getHeureOuverture())
@@ -24,7 +24,7 @@ public class SiteMapper {
                 .build();
     }
 
-    public SiteResponse toResponse(Site site) {
+    public SiteResponse toResponse(Centre site) {
         if (site == null) {
             return null;
         }

@@ -4,7 +4,7 @@ import com.padell.padell.dto.request.JourFermetureRequest;
 import com.padell.padell.dto.response.JourFermetureResponse;
 import com.padell.padell.entity.Administrateur;
 import com.padell.padell.entity.JourFermeture;
-import com.padell.padell.entity.Site;
+import com.padell.padell.entity.Centre;
 import com.padell.padell.entity.enums.TypeAdministrateur;
 import com.padell.padell.exception.BusinessException;
 import com.padell.padell.repository.AdministrateurRepository;
@@ -105,7 +105,7 @@ public class JourFermetureController {
             validateSiteAccess(admin, request.getSiteId());
         }
 
-        Site site = Boolean.TRUE.equals(request.getGlobal()) ? null : siteService.getById(request.getSiteId());
+        Centre site = Boolean.TRUE.equals(request.getGlobal()) ? null : siteService.getById(request.getSiteId());
         JourFermeture jour = JourFermeture.builder()
                 .date(request.getDate())
                 .raison(request.getRaison())

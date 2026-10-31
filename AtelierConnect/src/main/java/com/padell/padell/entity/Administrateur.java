@@ -35,5 +35,5 @@ public class Administrateur extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id")
-    private Site site;
+    private Centre site;
 }

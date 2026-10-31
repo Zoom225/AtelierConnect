@@ -1,8 +1,8 @@
 package com.padell.padell.repository;
 
-import com.padell.padell.entity.Match;
-import com.padell.padell.entity.enums.StatutMatch;
-import com.padell.padell.entity.enums.TypeMatch;
+import com.padell.padell.entity.Atelier;
+import com.padell.padell.entity.enums.StatutAtelier;
+import com.padell.padell.entity.enums.TypeAtelier;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -16,28 +16,28 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface MatchRepository extends JpaRepository<Match, Long> {
+public interface MatchRepository extends JpaRepository<Atelier, Long> {
 
     @EntityGraph(attributePaths = {"terrain", "terrain.site", "organisateur"})
-    List<Match> findAll();
+    List<Atelier> findAll();
 
     @EntityGraph(attributePaths = {"terrain", "terrain.site", "organisateur"})
-    Optional<Match> findById(Long id);
+    Optional<Atelier> findById(Long id);
 
     @EntityGraph(attributePaths = {"terrain", "terrain.site", "organisateur"})
-    List<Match> findByTypeMatchAndStatut(TypeMatch type, StatutMatch statut);
+    List<Atelier> findByTypeMatchAndStatut(TypeAtelier type, StatutAtelier statut);
 
     @EntityGraph(attributePaths = {"terrain", "terrain.site", "organisateur"})
-    List<Match> findByTerrainSiteId(Long siteId);
+    List<Atelier> findByTerrainSiteId(Long siteId);
 
     @EntityGraph(attributePaths = {"terrain", "terrain.site", "organisateur"})
-    List<Match> findByOrganisateurId(Long organisateurId);
+    List<Atelier> findByOrganisateurId(Long organisateurId);
 
-    List<Match> findByDateDebutBetweenAndStatut(LocalDateTime start, LocalDateTime end, StatutMatch statut);
+    List<Atelier> findByDateDebutBetweenAndStatut(LocalDateTime start, LocalDateTime end, StatutAtelier statut);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT m FROM Match m WHERE m.id = :id")
-    Optional<Match> findByIdForUpdate(@Param("id") Long id);
+    @Query("SELECT m FROM Atelier m WHERE m.id = :id")
+    Optional<Atelier> findByIdForUpdate(@Param("id") Long id);
 
     /**
      * Trouve les matchs sur un terrain donné qui chevauchent un créneau horaire spécifié,
@@ -52,14 +52,14 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
      * @param statut    Le statut à exclure de la recherche.
      * @return Une liste de matchs qui se chevauchent.
      */
-    @Query("SELECT m FROM Match m WHERE m.terrain.id = :terrainId " +
+    @Query("SELECT m FROM Atelier m WHERE m.terrain.id = :terrainId " +
            "AND m.statut <> :statut " +
            "AND m.dateDebut < :end " +
            "AND m.dateFin > :start")
-    List<Match> findOverlappingMatches(
+    List<Atelier> findOverlappingMatches(
             @Param("terrainId") Long terrainId,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end,
-            @Param("statut") StatutMatch statut
+            @Param("statut") StatutAtelier statut
     );
 }

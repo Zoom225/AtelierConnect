@@ -1,10 +1,10 @@
 package com.padell.padell.service.impl;
 
-import com.padell.padell.entity.Membre;
-import com.padell.padell.entity.Match;
+import com.padell.padell.entity.Participant;
+import com.padell.padell.entity.Atelier;
 import com.padell.padell.entity.Paiement;
 import com.padell.padell.entity.Reservation;
-import com.padell.padell.entity.enums.StatutMatch;
+import com.padell.padell.entity.enums.StatutAtelier;
 import com.padell.padell.entity.enums.StatutPaiement;
 import com.padell.padell.entity.enums.StatutReservation;
 import com.padell.padell.exception.BusinessException;
@@ -38,7 +38,7 @@ public class PaiementServiceImpl implements PaiementService {
     @Transactional
     public Paiement pay(Long reservationId, Long membreId) {
         Reservation reservation = reservationService.getById(reservationId);
-        Membre membre = reservation.getMembre();
+        Participant membre = reservation.getMembre();
 
         // Regle metier : seul le membre lié a la reservation peut payer.
         if (!membre.getId().equals(membreId)) {
@@ -69,10 +69,10 @@ public class PaiementServiceImpl implements PaiementService {
             throw new BusinessException("Seules les réservations en attente peuvent être payées.");
         }
         // La place est attribuee uniquement au moment du paiement, apres verification du match sous verrou.
-        Match match = matchRepository.findByIdForUpdate(reservation.getMatch().getId())
+        Atelier match = matchRepository.findByIdForUpdate(reservation.getMatch().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Match introuvable avec l'ID : " + reservation.getMatch().getId()));
         // Regle metier : le match doit toujours etre valide une fois verrouille.
-        if (match.getStatut() == StatutMatch.ANNULE) {
+        if (match.getStatut() == StatutAtelier.ANNULE) {
             throw new BusinessException("Le match est annulé.");
         }
         if (match.getNbJoueursActuels() != null && match.getNbJoueursActuels() >= AtelierRules.CAPACITE) {
@@ -98,7 +98,7 @@ public class PaiementServiceImpl implements PaiementService {
         nbJoueursActuels++;
         match.setNbJoueursActuels(nbJoueursActuels);
         if (nbJoueursActuels == AtelierRules.CAPACITE) {
-            match.setStatut(StatutMatch.COMPLET);
+            match.setStatut(StatutAtelier.COMPLET);
         }
         matchRepository.save(match);
 
@@ -154,12 +154,12 @@ public class PaiementServiceImpl implements PaiementService {
                         .getDateDebut().toLocalDate().equals(tomorrow))
                 .forEach(p -> {
                     Reservation reservation = p.getReservation();
-                    Match match = reservation.getMatch();
+                    Atelier match = reservation.getMatch();
 
                     reservationService.cancel(reservation.getId());
 
                     double partManquante = match.getPrixParJoueur();
-                    Membre organisateur = match.getOrganisateur();
+                    Participant organisateur = match.getOrganisateur();
                     organisateur.setSolde(organisateur.getSolde() + partManquante);
                     membreRepository.save(organisateur);
 

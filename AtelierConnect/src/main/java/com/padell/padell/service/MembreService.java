@@ -1,20 +1,20 @@
 package com.padell.padell.service;
 
-import com.padell.padell.entity.Membre;
+import com.padell.padell.entity.Participant;
 
 import java.util.List;
 
 public interface MembreService {
-    Membre create(Membre membre);
-    Membre create(Membre membre, Long siteId, String rawPassword);
-    Membre prepareForCreation(Membre membre, Long siteId, String rawPassword);
-    Membre getById(Long id);
-    Membre getByMatricule(String matricule);
-    List<Membre> getAll();
-    Membre update(Long id, Membre membre);
+    Participant create(Participant membre);
+    Participant create(Participant membre, Long siteId, String rawPassword);
+    Participant prepareForCreation(Participant membre, Long siteId, String rawPassword);
+    Participant getById(Long id);
+    Participant getByMatricule(String matricule);
+    List<Participant> getAll();
+    Participant update(Long id, Participant membre);
     void delete(Long id);
     boolean hasActivePenalty(Long membreId);
     boolean hasOutstandingBalance(Long membreId);
     void addPenalty(Long membreId);
-    Membre authenticate(String matricule, String password);
+    Participant authenticate(String matricule, String password);
 }

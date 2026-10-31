@@ -1,6 +1,6 @@
 package com.padell.padell.service;
 
-import com.padell.padell.entity.Membre;
+import com.padell.padell.entity.Participant;
 import com.padell.padell.service.impl.AdminAuthorizationService;
 import com.padell.padell.service.impl.CurrentMemberService;
 import com.padell.padell.service.impl.MembreAccessService;
@@ -42,7 +42,7 @@ class MembreAccessServiceTest {
     @DisplayName("Un administrateur délègue l'accès lecture au service admin")
     void adminReadAccessDelegatesToAdminAuthorization() {
         authenticate("admin@padel.com", "ROLE_ADMIN");
-        Membre membre = new Membre();
+        Participant membre = new Participant();
         membre.setId(12L);
 
         membreAccessService.assertCanRead(membre);
@@ -55,7 +55,7 @@ class MembreAccessServiceTest {
     @DisplayName("Un membre délègue l'accès lecture à son propre contrôle")
     void memberReadAccessDelegatesToCurrentMemberCheck() {
         authenticate("S10001", "ROLE_MEMBER");
-        Membre membre = new Membre();
+        Participant membre = new Participant();
         membre.setId(7L);
 
         membreAccessService.assertCanRead(membre);
@@ -79,9 +79,9 @@ class MembreAccessServiceTest {
     @DisplayName("La liste des membres est filtrée par le service admin")
     void filterMembersDelegatesToAdminAuthorization() {
         authenticate("admin@padel.com", "ROLE_ADMIN");
-        Membre membre = new Membre();
+        Participant membre = new Participant();
         membre.setId(1L);
-        List<Membre> membres = List.of(membre);
+        List<Participant> membres = List.of(membre);
 
         membreAccessService.filterMembres(membres);
 

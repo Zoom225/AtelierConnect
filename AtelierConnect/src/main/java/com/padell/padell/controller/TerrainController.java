@@ -2,7 +2,7 @@ package com.padell.padell.controller;
 
 import com.padell.padell.dto.request.TerrainRequest;
 import com.padell.padell.dto.response.TerrainResponse;
-import com.padell.padell.entity.Terrain;
+import com.padell.padell.entity.Salle;
 import com.padell.padell.mapper.TerrainMapper;
 import com.padell.padell.service.TerrainService;
 import com.padell.padell.service.impl.AdminAuthorizationService;
@@ -51,8 +51,8 @@ public class TerrainController {
     @PostMapping
     public ResponseEntity<TerrainResponse> create(@Valid @RequestBody TerrainRequest request) {
         adminAuthorizationService.checkSiteAccess(request.getSiteId());
-        Terrain terrain = terrainMapper.toEntity(request);
-        Terrain saved = terrainService.create(terrain, request.getSiteId());
+        Salle terrain = terrainMapper.toEntity(request);
+        Salle saved = terrainService.create(terrain, request.getSiteId());
         return ResponseEntity.status(HttpStatus.CREATED).body(terrainMapper.toResponse(saved));
     }
 
@@ -133,8 +133,8 @@ public class TerrainController {
             @PathVariable Long id,
             @Valid @RequestBody TerrainRequest request) {
         adminAuthorizationService.checkTerrainAccess(terrainService.getById(id));
-        Terrain terrain = terrainMapper.toEntity(request);
-        Terrain updated = terrainService.update(id, terrain);
+        Salle terrain = terrainMapper.toEntity(request);
+        Salle updated = terrainService.update(id, terrain);
         return ResponseEntity.ok(terrainMapper.toResponse(updated));
     }
 

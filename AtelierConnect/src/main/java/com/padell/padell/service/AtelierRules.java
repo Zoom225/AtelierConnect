@@ -1,6 +1,6 @@
 package com.padell.padell.service;
 
-import com.padell.padell.entity.enums.TypeMembre;
+import com.padell.padell.entity.enums.TypeParticipant;
 
 public final class AtelierRules {
     public static final int CAPACITE = 6;
@@ -15,8 +15,8 @@ public final class AtelierRules {
 
     private AtelierRules() {}
 
-    public static int delaiReservation(TypeMembre type) {
-        return switch (type.toCategorie()) {
+    public static int delaiReservation(TypeParticipant type) {
+        return switch (type) {
             case PARTENAIRE -> PARTENAIRE_JOURS;
             case ABONNE -> ABONNE_JOURS;
             case VISITEUR -> VISITEUR_JOURS;

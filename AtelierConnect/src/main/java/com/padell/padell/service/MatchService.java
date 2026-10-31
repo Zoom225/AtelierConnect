@@ -1,7 +1,7 @@
 package com.padell.padell.service;
 
 import com.padell.padell.dto.request.MatchRequest;
-import com.padell.padell.entity.Match;
+import com.padell.padell.entity.Atelier;
 import com.padell.padell.dto.request.CreateMatchRequest;
 import com.padell.padell.dto.response.MatchDto;
 
@@ -19,7 +19,7 @@ public interface MatchService {
 
     List<MatchDto> findBySite(Long siteId);
 
-    Match getMatchEntityById(Long id);
+    Atelier getMatchEntityById(Long id);
 
     MatchDto getMatchDtoById(Long id);
 

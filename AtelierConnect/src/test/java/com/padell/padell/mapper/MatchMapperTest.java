@@ -1,11 +1,11 @@
 package com.padell.padell.mapper;
 
-import com.padell.padell.entity.Match;
-import com.padell.padell.entity.Membre;
-import com.padell.padell.entity.Site;
-import com.padell.padell.entity.Terrain;
-import com.padell.padell.entity.enums.StatutMatch;
-import com.padell.padell.entity.enums.TypeMatch;
+import com.padell.padell.entity.Atelier;
+import com.padell.padell.entity.Participant;
+import com.padell.padell.entity.Centre;
+import com.padell.padell.entity.Salle;
+import com.padell.padell.entity.enums.StatutAtelier;
+import com.padell.padell.entity.enums.TypeAtelier;
 import com.padell.padell.dto.response.MatchDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,10 +21,10 @@ class MatchMapperTest {
 
     private MatchMapper matchMapper;
 
-    private Match match;
-    private Membre organisateur;
-    private Terrain terrain;
-    private Site site;
+    private Atelier match;
+    private Participant organisateur;
+    private Salle terrain;
+    private Centre site;
 
     private static final LocalDateTime FIXED_DATE = LocalDateTime.of(2024, 5, 20, 14, 0);
 
@@ -32,32 +32,32 @@ class MatchMapperTest {
     void setUp() {
         matchMapper = new MatchMapper();
 
-        site = new Site();
+        site = new Centre();
         site.setId(1L);
         site.setNom("Test Site");
         site.setDureeMatchMinutes(90);
         site.setHeureOuverture(LocalTime.of(9, 0));
         site.setHeureFermeture(LocalTime.of(22, 0));
 
-        organisateur = new Membre();
+        organisateur = new Participant();
         organisateur.setId(1L);
         organisateur.setPrenom("John");
         organisateur.setNom("Doe");
 
-        terrain = new Terrain();
+        terrain = new Salle();
         terrain.setId(1L);
         terrain.setNom("Court Central");
         terrain.setPrix(20.0);
         terrain.setSite(site);
 
-        match = new Match();
+        match = new Atelier();
         match.setId(1L);
         match.setTerrain(terrain);
         match.setOrganisateur(organisateur);
         match.setDateDebut(FIXED_DATE);
         match.setDateFin(FIXED_DATE.plusMinutes(site.getDureeMatchMinutes()));
-        match.setTypeMatch(TypeMatch.PUBLIC);
-        match.setStatut(StatutMatch.PLANIFIE);
+        match.setTypeMatch(TypeAtelier.PUBLIC);
+        match.setStatut(StatutAtelier.PLANIFIE);
         match.setNbJoueursActuels(1);
         match.setPrixParJoueur(5.0);
     }
@@ -97,7 +97,7 @@ class MatchMapperTest {
     @Test
     @DisplayName("toMatchDto - Doit gérer les propriétés nulles sans erreur")
     void toMatchDto_shouldHandleNullProperties() {
-        Match matchWithNulls = new Match();
+        Atelier matchWithNulls = new Atelier();
         matchWithNulls.setId(2L);
         matchWithNulls.setTerrain(null);
         matchWithNulls.setOrganisateur(null);

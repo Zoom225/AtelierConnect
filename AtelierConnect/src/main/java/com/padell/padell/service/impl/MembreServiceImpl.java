@@ -1,9 +1,9 @@
 package com.padell.padell.service.impl;
 
-import com.padell.padell.entity.Membre;
+import com.padell.padell.entity.Participant;
 import com.padell.padell.entity.Penalite;
-import com.padell.padell.entity.Site;
-import com.padell.padell.entity.enums.TypeMembre;
+import com.padell.padell.entity.Centre;
+import com.padell.padell.entity.enums.TypeParticipant;
 import com.padell.padell.exception.BusinessException;
 import com.padell.padell.exception.ResourceNotFoundException;
 import com.padell.padell.repository.MembreRepository;
@@ -33,15 +33,15 @@ public class MembreServiceImpl implements MembreService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public Membre create(Membre membre, Long siteId, String rawPassword) {
+    public Participant create(Participant membre, Long siteId, String rawPassword) {
         prepareForCreation(membre, siteId, rawPassword);
         return create(membre);
     }
 
     @Override
-    public Membre prepareForCreation(Membre membre, Long siteId, String rawPassword) {
+    public Participant prepareForCreation(Participant membre, Long siteId, String rawPassword) {
         if (siteId != null) {
-            Site site = siteService.getById(siteId);
+            Centre site = siteService.getById(siteId);
             membre.setSite(site);
         }
 
@@ -51,7 +51,7 @@ public class MembreServiceImpl implements MembreService {
     }
 
     @Override
-    public Membre create(Membre membre) {
+    public Participant create(Participant membre) {
         membre.setMatricule(normalizeMatricule(membre.getMatricule()));
         validateMatricule(membre.getMatricule(), membre.getTypeMembre());
 
@@ -64,7 +64,7 @@ public class MembreServiceImpl implements MembreService {
             throw new BusinessException("L'email existe déjà : " + membre.getEmail());
         }
         // Regle metier : un membre SITE doit etre rattache a un site.
-        if (membre.getTypeMembre() == TypeMembre.SITE && membre.getSite() == null) {
+        if (membre.getTypeMembre() == TypeParticipant.SITE && membre.getSite() == null) {
             throw new BusinessException("Un membre SITE doit être lié à un site.");
         }
 
@@ -73,26 +73,26 @@ public class MembreServiceImpl implements MembreService {
     }
 
     @Override
-    public Membre getById(Long id) {
+    public Participant getById(Long id) {
         return membreRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Membre introuvable avec l'ID : " + id));
     }
 
     @Override
-    public Membre getByMatricule(String matricule) {
+    public Participant getByMatricule(String matricule) {
         String normalizedMatricule = normalizeMatricule(matricule);
         return membreRepository.findByMatriculeIgnoreCase(normalizedMatricule)
                 .orElseThrow(() -> new ResourceNotFoundException("Membre introuvable avec le matricule : " + normalizedMatricule));
     }
 
     @Override
-    public List<Membre> getAll() {
+    public List<Participant> getAll() {
         return membreRepository.findAll();
     }
 
     @Override
-    public Membre update(Long id, Membre membre) {
-        Membre existing = getById(id);
+    public Participant update(Long id, Participant membre) {
+        Participant existing = getById(id);
         existing.setNom(membre.getNom());
         existing.setPrenom(membre.getPrenom());
         existing.setEmail(membre.getEmail());
@@ -101,7 +101,7 @@ public class MembreServiceImpl implements MembreService {
 
     @Override
     public void delete(Long id) {
-        Membre existing = getById(id);
+        Participant existing = getById(id);
         membreRepository.delete(existing);
     }
 
@@ -112,12 +112,12 @@ public class MembreServiceImpl implements MembreService {
 
     @Override
     public boolean hasOutstandingBalance(Long membreId) {
-        Membre membre = getById(membreId);
+        Participant membre = getById(membreId);
         return membre.getSolde() > 0.0;
     }
     @Override
     public void addPenalty(Long membreId) {
-        Membre membre = getById(membreId);
+        Participant membre = getById(membreId);
         Penalite penalite = Penalite.builder()
                 .membre(membre)
                 .dateFin(LocalDate.now().plusWeeks(1))
@@ -127,9 +127,9 @@ public class MembreServiceImpl implements MembreService {
     }
 
     @Override
-    public Membre authenticate(String matricule, String password) {
+    public Participant authenticate(String matricule, String password) {
         String normalizedMatricule = normalizeMatricule(matricule);
-        Membre membre = membreRepository.findByMatriculeIgnoreCase(normalizedMatricule)
+        Participant membre = membreRepository.findByMatriculeIgnoreCase(normalizedMatricule)
                 .orElseThrow(() -> new BusinessException("Identifiants invalides."));
 
         if (!StringUtils.hasText(password)
@@ -145,11 +145,11 @@ public class MembreServiceImpl implements MembreService {
         return matricule == null ? "" : matricule.trim().toUpperCase(Locale.ROOT);
     }
 
-    private void validateMatricule(String matricule, TypeMembre type) {
+    private void validateMatricule(String matricule, TypeParticipant type) {
         boolean valid = switch (type) {
-            case GLOBAL -> matricule.matches("^G\\d{4}$");
-            case SITE   -> matricule.matches("^S\\d{5}$");
-            case LIBRE  -> matricule.matches("^L\\d{5}$");
+            case PARTENAIRE -> matricule.matches("^G\\d{4}$");
+            case ABONNE -> matricule.matches("^S\\d{5}$");
+            case VISITEUR -> matricule.matches("^L\\d{5}$");
         };
         // Regle metier : un matricule doit respecter le format du type de membre.
         if (!valid) {

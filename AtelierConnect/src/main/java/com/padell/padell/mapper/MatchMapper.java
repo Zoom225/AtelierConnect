@@ -1,23 +1,23 @@
 package com.padell.padell.mapper;
 
-import com.padell.padell.entity.Match;
-import com.padell.padell.entity.Membre;
-import com.padell.padell.entity.Site;
-import com.padell.padell.entity.Terrain;
+import com.padell.padell.entity.Atelier;
+import com.padell.padell.entity.Participant;
+import com.padell.padell.entity.Centre;
+import com.padell.padell.entity.Salle;
 import com.padell.padell.dto.response.MatchDto;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MatchMapper {
 
-    public MatchDto toMatchDto(Match match) {
+    public MatchDto toMatchDto(Atelier match) {
         if (match == null) {
             return null;
         }
 
-        Terrain terrain = match.getTerrain();
-        Membre organisateur = match.getOrganisateur();
-        Site site = (terrain != null) ? terrain.getSite() : null;
+        Salle terrain = match.getTerrain();
+        Participant organisateur = match.getOrganisateur();
+        Centre site = (terrain != null) ? terrain.getSite() : null;
 
         Long terrainId = (terrain != null) ? terrain.getId() : null;
         String terrainNom = (terrain != null) ? terrain.getNom() : null;

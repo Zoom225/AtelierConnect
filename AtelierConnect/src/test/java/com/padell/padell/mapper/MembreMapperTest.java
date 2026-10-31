@@ -2,9 +2,10 @@ package com.padell.padell.mapper;
 
 import com.padell.padell.dto.request.MembreRequest;
 import com.padell.padell.dto.response.MembreResponse;
-import com.padell.padell.entity.Membre;
-import com.padell.padell.entity.Site;
-import com.padell.padell.entity.enums.TypeMembre;
+import com.padell.padell.entity.Participant;
+import com.padell.padell.entity.Centre;
+import com.padell.padell.entity.enums.TypeParticipant;
+import com.padell.padell.entity.enums.TypeParticipantLegacy;
 import com.padell.padell.entity.enums.TypeParticipant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,11 +32,11 @@ class MembreMapperTest {
                 .nom("Doe")
                 .prenom("John")
                 .email("john.doe@example.com")
-                .typeMembre(TypeMembre.LIBRE)
+                .typeMembre(TypeParticipantLegacy.LIBRE)
                 .build();
 
         // Act
-        Membre membre = membreMapper.toEntity(request);
+        Participant membre = membreMapper.toEntity(request);
 
         // Assert
         assertNotNull(membre);
@@ -44,7 +45,7 @@ class MembreMapperTest {
                 () -> assertEquals("Doe", membre.getNom()),
                 () -> assertEquals("John", membre.getPrenom()),
                 () -> assertEquals("john.doe@example.com", membre.getEmail()),
-                () -> assertEquals(TypeMembre.LIBRE, membre.getTypeMembre()),
+                () -> assertEquals(TypeParticipant.LIBRE, membre.getTypeMembre()),
                 () -> assertNull(membre.getSite(), "Le site ne doit pas être mappé par le mapper")
         );
     }
@@ -53,17 +54,17 @@ class MembreMapperTest {
     @DisplayName("Doit mapper Membre Entity vers MembreResponse")
     void shouldMapMembreEntityToMembreResponse() {
         // Arrange
-        Site site = new Site();
+        Centre site = new Centre();
         site.setId(1L);
         site.setNom("Padel Club Central");
 
         // Correction : Construire l'objet, puis setter l'ID
-        Membre membre = Membre.builder()
+        Participant membre = Participant.builder()
                 .matricule("S54321")
                 .nom("Smith")
                 .prenom("Jane")
                 .email("jane.smith@example.com")
-                .typeMembre(TypeMembre.SITE)
+                .typeMembre(TypeParticipant.SITE)
                 .site(site)
                 .solde(25.5)
                 .build();
@@ -79,7 +80,7 @@ class MembreMapperTest {
                 () -> assertEquals("S54321", response.getMatricule()),
                 () -> assertEquals("Smith", response.getNom()),
                 () -> assertEquals("Jane", response.getPrenom()),
-                () -> assertEquals(TypeMembre.SITE, response.getTypeMembre()),
+                () -> assertEquals(TypeParticipantLegacy.SITE, response.getTypeMembre()),
                 () -> assertEquals(TypeParticipant.ABONNE, response.getCategorie()),
                 () -> assertEquals(1L, response.getSiteId()),
                 () -> assertEquals("Padel Club Central", response.getSiteNom()),
@@ -97,8 +98,8 @@ class MembreMapperTest {
                 .build();
 
         assertTrue(request.isCategorieValide());
-        assertEquals(TypeMembre.LIBRE, membreMapper.toEntity(request).getTypeMembre());
-        request.setTypeMembre(TypeMembre.SITE);
+        assertEquals(TypeParticipant.LIBRE, membreMapper.toEntity(request).getTypeMembre());
+        request.setTypeMembre(TypeParticipantLegacy.SITE);
         assertFalse(request.isCategorieValide());
     }
 
@@ -107,9 +108,9 @@ class MembreMapperTest {
     void shouldHandleNullSiteWhenMappingToMembreResponse() {
         // Arrange
         // Correction : Construire l'objet, puis setter l'ID
-        Membre membre = Membre.builder()
+        Participant membre = Participant.builder()
                 .matricule("G9876")
-                .typeMembre(TypeMembre.GLOBAL) // Un membre GLOBAL n'a pas de site
+                .typeMembre(TypeParticipant.GLOBAL) // Un membre GLOBAL n'a pas de site
                 .site(null)
                 .solde(0.0) // Initialiser tous les champs non-null
                 .build();

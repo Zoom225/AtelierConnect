@@ -1,11 +1,11 @@
 package com.padell.padell.service;
 
 import com.padell.padell.entity.*;
-import com.padell.padell.entity.enums.StatutMatch;
+import com.padell.padell.entity.enums.StatutAtelier;
 import com.padell.padell.entity.enums.StatutPaiement;
 import com.padell.padell.entity.enums.StatutReservation;
-import com.padell.padell.entity.enums.TypeMatch;
-import com.padell.padell.entity.enums.TypeMembre;
+import com.padell.padell.entity.enums.TypeAtelier;
+import com.padell.padell.entity.enums.TypeParticipant;
 import com.padell.padell.exception.BusinessException;
 import com.padell.padell.exception.ResourceNotFoundException;
 import com.padell.padell.mapper.MatchMapper;
@@ -59,15 +59,15 @@ class MatchServiceTest {
     @InjectMocks
     private MatchServiceImpl matchService;
 
-    private Membre organisateur;
-    private Terrain terrain;
-    private Site site;
+    private Participant organisateur;
+    private Salle terrain;
+    private Centre site;
     private CreateMatchRequest createMatchRequest;
     private MatchDto matchDto;
 
     @BeforeEach
     void setUp() {
-        site = new Site();
+        site = new Centre();
         site.setId(1L);
         site.setDureeMatchMinutes(AtelierRules.DUREE_MINUTES);
         site.setDureeEntreMatchMinutes(AtelierRules.PAUSE_MINUTES);
@@ -75,14 +75,14 @@ class MatchServiceTest {
         site.setHeureFermeture(LocalTime.of(22, 0));
         site.setOuvertVisiteurs(true);
 
-        organisateur = new Membre();
+        organisateur = new Participant();
         organisateur.setId(1L);
         organisateur.setMatricule("user123");
         organisateur.setPrenom("John");
         organisateur.setNom("Doe");
-        organisateur.setTypeMembre(TypeMembre.LIBRE);
+        organisateur.setTypeMembre(TypeParticipant.LIBRE);
 
-        terrain = new Terrain();
+        terrain = new Salle();
         terrain.setId(1L);
         terrain.setNom("Court Central");
         terrain.setPrix(20.0);
@@ -104,8 +104,8 @@ class MatchServiceTest {
                 createMatchRequest.matchDate().toLocalDate(),
                 createMatchRequest.matchDate().toLocalTime(),
                 createMatchRequest.matchDate().plusMinutes(AtelierRules.DUREE_MINUTES).toLocalTime(),
-                TypeMatch.PUBLIC,
-                StatutMatch.PLANIFIE,
+                TypeAtelier.PUBLIC,
+                StatutAtelier.PLANIFIE,
                 0,
                 15.0,
                 null  // dateConversionPublic
@@ -114,11 +114,11 @@ class MatchServiceTest {
 
     @Test
     void ouverturePubliqueExigeAccordExplicite() {
-        Match prive = new Match();
+        Atelier prive = new Atelier();
         prive.setId(10L);
         prive.setOrganisateur(organisateur);
-        prive.setTypeMatch(TypeMatch.PRIVE);
-        prive.setStatut(StatutMatch.PLANIFIE);
+        prive.setTypeMatch(TypeAtelier.PRIVE);
+        prive.setStatut(StatutAtelier.PLANIFIE);
         prive.setNbJoueursActuels(1);
         prive.setDateDebut(LocalDate.now().plusDays(AtelierRules.OUVERTURE_PUBLIQUE_JOURS).atTime(10, 0));
         when(matchRepository.findById(10L)).thenReturn(Optional.of(prive));
@@ -129,14 +129,14 @@ class MatchServiceTest {
         matchService.consentToPublicOpening(10L, organisateur.getId());
         assertNotNull(prive.getDateAccordOuverturePublique());
         matchService.convertToPublic(10L);
-        assertEquals(TypeMatch.PUBLIC, prive.getTypeMatch());
+        assertEquals(TypeAtelier.PUBLIC, prive.getTypeMatch());
         assertNotNull(prive.getDateConversionPublic());
         verify(membreService, never()).addPenalty(any());
     }
 
     @Test
     void refusAccordParUnAutreParticipant() {
-        Match prive = new Match();
+        Atelier prive = new Atelier();
         prive.setId(10L);
         prive.setOrganisateur(organisateur);
         when(matchRepository.findById(10L)).thenReturn(Optional.of(prive));
@@ -154,10 +154,10 @@ class MatchServiceTest {
         when(membreService.hasOutstandingBalance(organisateur.getId())).thenReturn(false);
         when(membreService.hasActivePenalty(organisateur.getId())).thenReturn(false);
         when(matchRepository.findOverlappingMatches(any(), any(), any(), any())).thenReturn(Collections.emptyList());
-        when(matchRepository.save(any(Match.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(matchRepository.save(any(Atelier.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(reservationRepository.save(any(Reservation.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(paiementRepository.save(any(Paiement.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(matchMapper.toMatchDto(any(Match.class))).thenReturn(matchDto); // Utiliser le DTO corrigé
+        when(matchMapper.toMatchDto(any(Atelier.class))).thenReturn(matchDto); // Utiliser le DTO corrigé
 
         // Act
         MatchDto result = matchService.createMatch(createMatchRequest, "user123");
@@ -165,9 +165,9 @@ class MatchServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(0, result.nbJoueursActuels());
-        assertEquals(TypeMatch.PUBLIC, result.typeMatch());
+        assertEquals(TypeAtelier.PUBLIC, result.typeMatch());
         verify(matchRepository, times(1)).save(argThat(match ->
-                match.getStatut() == StatutMatch.PLANIFIE &&
+                match.getStatut() == StatutAtelier.PLANIFIE &&
                         match.getNbJoueursActuels() == 0
         ));
         verify(reservationRepository, times(1)).save(argThat(reservation ->
@@ -230,7 +230,7 @@ class MatchServiceTest {
         when(membreRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
         when(terrainService.getById(terrain.getId())).thenReturn(terrain);
 
-        for (TypeMembre type : TypeMembre.values()) {
+        for (TypeParticipant type : TypeParticipant.values()) {
             organisateur.setTypeMembre(type);
             int delai = AtelierRules.delaiReservation(type);
             CreateMatchRequest demande = new CreateMatchRequest(
@@ -248,7 +248,7 @@ class MatchServiceTest {
         // Arrange
         when(membreRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
         when(terrainService.getById(terrain.getId())).thenReturn(terrain);
-        when(matchRepository.findOverlappingMatches(any(), any(), any(), any())).thenReturn(Collections.singletonList(new Match()));
+        when(matchRepository.findOverlappingMatches(any(), any(), any(), any())).thenReturn(Collections.singletonList(new Atelier()));
 
         // Act & Assert
         BusinessException exception = assertThrows(BusinessException.class, () -> {

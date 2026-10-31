@@ -1,7 +1,7 @@
 package com.padell.padell.dto.response;
 
-import com.padell.padell.entity.enums.StatutMatch;
-import com.padell.padell.entity.enums.TypeMatch;
+import com.padell.padell.entity.enums.StatutAtelier;
+import com.padell.padell.entity.enums.TypeAtelier;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -16,8 +16,8 @@ public record MatchDto(
         LocalDate date,
         LocalTime heureDebut,
         LocalTime heureFin,
-        TypeMatch typeMatch,
-        StatutMatch statut,
+        TypeAtelier typeMatch,
+        StatutAtelier statut,
         Integer nbJoueursActuels,
         Double prixParJoueur,
         LocalDateTime dateConversionPublic

@@ -2,19 +2,19 @@ package com.padell.padell;
 
 import com.padell.padell.entity.Administrateur;
 import com.padell.padell.entity.JourFermeture;
-import com.padell.padell.entity.Match;
-import com.padell.padell.entity.Membre;
+import com.padell.padell.entity.Atelier;
+import com.padell.padell.entity.Participant;
 import com.padell.padell.entity.Paiement;
 import com.padell.padell.entity.Penalite;
 import com.padell.padell.entity.Reservation;
-import com.padell.padell.entity.Site;
-import com.padell.padell.entity.Terrain;
-import com.padell.padell.entity.enums.StatutMatch;
+import com.padell.padell.entity.Centre;
+import com.padell.padell.entity.Salle;
+import com.padell.padell.entity.enums.StatutAtelier;
 import com.padell.padell.entity.enums.StatutPaiement;
 import com.padell.padell.entity.enums.StatutReservation;
 import com.padell.padell.entity.enums.TypeAdministrateur;
-import com.padell.padell.entity.enums.TypeMatch;
-import com.padell.padell.entity.enums.TypeMembre;
+import com.padell.padell.entity.enums.TypeAtelier;
+import com.padell.padell.entity.enums.TypeParticipant;
 import com.padell.padell.repository.AdministrateurRepository;
 import com.padell.padell.repository.JourFermetureRepository;
 import com.padell.padell.repository.MatchRepository;
@@ -76,7 +76,7 @@ public class DataInitializer implements CommandLineRunner {
 
         log.info("DataInitializer : initialisation de la base de donnees...");
 
-        Site siteLyon = siteRepository.save(Site.builder()
+        Centre siteLyon = siteRepository.save(Centre.builder()
                 .nom("Padel Club Lyon")
                 .adresse("12 rue de la Republique, Lyon")
                 .heureOuverture(LocalTime.of(8, 0))
@@ -87,7 +87,7 @@ public class DataInitializer implements CommandLineRunner {
                 .ouvertVisiteurs(true)
                 .build());
 
-        Site siteParis = siteRepository.save(Site.builder()
+        Centre siteParis = siteRepository.save(Centre.builder()
                 .nom("Padel Club Paris")
                 .adresse("45 avenue des Champs, Paris")
                 .heureOuverture(LocalTime.of(7, 0))
@@ -100,11 +100,11 @@ public class DataInitializer implements CommandLineRunner {
 
         log.info("DataInitializer : {} sites crees", siteRepository.count());
 ////-------------------Terrains--------------------//
-        Terrain courtA = terrainRepository.save(Terrain.builder().nom("Court A").site(siteLyon).prix(AtelierRules.PRIX_TOTAL).build());
-        Terrain courtB = terrainRepository.save(Terrain.builder().nom("Court B").site(siteLyon).prix(AtelierRules.PRIX_TOTAL).build());
-        Terrain courtC = terrainRepository.save(Terrain.builder().nom("Court C").site(siteLyon).prix(AtelierRules.PRIX_TOTAL).build());
-        Terrain court1 = terrainRepository.save(Terrain.builder().nom("Court 1").site(siteParis).prix(AtelierRules.PRIX_TOTAL).build());
-        terrainRepository.save(Terrain.builder().nom("Court 2").site(siteParis).prix(AtelierRules.PRIX_TOTAL).build());
+        Salle courtA = terrainRepository.save(Salle.builder().nom("Court A").site(siteLyon).prix(AtelierRules.PRIX_TOTAL).build());
+        Salle courtB = terrainRepository.save(Salle.builder().nom("Court B").site(siteLyon).prix(AtelierRules.PRIX_TOTAL).build());
+        Salle courtC = terrainRepository.save(Salle.builder().nom("Court C").site(siteLyon).prix(AtelierRules.PRIX_TOTAL).build());
+        Salle court1 = terrainRepository.save(Salle.builder().nom("Court 1").site(siteParis).prix(AtelierRules.PRIX_TOTAL).build());
+        terrainRepository.save(Salle.builder().nom("Court 2").site(siteParis).prix(AtelierRules.PRIX_TOTAL).build());
 
         log.info("DataInitializer : {} terrains crees", terrainRepository.count());
 //-----------------------Jours de fermeture--------------------//
@@ -133,67 +133,67 @@ public class DataInitializer implements CommandLineRunner {
 //-----------------------Membres--------------------//
         String defaultMemberPasswordHash = passwordEncoder.encode(demoMemberPassword);
 
-        Membre lucas = membreRepository.save(Membre.builder()
+        Participant lucas = membreRepository.save(Participant.builder()
                 .matricule("G1001")
                 .nom("Martin")
                 .prenom("Lucas")
                 .email("lucas.martin@gmail.com")
-                .typeMembre(TypeMembre.GLOBAL)
+                .typeMembre(TypeParticipant.GLOBAL)
                 .solde(0.0)
                 .site(null)
                 .passwordHash(defaultMemberPasswordHash)
                 .build());
 
-        Membre emma = membreRepository.save(Membre.builder()
+        Participant emma = membreRepository.save(Participant.builder()
                 .matricule("G1002")
                 .nom("Dubois")
                 .prenom("Emma")
                 .email("emma.dubois@gmail.com")
-                .typeMembre(TypeMembre.GLOBAL)
+                .typeMembre(TypeParticipant.GLOBAL)
                 .solde(0.0)
                 .site(null)
                 .passwordHash(defaultMemberPasswordHash)
                 .build());
 
-        Membre tom = membreRepository.save(Membre.builder()
+        Participant tom = membreRepository.save(Participant.builder()
                 .matricule("S10001")
                 .nom("Bernard")
                 .prenom("Tom")
                 .email("tom.bernard@gmail.com")
-                .typeMembre(TypeMembre.SITE)
+                .typeMembre(TypeParticipant.SITE)
                 .solde(0.0)
                 .site(siteLyon)
                 .passwordHash(defaultMemberPasswordHash)
                 .build());
 
-        Membre sarah = membreRepository.save(Membre.builder()
+        Participant sarah = membreRepository.save(Participant.builder()
                 .matricule("S10002")
                 .nom("Leroy")
                 .prenom("Sarah")
                 .email("sarah.leroy@gmail.com")
-                .typeMembre(TypeMembre.SITE)
+                .typeMembre(TypeParticipant.SITE)
                 .solde(0.0)
                 .site(siteParis)
                 .passwordHash(defaultMemberPasswordHash)
                 .build());
 
-        Membre alex = membreRepository.save(Membre.builder()
+        Participant alex = membreRepository.save(Participant.builder()
                 .matricule("L10001")
                 .nom("Petit")
                 .prenom("Alex")
                 .email("alex.petit@gmail.com")
-                .typeMembre(TypeMembre.LIBRE)
+                .typeMembre(TypeParticipant.LIBRE)
                 .solde(0.0)
                 .site(null)
                 .passwordHash(defaultMemberPasswordHash)
                 .build());
 
-        Membre penalise = membreRepository.save(Membre.builder()
+        Participant penalise = membreRepository.save(Participant.builder()
                 .matricule("L10002")
                 .nom("Penalise")
                 .prenom("Demo")
                 .email("demo.penalise@gmail.com")
-                .typeMembre(TypeMembre.LIBRE)
+                .typeMembre(TypeParticipant.LIBRE)
                 .solde(0.0)
                 .site(null)
                 .passwordHash(defaultMemberPasswordHash)
@@ -239,7 +239,7 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void migrateLegacyMemberCredentials() {
-        List<Membre> legacyMembers = membreRepository.findAll().stream()
+        List<Participant> legacyMembers = membreRepository.findAll().stream()
                 .filter(member -> !StringUtils.hasText(member.getPasswordHash()))
                 .toList();
 
@@ -254,40 +254,40 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedMatchesFromExistingData() {
-        Terrain courtA = requireSeedTerrain("Court A");
-        Terrain courtB = requireSeedTerrain("Court B");
-        Terrain courtC = requireSeedTerrain("Court C");
-        Terrain court1 = requireSeedTerrain("Court 1");
+        Salle courtA = requireSeedTerrain("Court A");
+        Salle courtB = requireSeedTerrain("Court B");
+        Salle courtC = requireSeedTerrain("Court C");
+        Salle court1 = requireSeedTerrain("Court 1");
 
-        Membre lucas = requireSeedMember("G1001");
-        Membre emma = requireSeedMember("G1002");
-        Membre tom = requireSeedMember("S10001");
-        Membre sarah = requireSeedMember("S10002");
-        Membre alex = requireSeedMember("L10001");
+        Participant lucas = requireSeedMember("G1001");
+        Participant emma = requireSeedMember("G1002");
+        Participant tom = requireSeedMember("S10001");
+        Participant sarah = requireSeedMember("S10002");
+        Participant alex = requireSeedMember("L10001");
 
         seedMatches(courtA, courtB, courtC, court1, lucas, emma, tom, sarah, alex);
     }
 
-    private Terrain requireSeedTerrain(String nom) {
+    private Salle requireSeedTerrain(String nom) {
         return terrainRepository.findAll().stream()
                 .filter(terrain -> terrain.getNom().equals(nom))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Terrain seed introuvable : " + nom));
     }
 
-    private Membre requireSeedMember(String matricule) {
+    private Participant requireSeedMember(String matricule) {
         return membreRepository.findByMatriculeIgnoreCase(matricule)
                 .orElseThrow(() -> new IllegalStateException("Membre seed introuvable : " + matricule));
     }
 
     private void ensurePenalizedDemoMember() {
-        Membre membre = membreRepository.findByMatriculeIgnoreCase("L10002")
-                .orElseGet(() -> membreRepository.save(Membre.builder()
+        Participant membre = membreRepository.findByMatriculeIgnoreCase("L10002")
+                .orElseGet(() -> membreRepository.save(Participant.builder()
                         .matricule("L10002")
                         .nom("Penalise")
                         .prenom("Demo")
                         .email("demo.penalise@gmail.com")
-                        .typeMembre(TypeMembre.LIBRE)
+                        .typeMembre(TypeParticipant.LIBRE)
                         .solde(0.0)
                         .site(null)
                         .passwordHash(passwordEncoder.encode(demoMemberPassword))
@@ -326,7 +326,7 @@ public class DataInitializer implements CommandLineRunner {
         });
     }
 
-    private void seedActivePenalty(Membre membre) {
+    private void seedActivePenalty(Participant membre) {
         if (penaliteRepository.existsByMembreIdAndDateFinAfter(membre.getId(), LocalDate.now())) {
             return;
         }
@@ -339,31 +339,31 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedMatches(
-            Terrain courtA,
-            Terrain courtB,
-            Terrain courtC,
-            Terrain court1,
-            Membre lucas,
-            Membre emma,
-            Membre tom,
-            Membre sarah,
-            Membre alex
+            Salle courtA,
+            Salle courtB,
+            Salle courtC,
+            Salle court1,
+            Participant lucas,
+            Participant emma,
+            Participant tom,
+            Participant sarah,
+            Participant alex
     ) {
-        Match publicLyon = createSeedMatch(courtA, lucas, LocalDate.now().plusDays(2).atTime(10, 0),
-                TypeMatch.PUBLIC, StatutMatch.PLANIFIE, 0);
+        Atelier publicLyon = createSeedMatch(courtA, lucas, LocalDate.now().plusDays(2).atTime(10, 0),
+                TypeAtelier.PUBLIC, StatutAtelier.PLANIFIE, 0);
         createSeedReservation(publicLyon, lucas, StatutReservation.EN_ATTENTE, StatutPaiement.EN_ATTENTE);
 
-        Match privateLyon = createSeedMatch(courtB, tom, LocalDate.now().plusDays(3).atTime(14, 0),
-                TypeMatch.PRIVE, StatutMatch.PLANIFIE, 1);
+        Atelier privateLyon = createSeedMatch(courtB, tom, LocalDate.now().plusDays(3).atTime(14, 0),
+                TypeAtelier.PRIVE, StatutAtelier.PLANIFIE, 1);
         createSeedReservation(privateLyon, tom, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
 
-        Match publicParis = createSeedMatch(court1, sarah, LocalDate.now().plusDays(4).atTime(18, 0),
-                TypeMatch.PUBLIC, StatutMatch.PLANIFIE, 2);
+        Atelier publicParis = createSeedMatch(court1, sarah, LocalDate.now().plusDays(4).atTime(18, 0),
+                TypeAtelier.PUBLIC, StatutAtelier.PLANIFIE, 2);
         createSeedReservation(publicParis, sarah, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
         createSeedReservation(publicParis, emma, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
 
-        Match completeLyon = createSeedMatch(courtC, lucas, LocalDate.now().plusDays(5).atTime(16, 0),
-                TypeMatch.PUBLIC, StatutMatch.PLANIFIE, 4);
+        Atelier completeLyon = createSeedMatch(courtC, lucas, LocalDate.now().plusDays(5).atTime(16, 0),
+                TypeAtelier.PUBLIC, StatutAtelier.PLANIFIE, 4);
         createSeedReservation(completeLyon, lucas, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
         createSeedReservation(completeLyon, emma, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
         createSeedReservation(completeLyon, tom, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
@@ -372,15 +372,15 @@ public class DataInitializer implements CommandLineRunner {
         log.info("DataInitializer : {} matchs crees", matchRepository.count());
     }
 
-    private Match createSeedMatch(
-            Terrain terrain,
-            Membre organisateur,
+    private Atelier createSeedMatch(
+            Salle terrain,
+            Participant organisateur,
             LocalDateTime dateDebut,
-            TypeMatch typeMatch,
-            StatutMatch statut,
+            TypeAtelier typeMatch,
+            StatutAtelier statut,
             int nbJoueursActuels
     ) {
-        return matchRepository.save(Match.builder()
+        return matchRepository.save(Atelier.builder()
                 .terrain(terrain)
                 .organisateur(organisateur)
                 .dateDebut(dateDebut)
@@ -394,8 +394,8 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void createSeedReservation(
-            Match match,
-            Membre membre,
+            Atelier match,
+            Participant membre,
             StatutReservation statutReservation,
             StatutPaiement statutPaiement
     ) {

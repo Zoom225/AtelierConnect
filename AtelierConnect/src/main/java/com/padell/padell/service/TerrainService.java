@@ -1,14 +1,14 @@
 package com.padell.padell.service;
 
-import com.padell.padell.entity.Terrain;
+import com.padell.padell.entity.Salle;
 
 import java.util.List;
 
 public interface TerrainService {
-    Terrain create(Terrain terrain, Long siteId);
-    Terrain getById(Long id);
-    List<Terrain> getAll();
-    List<Terrain> getBySiteId(Long siteId);
-    Terrain update(Long id, Terrain terrain);
+    Salle create(Salle terrain, Long siteId);
+    Salle getById(Long id);
+    List<Salle> getAll();
+    List<Salle> getBySiteId(Long siteId);
+    Salle update(Long id, Salle terrain);
     void delete(Long id);
 }

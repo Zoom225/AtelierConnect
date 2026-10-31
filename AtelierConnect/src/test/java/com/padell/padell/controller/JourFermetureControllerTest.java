@@ -6,7 +6,7 @@ import com.padell.padell.config.JwtConfig;
 import com.padell.padell.dto.request.JourFermetureRequest;
 import com.padell.padell.entity.Administrateur;
 import com.padell.padell.entity.JourFermeture;
-import com.padell.padell.entity.Site;
+import com.padell.padell.entity.Centre;
 import com.padell.padell.entity.enums.TypeAdministrateur;
 import com.padell.padell.repository.AdministrateurRepository;
 import com.padell.padell.repository.JourFermetureRepository;
@@ -68,14 +68,14 @@ class JourFermetureControllerTest {
     @MockitoBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    private Site siteLyon;
-    private Site siteParis;
+    private Centre siteLyon;
+    private Centre siteParis;
 
     @BeforeEach
     void setUp() {
-        siteLyon = Site.builder().nom("Padel Club Lyon").build();
+        siteLyon = Centre.builder().nom("Padel Club Lyon").build();
         siteLyon.setId(1L);
-        siteParis = Site.builder().nom("Padel Club Paris").build();
+        siteParis = Centre.builder().nom("Padel Club Paris").build();
         siteParis.setId(2L);
     }
 
@@ -196,7 +196,7 @@ class JourFermetureControllerTest {
                 .andExpect(status().isNoContent());
     }
 
-    private Administrateur admin(TypeAdministrateur type, Site site) {
+    private Administrateur admin(TypeAdministrateur type, Centre site) {
         return Administrateur.builder()
                 .typeAdministrateur(type)
                 .site(site)

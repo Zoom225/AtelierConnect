@@ -1,6 +1,6 @@
 package com.padell.padell.entity.enums;
 
-public enum TypeMembre {
+public enum TypeParticipantLegacy {
     GLOBAL,   // Gxxxx — tous les sites, 3 semaines avant
     SITE,     // Sxxxxx — son site uniquement, 2 semaines avant
     LIBRE;    // Valeurs SQL historiques conservées pour les lignes existantes.

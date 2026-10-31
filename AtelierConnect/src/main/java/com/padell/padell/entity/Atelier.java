@@ -2,8 +2,8 @@ package com.padell.padell.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.padell.padell.entity.enums.StatutMatch;
-import com.padell.padell.entity.enums.TypeMatch;
+import com.padell.padell.entity.enums.StatutAtelier;
+import com.padell.padell.entity.enums.TypeAtelier;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,16 +17,16 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Match extends BaseEntity {
+public class Atelier extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "terrain_id", nullable = false)
     @JsonBackReference("terrain-matches")
-    private Terrain terrain;
+    private Salle terrain;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organisateur_id", nullable = false)
-    private Membre organisateur;
+    private Participant organisateur;
 
     @Column(nullable = false)
     private LocalDateTime dateDebut;
@@ -36,11 +36,11 @@ public class Match extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TypeMatch typeMatch;
+    private TypeAtelier typeMatch;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private StatutMatch statut;
+    private StatutAtelier statut;
 
     @Column(nullable = false)
     private Integer nbJoueursActuels;

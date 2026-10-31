@@ -2,9 +2,9 @@ package com.padell.padell.service.impl;
 
 import com.padell.padell.dto.response.MatchDto;
 import com.padell.padell.entity.Administrateur;
-import com.padell.padell.entity.Match;
-import com.padell.padell.entity.Membre;
-import com.padell.padell.entity.Terrain;
+import com.padell.padell.entity.Atelier;
+import com.padell.padell.entity.Participant;
+import com.padell.padell.entity.Salle;
 import com.padell.padell.entity.enums.TypeAdministrateur;
 import com.padell.padell.exception.BusinessException;
 import com.padell.padell.repository.AdministrateurRepository;
@@ -51,17 +51,17 @@ public class AdminAuthorizationService {
         }
     }
 
-    public void checkTerrainAccess(Terrain terrain) {
+    public void checkTerrainAccess(Salle terrain) {
         checkSiteAccess(terrain.getSite().getId());
     }
 
     public void checkMatchAccess(Long matchId) {
-        Match match = matchRepository.findById(matchId)
+        Atelier match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new BusinessException("Match introuvable avec l'ID : " + matchId));
         checkSiteAccess(match.getTerrain().getSite().getId());
     }
 
-    public void checkMembreAccess(Membre membre) {
+    public void checkMembreAccess(Participant membre) {
         checkMembreAccess(membre != null && membre.getSite() != null ? membre.getSite().getId() : null);
     }
 
@@ -75,7 +75,7 @@ public class AdminAuthorizationService {
         }
     }
 
-    public boolean canAccessMembre(Membre membre) {
+    public boolean canAccessMembre(Participant membre) {
         try {
             checkMembreAccess(membre);
             return true;
@@ -93,7 +93,7 @@ public class AdminAuthorizationService {
         }
     }
 
-    public List<Membre> filterMembres(List<Membre> membres) {
+    public List<Participant> filterMembres(List<Participant> membres) {
         Administrateur admin = currentAdmin();
         if (admin.getTypeAdministrateur() == TypeAdministrateur.GLOBAL) {
             return membres;
@@ -104,7 +104,7 @@ public class AdminAuthorizationService {
                 .toList();
     }
 
-    public List<Match> filterMatches(List<Match> matches) {
+    public List<Atelier> filterMatches(List<Atelier> matches) {
         Administrateur admin = currentAdmin();
         if (admin.getTypeAdministrateur() == TypeAdministrateur.GLOBAL) {
             return matches;

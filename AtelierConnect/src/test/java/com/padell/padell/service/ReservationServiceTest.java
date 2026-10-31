@@ -45,98 +45,98 @@ class ReservationServiceTest {
     @InjectMocks
     private ReservationServiceImpl reservationService;
 
-    private Site site;
-    private Site siteB;
-    private Terrain terrain;
-    private Membre organisateur;
-    private Membre joueur;
-    private Membre joueurSiteB;
-    private Match matchPrive;
-    private Match matchPublic;
-    private Match matchComplet;
+    private Centre site;
+    private Centre siteB;
+    private Salle terrain;
+    private Participant organisateur;
+    private Participant joueur;
+    private Participant joueurSiteB;
+    private Atelier matchPrive;
+    private Atelier matchPublic;
+    private Atelier matchComplet;
 
     @BeforeEach
     void setUp() {
-        siteB = Site.builder()
+        siteB = Centre.builder()
                 .nom("Padel Club Paris")
                 .build();
         siteB.setId(2L);
 
-        site = Site.builder()
+        site = Centre.builder()
                 .nom("Padel Club Lyon")
                 .build();
         site.setId(1L);
 
-        terrain = Terrain.builder()
+        terrain = Salle.builder()
                 .nom("Court A")
                 .site(site)
                 .build();
         terrain.setId(1L);
 
-        organisateur = Membre.builder()
+        organisateur = Participant.builder()
                 .matricule("G1001")
                 .nom("Martin")
                 .prenom("Lucas")
-                .typeMembre(TypeMembre.GLOBAL)
+                .typeMembre(TypeParticipant.GLOBAL)
                 .solde(0.0)
                 .site(null)
                 .build();
         organisateur.setId(1L);
 
-        joueur = Membre.builder()
+        joueur = Participant.builder()
                 .matricule("G1002")
                 .nom("Dupont")
                 .prenom("Julie")
-                .typeMembre(TypeMembre.GLOBAL)
+                .typeMembre(TypeParticipant.GLOBAL)
                 .solde(0.0)
                 .site(null)
                 .build();
         joueur.setId(2L);
 
         // membre rattaché à un autre site → ne peut pas réserver sur siteLyon
-        joueurSiteB = Membre.builder()
+        joueurSiteB = Participant.builder()
                 .matricule("S20001")
                 .nom("Leclerc")
                 .prenom("Paul")
-                .typeMembre(TypeMembre.SITE)
+                .typeMembre(TypeParticipant.SITE)
                 .solde(0.0)
                 .site(siteB)
                 .build();
         joueurSiteB.setId(3L);
 
-        matchPrive = Match.builder()
+        matchPrive = Atelier.builder()
                 .terrain(terrain)
                 .organisateur(organisateur)
                 .dateDebut(java.time.LocalDateTime.of(LocalDate.now().plusDays(25), LocalTime.of(15, 0)))
                 .dateFin(java.time.LocalDateTime.of(LocalDate.now().plusDays(25), LocalTime.of(16, 30)))
-                .typeMatch(TypeMatch.PRIVE)
-                .statut(StatutMatch.PLANIFIE)
+                .typeMatch(TypeAtelier.PRIVE)
+                .statut(StatutAtelier.PLANIFIE)
                 .nbJoueursActuels(1)
                 .prixTotal(60.0)
                 .prixParJoueur(15.0)
                 .build();
         matchPrive.setId(10L);
 
-        matchPublic = Match.builder()
+        matchPublic = Atelier.builder()
                 .terrain(terrain)
                 .organisateur(organisateur)
                 .dateDebut(java.time.LocalDateTime.of(LocalDate.now().plusDays(25), LocalTime.of(17, 0)))
                 .dateFin(java.time.LocalDateTime.of(LocalDate.now().plusDays(25), LocalTime.of(18, 30)))
-                .typeMatch(TypeMatch.PUBLIC)
-                .statut(StatutMatch.PLANIFIE)
+                .typeMatch(TypeAtelier.PUBLIC)
+                .statut(StatutAtelier.PLANIFIE)
                 .nbJoueursActuels(1)
                 .prixTotal(60.0)
                 .prixParJoueur(15.0)
                 .build();
         matchPublic.setId(11L);
 
-        matchComplet = Match.builder()
+        matchComplet = Atelier.builder()
                 .terrain(terrain)
                 .organisateur(organisateur)
                 .dateDebut(java.time.LocalDateTime.of(LocalDate.now().plusDays(25), LocalTime.of(19, 0)))
                 .dateFin(java.time.LocalDateTime.of(LocalDate.now().plusDays(25), LocalTime.of(20, 30)))
-                .typeMatch(TypeMatch.PUBLIC)
-                .statut(StatutMatch.COMPLET)
+                .typeMatch(TypeAtelier.PUBLIC)
+                .statut(StatutAtelier.COMPLET)
                 .nbJoueursActuels(4)
                 .prixTotal(60.0)
                 .prixParJoueur(15.0)
@@ -231,7 +231,7 @@ class ReservationServiceTest {
         @Test
         @DisplayName("❌ doit lever une BusinessException quand le match est ANNULE")
         void shouldThrowWhenMatchIsCancelled() {
-            matchPublic.setStatut(StatutMatch.ANNULE);
+            matchPublic.setStatut(StatutAtelier.ANNULE);
             when(matchService.getMatchEntityById(11L)).thenReturn(matchPublic); // MODIFIÉ
             when(membreService.getById(2L)).thenReturn(joueur);
 
@@ -325,7 +325,7 @@ class ReservationServiceTest {
 
         @Test
         void visiteurRefuseSiCentreFermeAuxVisiteurs() {
-            joueur.setTypeMembre(TypeMembre.LIBRE);
+            joueur.setTypeMembre(TypeParticipant.LIBRE);
             matchPublic.setDateDebut(LocalDate.now().plusDays(3).atTime(15, 0));
             when(matchService.getMatchEntityById(11L)).thenReturn(matchPublic);
             when(membreService.getById(2L)).thenReturn(joueur);

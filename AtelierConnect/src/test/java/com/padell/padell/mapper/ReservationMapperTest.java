@@ -2,8 +2,8 @@ package com.padell.padell.mapper;
 
 import com.padell.padell.dto.response.PaiementResponse;
 import com.padell.padell.dto.response.ReservationResponse;
-import com.padell.padell.entity.Match;
-import com.padell.padell.entity.Membre;
+import com.padell.padell.entity.Atelier;
+import com.padell.padell.entity.Participant;
 import com.padell.padell.entity.Paiement;
 import com.padell.padell.entity.Reservation;
 import com.padell.padell.entity.enums.StatutPaiement;
@@ -32,17 +32,17 @@ class ReservationMapperTest {
     private ReservationMapper reservationMapper;
 
     private Reservation reservation;
-    private Match match;
-    private Membre membre;
+    private Atelier match;
+    private Participant membre;
     private Paiement paiement;
 
     @BeforeEach
     void setUp() {
-        match = new Match();
+        match = new Atelier();
         match.setId(1L);
         match.setDateDebut(LocalDateTime.of(2024, 8, 20, 19, 0));
 
-        membre = new Membre();
+        membre = new Participant();
         membre.setId(10L);
         membre.setNom("Doe");
         membre.setPrenom("John");

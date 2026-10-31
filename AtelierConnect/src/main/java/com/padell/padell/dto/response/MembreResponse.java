@@ -1,7 +1,7 @@
 package com.padell.padell.dto.response;
 
-import com.padell.padell.entity.enums.TypeMembre;
 import com.padell.padell.entity.enums.TypeParticipant;
+import com.padell.padell.entity.enums.TypeParticipantLegacy;
 import lombok.*;
 
 @Getter
@@ -15,7 +15,7 @@ public class MembreResponse {
     private String nom;
     private String prenom;
     private String email;
-    private TypeMembre typeMembre;
+    private TypeParticipantLegacy typeMembre;
     private TypeParticipant categorie;
     private Long siteId;
     private String siteNom;

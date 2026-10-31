@@ -1,12 +1,12 @@
 package com.padell.padell.repository;
 
-import com.padell.padell.entity.Match;
-import com.padell.padell.entity.Membre;
-import com.padell.padell.entity.Site;
-import com.padell.padell.entity.Terrain;
-import com.padell.padell.entity.enums.StatutMatch;
-import com.padell.padell.entity.enums.TypeMatch;
-import com.padell.padell.entity.enums.TypeMembre;
+import com.padell.padell.entity.Atelier;
+import com.padell.padell.entity.Participant;
+import com.padell.padell.entity.Centre;
+import com.padell.padell.entity.Salle;
+import com.padell.padell.entity.enums.StatutAtelier;
+import com.padell.padell.entity.enums.TypeAtelier;
+import com.padell.padell.entity.enums.TypeParticipant;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,47 +36,47 @@ class MatchRepositoryTest {
     @Test
     @DisplayName("findOverlappingMatches retourne les matchs planifiés qui chevauchent le créneau")
     void shouldFindOverlappingMatches() {
-        Terrain terrain = terrainRepository.save(Terrain.builder()
+        Salle terrain = terrainRepository.save(Salle.builder()
                 .nom("Court A")
                 .site(siteRepository.save(site()))
                 .prix(60.0)
                 .build());
-        Membre organisateur = membreRepository.save(membre("G1001"));
+        Participant organisateur = membreRepository.save(membre("G1001"));
 
         LocalDateTime start = LocalDateTime.of(2026, 7, 10, 10, 0);
-        matchRepository.save(match(terrain, organisateur, start, StatutMatch.PLANIFIE));
+        matchRepository.save(match(terrain, organisateur, start, StatutAtelier.PLANIFIE));
 
         assertThat(matchRepository.findOverlappingMatches(
                 terrain.getId(),
                 start.plusMinutes(30),
                 start.plusMinutes(120),
-                StatutMatch.ANNULE
+                StatutAtelier.ANNULE
         )).hasSize(1);
     }
 
     @Test
     @DisplayName("findOverlappingMatches ignore les matchs annulés")
     void shouldIgnoreCancelledMatches() {
-        Terrain terrain = terrainRepository.save(Terrain.builder()
+        Salle terrain = terrainRepository.save(Salle.builder()
                 .nom("Court A")
                 .site(siteRepository.save(site()))
                 .prix(60.0)
                 .build());
-        Membre organisateur = membreRepository.save(membre("G1001"));
+        Participant organisateur = membreRepository.save(membre("G1001"));
 
         LocalDateTime start = LocalDateTime.of(2026, 7, 10, 10, 0);
-        matchRepository.save(match(terrain, organisateur, start, StatutMatch.ANNULE));
+        matchRepository.save(match(terrain, organisateur, start, StatutAtelier.ANNULE));
 
         assertThat(matchRepository.findOverlappingMatches(
                 terrain.getId(),
                 start.plusMinutes(30),
                 start.plusMinutes(120),
-                StatutMatch.ANNULE
+                StatutAtelier.ANNULE
         )).isEmpty();
     }
 
-    private Site site() {
-        return Site.builder()
+    private Centre site() {
+        return Centre.builder()
                 .nom("Padel Club Lyon")
                 .adresse("12 rue de la République")
                 .heureOuverture(LocalTime.of(8, 0))
@@ -87,24 +87,24 @@ class MatchRepositoryTest {
                 .build();
     }
 
-    private Membre membre(String matricule) {
-        return Membre.builder()
+    private Participant membre(String matricule) {
+        return Participant.builder()
                 .matricule(matricule)
                 .nom("Martin")
                 .prenom("Lucas")
                 .email(matricule.toLowerCase() + "@example.com")
-                .typeMembre(TypeMembre.GLOBAL)
+                .typeMembre(TypeParticipant.GLOBAL)
                 .solde(0.0)
                 .build();
     }
 
-    private Match match(Terrain terrain, Membre organisateur, LocalDateTime start, StatutMatch statut) {
-        return Match.builder()
+    private Atelier match(Salle terrain, Participant organisateur, LocalDateTime start, StatutAtelier statut) {
+        return Atelier.builder()
                 .terrain(terrain)
                 .organisateur(organisateur)
                 .dateDebut(start)
                 .dateFin(start.plusMinutes(90))
-                .typeMatch(TypeMatch.PUBLIC)
+                .typeMatch(TypeAtelier.PUBLIC)
                 .statut(statut)
                 .nbJoueursActuels(1)
                 .prixTotal(60.0)

@@ -1,7 +1,7 @@
 package com.padell.padell.repository;
 
 import com.padell.padell.entity.JourFermeture;
-import com.padell.padell.entity.Site;
+import com.padell.padell.entity.Centre;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,7 @@ class JourFermetureRepositoryTest {
     @Test
     @DisplayName("existsByDateAndSiteId détecte une fermeture de site")
     void shouldFindSiteClosingDay() {
-        Site site = siteRepository.save(site());
+        Centre site = siteRepository.save(site());
         LocalDate date = LocalDate.of(2026, 7, 14);
         jourFermetureRepository.save(JourFermeture.builder()
                 .date(date)
@@ -50,8 +50,8 @@ class JourFermetureRepositoryTest {
         assertThat(jourFermetureRepository.existsByDateAndSiteId(date, site.getId())).isTrue();
     }
 
-    private Site site() {
-        return Site.builder()
+    private Centre site() {
+        return Centre.builder()
                 .nom("Padel Club Lyon")
                 .adresse("12 rue de la République")
                 .heureOuverture(LocalTime.of(8, 0))

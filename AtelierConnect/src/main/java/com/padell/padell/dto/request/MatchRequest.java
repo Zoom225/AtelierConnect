@@ -1,6 +1,6 @@
 package com.padell.padell.dto.request;
 
-import com.padell.padell.entity.enums.TypeMatch;
+import com.padell.padell.entity.enums.TypeAtelier;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -29,5 +29,5 @@ public class MatchRequest {
     private LocalTime heureDebut;
 
     @NotNull(message = "Le type de match est obligatoire.")
-    private TypeMatch typeMatch;
+    private TypeAtelier typeMatch;
 }

@@ -46,38 +46,38 @@ class PaiementServiceTest {
     @InjectMocks
     private PaiementServiceImpl paiementService;
 
-    private Site site;
-    private Terrain terrain;
-    private Membre organisateur;
-    private Membre joueur;
-    private Match match;
+    private Centre site;
+    private Salle terrain;
+    private Participant organisateur;
+    private Participant joueur;
+    private Atelier match;
     private Reservation reservation;
     private Paiement paiement;
 
     @BeforeEach
     void setUp() {
-        site = Site.builder().nom("Padel Club Lyon").build();
-        terrain = Terrain.builder().nom("Court A").site(site).build();
+        site = Centre.builder().nom("Padel Club Lyon").build();
+        terrain = Salle.builder().nom("Court A").site(site).build();
 
-        organisateur = Membre.builder()
+        organisateur = Participant.builder()
                 .matricule("G1001").nom("Martin").prenom("Lucas")
-                .typeMembre(TypeMembre.GLOBAL).solde(0.0).build();
+                .typeMembre(TypeParticipant.GLOBAL).solde(0.0).build();
         organisateur.setId(1L);
 
-        joueur = Membre.builder()
+        joueur = Participant.builder()
                 .matricule("G1002").nom("Dupont").prenom("Julie")
-                .typeMembre(TypeMembre.GLOBAL).solde(0.0).build();
+                .typeMembre(TypeParticipant.GLOBAL).solde(0.0).build();
         joueur.setId(2L);
 
         // Correction : Utiliser uniquement dateDebut et dateFin
         LocalDateTime matchStart = LocalDate.now().plusDays(25).atTime(15, 0);
-        match = Match.builder()
+        match = Atelier.builder()
                 .terrain(terrain)
                 .organisateur(organisateur)
                 .dateDebut(matchStart)
                 .dateFin(matchStart.plusMinutes(90))
-                .typeMatch(TypeMatch.PUBLIC)
-                .statut(StatutMatch.PLANIFIE)
+                .typeMatch(TypeAtelier.PUBLIC)
+                .statut(StatutAtelier.PLANIFIE)
                 .nbJoueursActuels(1)
                 .prixTotal(60.0)
                 .prixParJoueur(15.0)
@@ -115,7 +115,7 @@ class PaiementServiceTest {
             assertThat(result.getStatut()).isEqualTo(StatutPaiement.PAYE);
             assertThat(reservation.getStatut()).isEqualTo(StatutReservation.CONFIRMEE);
             assertThat(match.getNbJoueursActuels()).isEqualTo(2);
-            assertThat(match.getStatut()).isEqualTo(StatutMatch.PLANIFIE);
+            assertThat(match.getStatut()).isEqualTo(StatutAtelier.PLANIFIE);
             verify(matchRepository).findByIdForUpdate(10L);
             verify(reservationService).confirm(1L);
             verify(matchRepository).save(match);
@@ -166,7 +166,7 @@ class PaiementServiceTest {
             assertThat(result.getStatut()).isEqualTo(StatutPaiement.PAYE);
             assertThat(reservation.getStatut()).isEqualTo(StatutReservation.CONFIRMEE);
             assertThat(match.getNbJoueursActuels()).isEqualTo(6);
-            assertThat(match.getStatut()).isEqualTo(StatutMatch.COMPLET);
+            assertThat(match.getStatut()).isEqualTo(StatutAtelier.COMPLET);
             verify(reservationService).confirm(1L);
             verify(matchRepository).findByIdForUpdate(10L);
             verify(matchRepository).save(match);
@@ -176,7 +176,7 @@ class PaiementServiceTest {
         @DisplayName("❌ doit refuser le paiement quand le match est déjà complet")
         void shouldThrowWhenMatchIsAlreadyFull() {
             match.setNbJoueursActuels(6);
-            match.setStatut(StatutMatch.COMPLET);
+            match.setStatut(StatutAtelier.COMPLET);
             when(reservationService.getById(1L)).thenReturn(reservation);
             when(matchRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(match));
 

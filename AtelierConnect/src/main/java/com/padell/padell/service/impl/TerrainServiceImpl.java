@@ -1,7 +1,7 @@
 package com.padell.padell.service.impl;
 
-import com.padell.padell.entity.Site;
-import com.padell.padell.entity.Terrain;
+import com.padell.padell.entity.Centre;
+import com.padell.padell.entity.Salle;
 import com.padell.padell.exception.ResourceNotFoundException;
 import com.padell.padell.repository.TerrainRepository;
 import com.padell.padell.service.SiteService;
@@ -21,40 +21,40 @@ public class TerrainServiceImpl implements TerrainService {
     private final SiteService siteService;
 
     @Override
-    public Terrain create(Terrain terrain, Long siteId) {
-        Site site = siteService.getById(siteId);
+    public Salle create(Salle terrain, Long siteId) {
+        Centre site = siteService.getById(siteId);
         terrain.setSite(site);
         log.info("Terrain créé pour le site {}", siteId);
         return terrainRepository.save(terrain);
     }
 
     @Override
-    public Terrain getById(Long id) {
+    public Salle getById(Long id) {
         return terrainRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Terrain introuvable avec l'ID : " + id));
     }
 
     @Override
-    public List<Terrain> getAll() {
+    public List<Salle> getAll() {
         return terrainRepository.findAll();
     }
 
     @Override
-    public List<Terrain> getBySiteId(Long siteId) {
+    public List<Salle> getBySiteId(Long siteId) {
         siteService.getById(siteId);
         return terrainRepository.findBySiteId(siteId);
     }
 
     @Override
-    public Terrain update(Long id, Terrain terrain) {
-        Terrain existing = getById(id);
+    public Salle update(Long id, Salle terrain) {
+        Salle existing = getById(id);
         existing.setNom(terrain.getNom());
         return terrainRepository.save(existing);
     }
 
     @Override
     public void delete(Long id) {
-        Terrain existing = getById(id);
+        Salle existing = getById(id);
         terrainRepository.delete(existing);
     }
 }

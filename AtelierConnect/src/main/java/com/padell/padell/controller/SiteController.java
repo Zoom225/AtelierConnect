@@ -2,7 +2,7 @@ package com.padell.padell.controller;
 
 import com.padell.padell.dto.request.SiteRequest;
 import com.padell.padell.dto.response.SiteResponse;
-import com.padell.padell.entity.Site;
+import com.padell.padell.entity.Centre;
 import com.padell.padell.mapper.SiteMapper;
 import com.padell.padell.service.SiteService;
 import com.padell.padell.service.impl.AdminAuthorizationService;
@@ -49,8 +49,8 @@ public class SiteController {
     @PostMapping
     public ResponseEntity<SiteResponse> create(@Valid @RequestBody SiteRequest request) {
         adminAuthorizationService.requireGlobalAdmin();
-        Site site = siteMapper.toEntity(request);
-        Site saved = siteService.create(site);
+        Centre site = siteMapper.toEntity(request);
+        Centre saved = siteService.create(site);
         return ResponseEntity.status(HttpStatus.CREATED).body(siteMapper.toResponse(saved));
     }
 
@@ -109,8 +109,8 @@ public class SiteController {
             @PathVariable Long id,
             @Valid @RequestBody SiteRequest request) {
         adminAuthorizationService.requireGlobalAdmin();
-        Site site = siteMapper.toEntity(request);
-        Site updated = siteService.update(id, site);
+        Centre site = siteMapper.toEntity(request);
+        Centre updated = siteService.update(id, site);
         return ResponseEntity.ok(siteMapper.toResponse(updated));
     }
 

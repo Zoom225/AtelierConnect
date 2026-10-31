@@ -7,7 +7,7 @@ import com.padell.test.TestSecurityConfig;
 import com.padell.padell.dto.request.MembreLoginRequest;
 import com.padell.padell.dto.request.MembreRequest;
 import com.padell.padell.dto.response.MembreResponse;
-import com.padell.padell.entity.Membre;
+import com.padell.padell.entity.Participant;
 import com.padell.padell.mapper.MembreMapper;
 import com.padell.padell.repository.AdministrateurRepository;
 import com.padell.padell.repository.MembreRepository;
@@ -68,7 +68,7 @@ class MembreControllerTest {
 
     private MembreRequest membreRequest;
     private MembreResponse membreResponse;
-    private Membre membreEntity; // Added for authenticate mock
+    private Participant membreEntity; // Added for authenticate mock
 
     @BeforeEach
     void setUp() {
@@ -76,7 +76,7 @@ class MembreControllerTest {
         membreRequest.setMatricule("L12345");
         membreRequest.setNom("Doe");
         membreRequest.setPrenom("John");
-        membreRequest.setTypeMembre(com.padell.padell.entity.enums.TypeMembre.GLOBAL);
+        membreRequest.setTypeMembre(com.padell.padell.entity.enums.TypeParticipantLegacy.GLOBAL);
 
         when(membreAccessService.canCreate(nullable(Long.class))).thenReturn(true);
         when(membreAccessService.canManageById(anyLong())).thenReturn(true);
@@ -87,10 +87,10 @@ class MembreControllerTest {
         membreResponse.setId(1L);
         membreResponse.setMatricule("L12345");
 
-        membreEntity = new Membre(); // Initialize membreEntity
+        membreEntity = new Participant(); // Initialize membreEntity
         membreEntity.setId(1L);
         membreEntity.setMatricule("L12345");
-        membreEntity.setTypeMembre(com.padell.padell.entity.enums.TypeMembre.LIBRE);
+        membreEntity.setTypeMembre(com.padell.padell.entity.enums.TypeParticipant.LIBRE);
     }
 
     @Test
@@ -119,7 +119,7 @@ class MembreControllerTest {
     @DisplayName("POST /api/membres - Doit creer un membre avec un role admin")
     void createMember_WithAdminRole_ShouldReturnCreated() throws Exception {
         when(membreCreationService.create(any(MembreRequest.class))).thenReturn(membreEntity);
-        when(membreMapper.toResponse(any(Membre.class))).thenReturn(membreResponse);
+        when(membreMapper.toResponse(any(Participant.class))).thenReturn(membreResponse);
 
         mockMvc.perform(post("/api/membres")
                 .with(csrf())
@@ -133,9 +133,9 @@ class MembreControllerTest {
     @WithMockUser(roles = "ADMIN")
     @DisplayName("PUT /api/membres/{id} - Doit mettre à jour un membre avec un rôle autorisé")
     void updateMember_WithAuthorizedRole_ShouldReturnOk() throws Exception {
-        when(membreService.update(anyLong(), any(Membre.class))).thenReturn(new Membre());
-        when(membreMapper.toEntity(any(MembreRequest.class))).thenReturn(new Membre());
-        when(membreMapper.toResponse(any(Membre.class))).thenReturn(membreResponse);
+        when(membreService.update(anyLong(), any(Participant.class))).thenReturn(new Participant());
+        when(membreMapper.toEntity(any(MembreRequest.class))).thenReturn(new Participant());
+        when(membreMapper.toResponse(any(Participant.class))).thenReturn(membreResponse);
 
         mockMvc.perform(put("/api/membres/1")
                         .with(csrf())
@@ -171,7 +171,7 @@ class MembreControllerTest {
     void loginMembre_ShouldAuthenticateAndReturnToken() throws Exception {
         MembreLoginRequest loginRequest = new MembreLoginRequest("L12345", "Membre1234!");
         when(membreService.authenticate("L12345", "Membre1234!")).thenReturn(membreEntity);
-        when(membreMapper.toResponse(any(Membre.class))).thenReturn(membreResponse);
+        when(membreMapper.toResponse(any(Participant.class))).thenReturn(membreResponse);
         when(jwtConfig.generateToken(anyString(), anyString(), anyString())).thenReturn("mocked-jwt-token");
 
         mockMvc.perform(post("/api/membres/login")

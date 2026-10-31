@@ -6,11 +6,26 @@ public enum TypeParticipant {
     ABONNE,
     VISITEUR;
 
-    public TypeMembre toLegacyType() {
+    // Alias Java transitoires pour les anciens tests et appels internes.
+    @Deprecated public static final TypeParticipant GLOBAL = PARTENAIRE;
+    @Deprecated public static final TypeParticipant SITE = ABONNE;
+    @Deprecated public static final TypeParticipant LIBRE = VISITEUR;
+
+    public TypeParticipantLegacy toLegacyType() {
         return switch (this) {
-            case PARTENAIRE -> TypeMembre.GLOBAL;
-            case ABONNE -> TypeMembre.SITE;
-            case VISITEUR -> TypeMembre.LIBRE;
+            case PARTENAIRE -> TypeParticipantLegacy.GLOBAL;
+            case ABONNE -> TypeParticipantLegacy.SITE;
+            case VISITEUR -> TypeParticipantLegacy.LIBRE;
+        };
+    }
+
+    public static TypeParticipant fromDatabaseValue(String value) {
+        if (value == null) return null;
+        return switch (value) {
+            case "GLOBAL", "PARTENAIRE" -> PARTENAIRE;
+            case "SITE", "ABONNE" -> ABONNE;
+            case "LIBRE", "VISITEUR" -> VISITEUR;
+            default -> throw new IllegalArgumentException("Catégorie de participant inconnue dans la base.");
         };
     }
 }

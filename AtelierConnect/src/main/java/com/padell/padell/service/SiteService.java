@@ -1,13 +1,13 @@
 package com.padell.padell.service;
 
-import com.padell.padell.entity.Site;
+import com.padell.padell.entity.Centre;
 
 import java.util.List;
 
 public interface SiteService {
-    Site create(Site site);
-    Site getById(Long id);
-    List<Site> getAll();
-    Site update(Long id, Site site);
+    Centre create(Centre site);
+    Centre getById(Long id);
+    List<Centre> getAll();
+    Centre update(Long id, Centre site);
     void delete(Long id);
 }

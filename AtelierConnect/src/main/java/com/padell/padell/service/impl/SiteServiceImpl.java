@@ -1,6 +1,6 @@
 package com.padell.padell.service.impl;
 
-import com.padell.padell.entity.Site;
+import com.padell.padell.entity.Centre;
 import com.padell.padell.exception.ResourceNotFoundException;
 import com.padell.padell.repository.SiteRepository;
 import com.padell.padell.service.SiteService;
@@ -16,26 +16,26 @@ public class SiteServiceImpl implements SiteService {
     private final SiteRepository siteRepository;
 
     @Override
-    public Site create(Site site) {
+    public Centre create(Centre site) {
         return siteRepository.save(site);
     }
 
     @Override
-    public Site getById(Long id) {
+    public Centre getById(Long id) {
         return siteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Site introuvable avec l'ID : " + id));
     }
 
     @Override
-    public List<Site> getAll() {
+    public List<Centre> getAll() {
         // C'est maintenant la bonne approche car les collections sont en LAZY
         // et ne seront pas chargées, évitant ainsi l'erreur 500.
         return siteRepository.findAll();
     }
 
     @Override
-    public Site update(Long id, Site site) {
-        Site existing = getById(id);
+    public Centre update(Long id, Centre site) {
+        Centre existing = getById(id);
         existing.setNom(site.getNom());
         existing.setAdresse(site.getAdresse());
         existing.setHeureOuverture(site.getHeureOuverture());
@@ -49,7 +49,7 @@ public class SiteServiceImpl implements SiteService {
 
     @Override
     public void delete(Long id) {
-        Site existing = getById(id);
+        Centre existing = getById(id);
         siteRepository.delete(existing);
     }
 }

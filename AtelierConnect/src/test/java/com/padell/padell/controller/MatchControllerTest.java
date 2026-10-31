@@ -2,8 +2,8 @@ package com.padell.padell.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.padell.padell.config.JwtConfig;
-import com.padell.padell.entity.enums.StatutMatch;
-import com.padell.padell.entity.enums.TypeMatch;
+import com.padell.padell.entity.enums.StatutAtelier;
+import com.padell.padell.entity.enums.TypeAtelier;
 import com.padell.padell.dto.request.CreateMatchRequest;
 import com.padell.padell.dto.response.MatchDto;
 import com.padell.padell.repository.AdministrateurRepository;
@@ -86,8 +86,8 @@ class MatchControllerTest {
                 startTime.toLocalDate(),                   // date
                 startTime.toLocalTime(),                   // heureDebut
                 startTime.plusMinutes(90).toLocalTime(),   // heureFin
-                TypeMatch.PUBLIC,                          // typeMatch
-                StatutMatch.PLANIFIE,                      // statut
+                TypeAtelier.PUBLIC,                          // typeMatch
+                StatutAtelier.PLANIFIE,                      // statut
                 1,                                         // nbJoueursActuels
                 15.0,                                      // prixParJoueur
                 null                                       // dateConversionPublic

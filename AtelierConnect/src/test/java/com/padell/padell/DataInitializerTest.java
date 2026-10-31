@@ -1,9 +1,9 @@
 package com.padell.padell;
 
-import com.padell.padell.entity.Membre;
-import com.padell.padell.entity.Site;
+import com.padell.padell.entity.Participant;
+import com.padell.padell.entity.Centre;
 import com.padell.padell.entity.Administrateur;
-import com.padell.padell.entity.enums.TypeMembre;
+import com.padell.padell.entity.enums.TypeParticipant;
 import com.padell.padell.entity.enums.TypeAdministrateur;
 import com.padell.padell.repository.*;
 import org.junit.jupiter.api.Test;
@@ -50,22 +50,22 @@ class DataInitializerTest {
 
     @Test
     void run_shouldBackfillLegacyMemberPasswordHashes() {
-        Membre legacyMember = Membre.builder()
+        Participant legacyMember = Participant.builder()
                 .matricule("g1001")
                 .nom("Martin")
                 .prenom("Lucas")
                 .email("lucas@email.com")
-                .typeMembre(TypeMembre.GLOBAL)
+                .typeMembre(TypeParticipant.GLOBAL)
                 .solde(0.0)
                 .passwordHash(null)
                 .build();
 
-        Membre penalizedMember = Membre.builder()
+        Participant penalizedMember = Participant.builder()
                 .matricule("L10002")
                 .nom("Penalise")
                 .prenom("Demo")
                 .email("demo@email.com")
-                .typeMembre(TypeMembre.LIBRE)
+                .typeMembre(TypeParticipant.LIBRE)
                 .solde(0.0)
                 .passwordHash("existing-hash")
                 .build();
@@ -80,10 +80,10 @@ class DataInitializerTest {
 
         dataInitializer.run();
 
-        ArgumentCaptor<List<Membre>> captor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<List<Participant>> captor = ArgumentCaptor.forClass(List.class);
         verify(membreRepository).saveAll(captor.capture());
         assertThat(captor.getValue())
-                .extracting(Membre::getPasswordHash)
+                .extracting(Participant::getPasswordHash)
                 .contains("hashed-default-password");
         assertThat(legacyMember.getPasswordHash()).isEqualTo("hashed-default-password");
     }
@@ -114,8 +114,8 @@ class DataInitializerTest {
         when(administrateurRepository.findByEmail("admin@padel.com")).thenReturn(Optional.empty());
         when(administrateurRepository.findByEmail("admin.lyon@padel.com")).thenReturn(Optional.of(adminLyon));
         when(administrateurRepository.findByEmail("admin.paris@padel.com")).thenReturn(Optional.of(adminParis));
-        when(membreRepository.save(any(Membre.class))).thenAnswer(invocation -> {
-            Membre saved = invocation.getArgument(0);
+        when(membreRepository.save(any(Participant.class))).thenAnswer(invocation -> {
+            Participant saved = invocation.getArgument(0);
             saved.setId(99L);
             return saved;
         });

@@ -1,6 +1,7 @@
 package com.padell.padell.entity;
 
-import com.padell.padell.entity.enums.TypeMembre;
+import com.padell.padell.entity.enums.TypeParticipant;
+import com.padell.padell.entity.enums.TypeParticipantConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +15,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Membre extends BaseEntity {
+public class Participant extends BaseEntity {
 
     @Column(nullable = false, unique = true)
     private String matricule;
@@ -30,20 +31,20 @@ public class Membre extends BaseEntity {
     @Column
     private String passwordHash; // Added passwordHash field
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TypeMembre typeMembre;
+    @Convert(converter = TypeParticipantConverter.class)
+    @Column(name = "type_membre", nullable = false)
+    private TypeParticipant typeMembre;
 
     @Column(nullable = false)
     private Double solde;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id")
-    private Site site;
+    private Centre site;
 
     @OneToMany(mappedBy = "organisateur", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
-    private Set<Match> matchesOrganises = new HashSet<>();
+    private Set<Atelier> matchesOrganises = new HashSet<>();
 
     @OneToMany(mappedBy = "membre", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default

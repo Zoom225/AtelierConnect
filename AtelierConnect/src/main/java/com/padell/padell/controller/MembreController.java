@@ -4,7 +4,7 @@ import com.padell.padell.config.JwtConfig;
 import com.padell.padell.dto.request.MembreLoginRequest;
 import com.padell.padell.dto.request.MembreRequest;
 import com.padell.padell.dto.response.MembreResponse;
-import com.padell.padell.entity.Membre;
+import com.padell.padell.entity.Participant;
 import com.padell.padell.mapper.MembreMapper;
 import com.padell.padell.service.MembreService;
 import com.padell.padell.service.impl.CurrentMemberService;
@@ -59,7 +59,7 @@ public class MembreController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') and @membreAccessService.canCreate(#request.siteId)")
     public ResponseEntity<MembreResponse> create(@Valid @RequestBody MembreRequest request) {
-        Membre saved = membreCreationService.create(request);
+        Participant saved = membreCreationService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(membreMapper.toResponse(saved));
     }
 
@@ -99,7 +99,7 @@ public class MembreController {
     public ResponseEntity<MembreResponse> getById(
             @Parameter(description = "ID interne du membre", required = true)
             @PathVariable Long id) {
-        Membre membre = membreService.getById(id);
+        Participant membre = membreService.getById(id);
         return ResponseEntity.ok(membreMapper.toResponse(membre));
     }
 
@@ -120,7 +120,7 @@ public class MembreController {
     public ResponseEntity<MembreResponse> getByMatricule(
             @Parameter(description = "Matricule unique du membre", required = true)
             @PathVariable String matricule) {
-        Membre membre = membreService.getByMatricule(matricule);
+        Participant membre = membreService.getByMatricule(matricule);
         return ResponseEntity.ok(membreMapper.toResponse(membre));
     }
 
@@ -139,7 +139,7 @@ public class MembreController {
     @GetMapping("/me")
     @PreAuthorize("hasRole('MEMBER')")
     public ResponseEntity<MembreResponse> me() {
-        Membre membre = currentMemberService.currentMember();
+        Participant membre = currentMemberService.currentMember();
         return ResponseEntity.ok(membreMapper.toResponse(membre));
     }
 
@@ -216,8 +216,8 @@ public class MembreController {
             @Parameter(description = "ID du membre à modifier", required = true)
             @PathVariable Long id,
             @Valid @RequestBody MembreRequest request) {
-        Membre membre = membreMapper.toEntity(request);
-        Membre updated = membreService.update(id, membre);
+        Participant membre = membreMapper.toEntity(request);
+        Participant updated = membreService.update(id, membre);
         return ResponseEntity.ok(membreMapper.toResponse(updated));
     }
 
@@ -255,7 +255,7 @@ public class MembreController {
     })
     @PostMapping("/login")
     public ResponseEntity<MembreResponse> login(@Valid @RequestBody MembreLoginRequest request) {
-        Membre membre = membreService.authenticate(request.getMatricule(), request.getPassword());
+        Participant membre = membreService.authenticate(request.getMatricule(), request.getPassword());
         MembreResponse response = membreMapper.toResponse(membre);
         String token = jwtConfig.generateToken(membre.getMatricule(), membre.getTypeMembre().name(), "MEMBER");
         response.setToken(token);

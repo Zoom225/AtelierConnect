@@ -15,7 +15,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Site extends BaseEntity {
+public class Centre extends BaseEntity {
 
     @Column(nullable = false)
     private String nom;
@@ -44,7 +44,7 @@ public class Site extends BaseEntity {
     @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference("site-terrains")
     @Builder.Default
-    private Set<Terrain> terrains = new HashSet<>();
+    private Set<Salle> terrains = new HashSet<>();
 
     @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference("site-joursFermeture")

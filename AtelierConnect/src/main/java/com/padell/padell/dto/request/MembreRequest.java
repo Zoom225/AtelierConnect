@@ -1,7 +1,7 @@
 package com.padell.padell.dto.request;
 
-import com.padell.padell.entity.enums.TypeMembre;
 import com.padell.padell.entity.enums.TypeParticipant;
+import com.padell.padell.entity.enums.TypeParticipantLegacy;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -27,7 +27,7 @@ public class MembreRequest {
     @Email(message = "Le format de l'e-mail est invalide.")
     private String email;
 
-    private TypeMembre typeMembre;
+    private TypeParticipantLegacy typeMembre;
 
     private TypeParticipant categorie;
 

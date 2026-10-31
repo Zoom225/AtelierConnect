@@ -3,7 +3,7 @@ package com.padell.padell.controller;
 import com.padell.padell.dto.request.ReservationInviteRequest;
 import com.padell.padell.dto.request.ReservationRequest;
 import com.padell.padell.dto.response.ReservationResponse;
-import com.padell.padell.entity.Membre;
+import com.padell.padell.entity.Participant;
 import com.padell.padell.entity.Reservation;
 import com.padell.padell.mapper.ReservationMapper;
 import com.padell.padell.service.ReservationService;
@@ -55,7 +55,7 @@ public class ReservationController {
     })
     @PostMapping
     public ResponseEntity<ReservationResponse> create(@Valid @RequestBody ReservationRequest request) {
-        Membre currentMember = currentMemberService.currentMember();
+        Participant currentMember = currentMemberService.currentMember();
         Reservation reservation = reservationService.create(
                 request.getMatchId(),
                 request.getMembreId(),
@@ -81,7 +81,7 @@ public class ReservationController {
     @PostMapping("/private-invites")
     public ResponseEntity<List<ReservationResponse>> createPrivateInvites(
             @Valid @RequestBody ReservationInviteRequest request) {
-        Membre currentMember = currentMemberService.currentMember();
+        Participant currentMember = currentMemberService.currentMember();
         List<ReservationResponse> reservations = reservationService
                 .createForInvites(request.getMatchId(), currentMember.getId(), request.getInviteeMatricules())
                 .stream()

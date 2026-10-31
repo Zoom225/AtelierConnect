@@ -1,6 +1,6 @@
 package com.padell.padell.service.impl;
 
-import com.padell.padell.entity.Membre;
+import com.padell.padell.entity.Participant;
 import com.padell.padell.exception.BusinessException;
 import com.padell.padell.repository.MembreRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,29 +27,29 @@ public class MembreAccessService {
     }
 
     public boolean canManageById(Long membreId) {
-        Membre membre = membreRepository.findById(membreId).orElse(null);
+        Participant membre = membreRepository.findById(membreId).orElse(null);
         return membre == null || adminAuthorizationService.canAccessMembre(membre);
     }
 
-    public void assertCanManage(Membre membre) {
+    public void assertCanManage(Participant membre) {
         adminAuthorizationService.checkMembreAccess(membre);
     }
 
     public boolean canReadById(Long membreId) {
-        Membre membre = membreRepository.findById(membreId).orElse(null);
+        Participant membre = membreRepository.findById(membreId).orElse(null);
         return membre == null || canRead(membre);
     }
 
     public boolean canReadByMatricule(String matricule) {
-        Membre membre = membreRepository.findByMatriculeIgnoreCase(matricule).orElse(null);
+        Participant membre = membreRepository.findByMatriculeIgnoreCase(matricule).orElse(null);
         return membre == null || canRead(membre);
     }
 
-    public List<Membre> filterMembres(List<Membre> membres) {
+    public List<Participant> filterMembres(List<Participant> membres) {
         return adminAuthorizationService.filterMembres(membres);
     }
 
-    public void assertCanRead(Membre membre) {
+    public void assertCanRead(Participant membre) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         boolean admin = authentication != null && authentication.getAuthorities().stream()
                 .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
@@ -62,7 +62,7 @@ public class MembreAccessService {
         currentMemberService.requireCurrentMember(membre.getId());
     }
 
-    private boolean canRead(Membre membre) {
+    private boolean canRead(Participant membre) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         boolean admin = authentication != null && authentication.getAuthorities().stream()
                 .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));

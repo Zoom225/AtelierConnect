@@ -1,7 +1,7 @@
 package com.padell.padell.controller;
 
 import com.padell.padell.dto.request.MatchRequest;
-import com.padell.padell.entity.Membre;
+import com.padell.padell.entity.Participant;
 import com.padell.padell.dto.request.CreateMatchRequest;
 import com.padell.padell.dto.response.MatchDto;
 import com.padell.padell.service.MatchService;
@@ -138,7 +138,7 @@ public class MatchController {
             @Parameter(description = "ID du match", required = true)
             @PathVariable Long id,
             @RequestParam(required = false) Long requesterId) {
-        Membre currentMember = currentMemberService.currentMember();
+        Participant currentMember = currentMemberService.currentMember();
         if (requesterId != null && !currentMember.getId().equals(requesterId)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
