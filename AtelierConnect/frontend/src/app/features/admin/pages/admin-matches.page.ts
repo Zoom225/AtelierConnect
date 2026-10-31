@@ -117,7 +117,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
           </mat-card>
         } @empty {
           <div class="adm-match-empty lg:col-span-2">
-            <span>🎾</span>
+            <span>🧩</span>
 <p>{{ language.t('admin.matches.empty') }}</p>
           </div>
         }
