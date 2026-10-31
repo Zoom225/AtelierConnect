@@ -35,6 +35,23 @@ class DtoJsonCompatibilityTest {
     }
 
     @Test
+    void exposeLeConsentementEnJsonSansSupprimerLesAnciensChamps() throws Exception {
+        LocalDateTime consentTime = LocalDateTime.of(2026, 10, 31, 11, 30);
+        AtelierDto dto = new AtelierDto(7L, 2L, "Salle A", "Centre A", 3L, "Organisateur",
+                LocalDate.of(2030, 5, 1), LocalTime.of(10, 0), LocalTime.of(12, 0),
+                TypeAtelier.PRIVE, StatutAtelier.PLANIFIE, 3, 15.0, null,
+                true, consentTime);
+
+        String json = mapper.writeValueAsString(dto);
+
+        assertThat(json).contains(
+                "\"accordOuverturePublique\":true",
+                "\"dateAccordOuverturePublique\":\"2026-10-31T11:30:00\"",
+                "\"typeMatch\":\"PRIVE\"",
+                "\"terrainId\":2");
+    }
+
+    @Test
     void exposeLesDeuxNomenclaturesEnReponse() throws Exception {
         AtelierDto dto = new AtelierDto(1L, 2L, "Salle A", "Centre A", 3L, "Organisateur",
                 LocalDate.of(2030, 5, 1), LocalTime.of(10, 0), LocalTime.of(12, 0),
