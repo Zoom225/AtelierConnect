@@ -15,6 +15,7 @@ import { ReservationsApiService } from '../../../core/api/reservations-api.servi
 import { MemberSessionService } from '../../../core/auth/member-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { MatchResponse } from '../../../shared/models/match.model';
+import { ATELIER_CAPACITY } from '../../../shared/models/atelier-rules';
 import { ReservationResponse } from '../../../shared/models/reservation.model';
 import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
 
@@ -92,7 +93,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
                     {{ match.date }} - {{ match.heureDebut.slice(0, 5) }} / {{ match.heureFin.slice(0, 5) }}
                   </div>
                   <div class="mt-1 text-xs text-slate-500">
-                    {{ match.nbJoueursActuels }}/4 joueurs
+                    {{ match.nbJoueursActuels }}/{{ ATELIER_CAPACITY }} participants
                   </div>
                 </button>
               }
@@ -270,6 +271,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
   `
 })
 export class MemberReservationsPage {
+  readonly ATELIER_CAPACITY = ATELIER_CAPACITY;
   private readonly matchesApi = inject(MatchesApiService);
   private readonly reservationsApi = inject(ReservationsApiService);
   private readonly paiementsApi = inject(PaiementsApiService);
