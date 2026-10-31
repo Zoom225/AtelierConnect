@@ -12,23 +12,23 @@ export class MatchesApiService {
   constructor(private readonly http: HttpClient) {}
 
   getAll(): Observable<MatchResponse[]> {
-    return this.http.get<MatchResponse[]>(apiUrl('/matches'));
+    return this.http.get<MatchResponse[]>(apiUrl('/ateliers'));
   }
 
   getById(id: number): Observable<MatchResponse> {
-    return this.http.get<MatchResponse>(apiUrl(`/matches/${id}`));
+    return this.http.get<MatchResponse>(apiUrl(`/ateliers/${id}`));
   }
 
   getPublic(): Observable<MatchResponse[]> {
-    return this.http.get<MatchResponse[]>(apiUrl('/matches/public'));
+    return this.http.get<MatchResponse[]>(apiUrl('/ateliers/public'));
   }
 
   getBySite(siteId: number): Observable<MatchResponse[]> {
-    return this.http.get<MatchResponse[]>(apiUrl(`/matches/site/${siteId}`));
+    return this.http.get<MatchResponse[]>(apiUrl(`/ateliers/site/${siteId}`));
   }
 
   getByOrganisateur(organisateurId: number): Observable<MatchResponse[]> {
-    return this.http.get<MatchResponse[]>(apiUrl(`/matches/organisateur/${organisateurId}`));
+    return this.http.get<MatchResponse[]>(apiUrl(`/ateliers/organisateur/${organisateurId}`));
   }
 
   create(payload: CreateMatchRequest): Observable<MatchResponse> {
@@ -36,18 +36,18 @@ export class MatchesApiService {
     const headers = token
       ? new HttpHeaders({ Authorization: `Bearer ${token}` })
       : new HttpHeaders();
-    return this.http.post<MatchResponse>(apiUrl('/matches'), payload, { headers });
+    return this.http.post<MatchResponse>(apiUrl('/ateliers'), payload, { headers });
   }
 
   update(id: number, payload: MatchRequest): Observable<MatchResponse> {
-    return this.http.put<MatchResponse>(apiUrl(`/matches/${id}`), payload);
+    return this.http.put<MatchResponse>(apiUrl(`/ateliers/${id}`), payload);
   }
 
   cancel(id: number, requesterId: number): Observable<void> {
-    return this.http.patch<void>(apiUrl(`/matches/${id}/cancel?requesterId=${requesterId}`), {});
+    return this.http.patch<void>(apiUrl(`/ateliers/${id}/cancel?requesterId=${requesterId}`), {});
   }
 
   convertToPublic(id: number): Observable<void> {
-    return this.http.patch<void>(apiUrl(`/matches/${id}/convert-public`), {});
+    return this.http.patch<void>(apiUrl(`/ateliers/${id}/convert-public`), {});
   }
 }
