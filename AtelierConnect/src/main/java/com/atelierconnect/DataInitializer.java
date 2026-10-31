@@ -79,54 +79,54 @@ public class DataInitializer implements CommandLineRunner {
         log.info("DataInitializer : initialisation de la base de donnees...");
 
         Centre siteLyon = siteRepository.save(Centre.builder()
-                .nom("Padel Club Lyon")
-                .adresse("12 rue de la Republique, Lyon")
+                .nom("Centre Créatif Bruxelles")
+                .adresse("Rue des Ateliers 12, 1000 Bruxelles")
                 .heureOuverture(LocalTime.of(8, 0))
                 .heureFermeture(LocalTime.of(22, 0))
                 .dureeMatchMinutes(AtelierRules.DUREE_MINUTES)
                 .dureeEntreMatchMinutes(AtelierRules.PAUSE_MINUTES)
-                .anneeCivile(2025)
+                .anneeCivile(LocalDate.now().getYear())
                 .ouvertVisiteurs(true)
                 .build());
 
         Centre siteParis = siteRepository.save(Centre.builder()
-                .nom("Padel Club Paris")
-                .adresse("45 avenue des Champs, Paris")
+                .nom("Centre Collaboratif Namur")
+                .adresse("Rue de la Créativité 45, 5000 Namur")
                 .heureOuverture(LocalTime.of(7, 0))
                 .heureFermeture(LocalTime.of(23, 0))
                 .dureeMatchMinutes(AtelierRules.DUREE_MINUTES)
                 .dureeEntreMatchMinutes(AtelierRules.PAUSE_MINUTES)
-                .anneeCivile(2025)
+                .anneeCivile(LocalDate.now().getYear())
                 .ouvertVisiteurs(true)
                 .build());
 
-        log.info("DataInitializer : {} sites crees", siteRepository.count());
+        log.info("DataInitializer : {} centres créés", siteRepository.count());
 ////-------------------Terrains--------------------//
-        Salle courtA = terrainRepository.save(Salle.builder().nom("Court A").site(siteLyon).prix(AtelierRules.PRIX_TOTAL).build());
-        Salle courtB = terrainRepository.save(Salle.builder().nom("Court B").site(siteLyon).prix(AtelierRules.PRIX_TOTAL).build());
-        Salle courtC = terrainRepository.save(Salle.builder().nom("Court C").site(siteLyon).prix(AtelierRules.PRIX_TOTAL).build());
-        Salle court1 = terrainRepository.save(Salle.builder().nom("Court 1").site(siteParis).prix(AtelierRules.PRIX_TOTAL).build());
-        terrainRepository.save(Salle.builder().nom("Court 2").site(siteParis).prix(AtelierRules.PRIX_TOTAL).build());
+        Salle courtA = terrainRepository.save(Salle.builder().nom("Salle Création A").site(siteLyon).prix(AtelierRules.PRIX_TOTAL).build());
+        Salle courtB = terrainRepository.save(Salle.builder().nom("Salle Formation B").site(siteLyon).prix(AtelierRules.PRIX_TOTAL).build());
+        Salle courtC = terrainRepository.save(Salle.builder().nom("Salle Collaborative C").site(siteLyon).prix(AtelierRules.PRIX_TOTAL).build());
+        Salle court1 = terrainRepository.save(Salle.builder().nom("Salle Numérique 1").site(siteParis).prix(AtelierRules.PRIX_TOTAL).build());
+        terrainRepository.save(Salle.builder().nom("Salle Numérique 2").site(siteParis).prix(AtelierRules.PRIX_TOTAL).build());
 
-        log.info("DataInitializer : {} terrains crees", terrainRepository.count());
+        log.info("DataInitializer : {} salles créées", terrainRepository.count());
 //-----------------------Jours de fermeture--------------------//
         jourFermetureRepository.save(JourFermeture.builder()
-                .date(LocalDate.of(2025, 12, 25))
+                .date(LocalDate.of(LocalDate.now().getYear(), 12, 25))
                 .raison("Jour de Noel")
                 .global(true)
                 .site(null)
                 .build());
 
         jourFermetureRepository.save(JourFermeture.builder()
-                .date(LocalDate.of(2025, 1, 1))
+                .date(LocalDate.of(LocalDate.now().getYear() + 1, 1, 1))
                 .raison("Jour de l'An")
                 .global(true)
                 .site(null)
                 .build());
 
         jourFermetureRepository.save(JourFermeture.builder()
-                .date(LocalDate.of(2025, 7, 14))
-                .raison("Fete nationale - maintenance du site de Lyon")
+                .date(LocalDate.now().plusDays(45))
+                .raison("Maintenance planifiée du centre de Bruxelles")
                 .global(false)
                 .site(siteLyon)
                 .build());
@@ -201,7 +201,7 @@ public class DataInitializer implements CommandLineRunner {
                 .passwordHash(defaultMemberPasswordHash)
                 .build());
 
-        log.info("DataInitializer : {} membres crees", membreRepository.count());
+        log.info("DataInitializer : {} participants créés", membreRepository.count());
 
         seedActivePenalty(penalise);
         seedAteliers(courtA, courtB, courtC, court1, lucas, emma, tom, sarah, alex);
@@ -210,7 +210,7 @@ public class DataInitializer implements CommandLineRunner {
                 .matricule("ADMIN001")
                 .nom("Admin")
                 .prenom("Global")
-                .email("admin@padel.com")
+                .email("admin@atelierconnect.example")
                 .passwordHash(passwordEncoder.encode(demoAdminPassword))
                 .typeAdministrateur(TypeAdministrateur.GLOBAL)
                 .site(null)
@@ -220,7 +220,7 @@ public class DataInitializer implements CommandLineRunner {
                 .matricule("ADMIN002")
                 .nom("Admin")
                 .prenom("Lyon")
-                .email("admin.lyon@padel.com")
+                .email("admin.bruxelles@atelierconnect.example")
                 .passwordHash(passwordEncoder.encode(demoAdminPassword))
                 .typeAdministrateur(TypeAdministrateur.SITE)
                 .site(siteLyon)
@@ -230,7 +230,7 @@ public class DataInitializer implements CommandLineRunner {
                 .matricule("ADMIN003")
                 .nom("Admin")
                 .prenom("Paris")
-                .email("admin.paris@padel.com")
+                .email("admin.namur@atelierconnect.example")
                 .passwordHash(passwordEncoder.encode(demoAdminPassword))
                 .typeAdministrateur(TypeAdministrateur.SITE)
                 .site(siteParis)
@@ -256,10 +256,10 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedAteliersFromExistingData() {
-        Salle courtA = requireSeedSalle("Court A");
-        Salle courtB = requireSeedSalle("Court B");
-        Salle courtC = requireSeedSalle("Court C");
-        Salle court1 = requireSeedSalle("Court 1");
+        Salle courtA = requireSeedSalle("Court A", "Salle Création A");
+        Salle courtB = requireSeedSalle("Court B", "Salle Formation B");
+        Salle courtC = requireSeedSalle("Court C", "Salle Collaborative C");
+        Salle court1 = requireSeedSalle("Court 1", "Salle Numérique 1");
 
         Participant lucas = requireSeedMember("G1001");
         Participant emma = requireSeedMember("G1002");
@@ -270,11 +270,12 @@ public class DataInitializer implements CommandLineRunner {
         seedAteliers(courtA, courtB, courtC, court1, lucas, emma, tom, sarah, alex);
     }
 
-    private Salle requireSeedSalle(String nom) {
+    private Salle requireSeedSalle(String ancienNom, String nouveauNom) {
         return terrainRepository.findAll().stream()
-                .filter(terrain -> terrain.getNom().equals(nom))
+                .filter(salle -> ancienNom.equals(salle.getNom()) || nouveauNom.equals(salle.getNom()))
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Terrain seed introuvable : " + nom));
+                .orElseThrow(() -> new IllegalStateException(
+                        "Salle de démonstration introuvable : " + ancienNom + " / " + nouveauNom));
     }
 
     private Participant requireSeedMember(String matricule) {
@@ -316,9 +317,13 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void ensureDemoAdminCredentials() {
+        // Maintenir les identifiants historiques des bases déjà initialisées.
         updateDemoAdminCredentials("admin@padel.com");
         updateDemoAdminCredentials("admin.lyon@padel.com");
         updateDemoAdminCredentials("admin.paris@padel.com");
+        updateDemoAdminCredentials("admin@atelierconnect.example");
+        updateDemoAdminCredentials("admin.bruxelles@atelierconnect.example");
+        updateDemoAdminCredentials("admin.namur@atelierconnect.example");
     }
 
     private void updateDemoAdminCredentials(String email) {
@@ -336,7 +341,7 @@ public class DataInitializer implements CommandLineRunner {
         penaliteRepository.save(Penalite.builder()
                 .membre(membre)
                 .dateFin(LocalDate.now().plusWeeks(1))
-                .motif("Membre de demonstration penalise")
+                .motif("Participant de démonstration suspendu")
                 .build());
     }
 
@@ -371,7 +376,7 @@ public class DataInitializer implements CommandLineRunner {
         createSeedReservation(completeLyon, tom, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
         createSeedReservation(completeLyon, alex, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
 
-        log.info("DataInitializer : {} matchs crees", matchRepository.count());
+        log.info("DataInitializer : {} ateliers créés", matchRepository.count());
     }
 
     private Atelier createSeedAtelier(
