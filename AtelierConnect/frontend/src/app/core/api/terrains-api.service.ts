@@ -12,27 +12,27 @@ export class TerrainsApiService {
   constructor(private readonly http: HttpClient) {}
 
   getAll(): Observable<TerrainResponse[]> {
-    return this.http.get<TerrainResponse[]>(apiUrl('/terrains'));
+    return this.http.get<TerrainResponse[]>(apiUrl('/salles'));
   }
 
   getById(id: number): Observable<TerrainResponse> {
-    return this.http.get<TerrainResponse>(apiUrl(`/terrains/${id}`));
+    return this.http.get<TerrainResponse>(apiUrl(`/salles/${id}`));
   }
 
   getBySite(siteId: number): Observable<TerrainResponse[]> {
-    return this.http.get<TerrainResponse[]>(apiUrl(`/terrains/site/${siteId}`));
+    return this.http.get<TerrainResponse[]>(apiUrl(`/salles/site/${siteId}`));
   }
 
   create(payload: TerrainRequest): Observable<TerrainResponse> {
-    return this.http.post<TerrainResponse>(apiUrl('/terrains'), payload);
+    return this.http.post<TerrainResponse>(apiUrl('/salles'), payload);
   }
 
   update(id: number, payload: TerrainRequest): Observable<TerrainResponse> {
-    return this.http.put<TerrainResponse>(apiUrl(`/terrains/${id}`), payload);
+    return this.http.put<TerrainResponse>(apiUrl(`/salles/${id}`), payload);
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(apiUrl(`/terrains/${id}`));
+    return this.http.delete<void>(apiUrl(`/salles/${id}`));
   }
 }
 
