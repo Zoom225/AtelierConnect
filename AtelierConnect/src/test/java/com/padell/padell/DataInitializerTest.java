@@ -28,12 +28,12 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class DataInitializerTest {
 
-    @Mock private SiteRepository siteRepository;
-    @Mock private TerrainRepository terrainRepository;
-    @Mock private MembreRepository membreRepository;
+    @Mock private CentreRepository siteRepository;
+    @Mock private SalleRepository terrainRepository;
+    @Mock private ParticipantRepository membreRepository;
     @Mock private AdministrateurRepository administrateurRepository;
     @Mock private JourFermetureRepository jourFermetureRepository;
-    @Mock private MatchRepository matchRepository;
+    @Mock private AtelierRepository matchRepository;
     @Mock private ReservationRepository reservationRepository;
     @Mock private PaiementRepository paiementRepository;
     @Mock private PenaliteRepository penaliteRepository;

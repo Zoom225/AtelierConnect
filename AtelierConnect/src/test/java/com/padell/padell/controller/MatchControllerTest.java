@@ -7,7 +7,7 @@ import com.padell.padell.entity.enums.TypeAtelier;
 import com.padell.padell.dto.request.CreateMatchRequest;
 import com.padell.padell.dto.response.MatchDto;
 import com.padell.padell.repository.AdministrateurRepository;
-import com.padell.padell.repository.MembreRepository;
+import com.padell.padell.repository.ParticipantRepository;
 import com.padell.padell.service.MatchService;
 import com.padell.padell.service.impl.AdminAuthorizationService;
 import com.padell.padell.service.impl.CurrentMemberService;
@@ -65,7 +65,7 @@ class MatchControllerTest {
     @MockitoBean
     private AdministrateurRepository administrateurRepository;
     @MockitoBean
-    private MembreRepository membreRepository;
+    private ParticipantRepository membreRepository;
 
 
     private CreateMatchRequest validCreateMatchRequest;

@@ -4,8 +4,8 @@ import com.padell.padell.entity.*;
 import com.padell.padell.entity.enums.*;
 import com.padell.padell.exception.BusinessException;
 import com.padell.padell.exception.ResourceNotFoundException;
-import com.padell.padell.repository.MatchRepository;
-import com.padell.padell.repository.MembreRepository;
+import com.padell.padell.repository.AtelierRepository;
+import com.padell.padell.repository.ParticipantRepository;
 import com.padell.padell.repository.PaiementRepository;
 import com.padell.padell.service.impl.PaiementServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,10 +38,10 @@ class PaiementServiceTest {
     private ReservationService reservationService;
 
     @Mock
-    private MembreRepository membreRepository;
+    private ParticipantRepository membreRepository;
 
     @Mock
-    private MatchRepository matchRepository;
+    private AtelierRepository matchRepository;
 
     @InjectMocks
     private PaiementServiceImpl paiementService;

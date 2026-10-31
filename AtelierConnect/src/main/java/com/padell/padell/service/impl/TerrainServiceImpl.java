@@ -3,7 +3,7 @@ package com.padell.padell.service.impl;
 import com.padell.padell.entity.Centre;
 import com.padell.padell.entity.Salle;
 import com.padell.padell.exception.ResourceNotFoundException;
-import com.padell.padell.repository.TerrainRepository;
+import com.padell.padell.repository.SalleRepository;
 import com.padell.padell.service.SiteService;
 import com.padell.padell.service.TerrainService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TerrainServiceImpl implements TerrainService {
 
-    private final TerrainRepository terrainRepository;
+    private final SalleRepository terrainRepository;
     private final SiteService siteService;
 
     @Override
@@ -42,7 +42,7 @@ public class TerrainServiceImpl implements TerrainService {
     @Override
     public List<Salle> getBySiteId(Long siteId) {
         siteService.getById(siteId);
-        return terrainRepository.findBySiteId(siteId);
+        return terrainRepository.findByCentreId(siteId);
     }
 
     @Override

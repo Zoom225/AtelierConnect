@@ -10,7 +10,7 @@ import com.padell.padell.dto.response.MembreResponse;
 import com.padell.padell.entity.Participant;
 import com.padell.padell.mapper.MembreMapper;
 import com.padell.padell.repository.AdministrateurRepository;
-import com.padell.padell.repository.MembreRepository;
+import com.padell.padell.repository.ParticipantRepository;
 import com.padell.padell.service.MembreService;
 import com.padell.padell.service.impl.CurrentMemberService;
 import com.padell.padell.service.impl.MembreAccessService;
@@ -64,7 +64,7 @@ class MembreControllerTest {
     @MockitoBean
     private AdministrateurRepository administrateurRepository;
     @MockitoBean
-    private MembreRepository membreRepository;
+    private ParticipantRepository membreRepository;
 
     private MembreRequest membreRequest;
     private MembreResponse membreResponse;

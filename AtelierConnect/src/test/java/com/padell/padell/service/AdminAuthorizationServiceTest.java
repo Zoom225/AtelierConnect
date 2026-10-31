@@ -7,7 +7,7 @@ import com.padell.padell.entity.Salle;
 import com.padell.padell.entity.enums.TypeAdministrateur;
 import com.padell.padell.exception.BusinessException;
 import com.padell.padell.repository.AdministrateurRepository;
-import com.padell.padell.repository.MatchRepository;
+import com.padell.padell.repository.AtelierRepository;
 import com.padell.padell.service.impl.AdminAuthorizationService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +31,7 @@ class AdminAuthorizationServiceTest {
     @Mock
     private AdministrateurRepository administrateurRepository;
     @Mock
-    private MatchRepository matchRepository;
+    private AtelierRepository matchRepository;
 
     private AdminAuthorizationService adminAuthorizationService;
     private Centre siteLyon;

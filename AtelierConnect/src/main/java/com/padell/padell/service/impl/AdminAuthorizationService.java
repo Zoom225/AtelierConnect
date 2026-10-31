@@ -8,7 +8,7 @@ import com.padell.padell.entity.Salle;
 import com.padell.padell.entity.enums.TypeAdministrateur;
 import com.padell.padell.exception.BusinessException;
 import com.padell.padell.repository.AdministrateurRepository;
-import com.padell.padell.repository.MatchRepository;
+import com.padell.padell.repository.AtelierRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,7 +23,7 @@ import java.util.List;
 public class AdminAuthorizationService {
 
     private final AdministrateurRepository administrateurRepository;
-    private final MatchRepository matchRepository;
+    private final AtelierRepository matchRepository;
 
     public Administrateur currentAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -23,16 +23,16 @@ class ReservationRepositoryTest {
     private ReservationRepository reservationRepository;
 
     @Autowired
-    private MatchRepository matchRepository;
+    private AtelierRepository matchRepository;
 
     @Autowired
-    private MembreRepository membreRepository;
+    private ParticipantRepository membreRepository;
 
     @Autowired
-    private SiteRepository siteRepository;
+    private CentreRepository siteRepository;
 
     @Autowired
-    private TerrainRepository terrainRepository;
+    private SalleRepository terrainRepository;
 
     @Test
     @DisplayName("existsByMatchIdAndMembreId détecte un membre déjà inscrit")

@@ -6,7 +6,7 @@ import com.padell.padell.entity.Centre;
 import com.padell.padell.entity.enums.TypeParticipant;
 import com.padell.padell.exception.BusinessException;
 import com.padell.padell.exception.ResourceNotFoundException;
-import com.padell.padell.repository.MembreRepository;
+import com.padell.padell.repository.ParticipantRepository;
 import com.padell.padell.repository.PenaliteRepository;
 import com.padell.padell.service.MembreService;
 import com.padell.padell.service.SiteService;
@@ -27,7 +27,7 @@ public class MembreServiceImpl implements MembreService {
     @Value("${APP_DEMO_MEMBER_PASSWORD}")
     private String defaultMemberPassword;
 
-    private final MembreRepository membreRepository;
+    private final ParticipantRepository membreRepository;
     private final PenaliteRepository penaliteRepository;
     private final SiteService siteService;
     private final PasswordEncoder passwordEncoder;

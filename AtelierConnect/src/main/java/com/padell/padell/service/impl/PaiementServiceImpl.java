@@ -9,8 +9,8 @@ import com.padell.padell.entity.enums.StatutPaiement;
 import com.padell.padell.entity.enums.StatutReservation;
 import com.padell.padell.exception.BusinessException;
 import com.padell.padell.exception.ResourceNotFoundException;
-import com.padell.padell.repository.MatchRepository;
-import com.padell.padell.repository.MembreRepository;
+import com.padell.padell.repository.AtelierRepository;
+import com.padell.padell.repository.ParticipantRepository;
 import com.padell.padell.repository.PaiementRepository;
 import com.padell.padell.service.PaiementService;
 import com.padell.padell.service.AtelierRules;
@@ -31,8 +31,8 @@ public class PaiementServiceImpl implements PaiementService {
 
     private final PaiementRepository paiementRepository;
     private final ReservationService reservationService;
-    private final MembreRepository membreRepository;
-    private final MatchRepository matchRepository;
+    private final ParticipantRepository membreRepository;
+    private final AtelierRepository matchRepository;
 
     @Override
     @Transactional

@@ -8,7 +8,7 @@ import com.padell.padell.dto.response.PaiementResponse;
 import com.padell.padell.entity.Paiement;
 import com.padell.padell.mapper.PaiementMapper;
 import com.padell.padell.repository.AdministrateurRepository;
-import com.padell.padell.repository.MembreRepository;
+import com.padell.padell.repository.ParticipantRepository;
 import com.padell.padell.service.PaiementService;
 import com.padell.padell.service.impl.CurrentMemberService;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,7 +54,7 @@ class PaiementControllerTest {
     @MockitoBean
     private AdministrateurRepository administrateurRepository;
     @MockitoBean
-    private MembreRepository membreRepository;
+    private ParticipantRepository membreRepository;
 
     private Paiement paiement;
     private PaiementResponse paiementResponse;

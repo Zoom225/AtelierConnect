@@ -19,19 +19,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @DisplayName("Tests de MatchRepository")
-class MatchRepositoryTest {
+class AtelierRepositoryTest {
 
     @Autowired
-    private MatchRepository matchRepository;
+    private AtelierRepository matchRepository;
 
     @Autowired
-    private SiteRepository siteRepository;
+    private CentreRepository siteRepository;
 
     @Autowired
-    private TerrainRepository terrainRepository;
+    private SalleRepository terrainRepository;
 
     @Autowired
-    private MembreRepository membreRepository;
+    private ParticipantRepository membreRepository;
 
     @Test
     @DisplayName("findOverlappingMatches retourne les matchs planifiés qui chevauchent le créneau")
@@ -46,7 +46,7 @@ class MatchRepositoryTest {
         LocalDateTime start = LocalDateTime.of(2026, 7, 10, 10, 0);
         matchRepository.save(match(terrain, organisateur, start, StatutAtelier.PLANIFIE));
 
-        assertThat(matchRepository.findOverlappingMatches(
+        assertThat(matchRepository.findOverlappingAteliers(
                 terrain.getId(),
                 start.plusMinutes(30),
                 start.plusMinutes(120),
@@ -67,7 +67,7 @@ class MatchRepositoryTest {
         LocalDateTime start = LocalDateTime.of(2026, 7, 10, 10, 0);
         matchRepository.save(match(terrain, organisateur, start, StatutAtelier.ANNULE));
 
-        assertThat(matchRepository.findOverlappingMatches(
+        assertThat(matchRepository.findOverlappingAteliers(
                 terrain.getId(),
                 start.plusMinutes(30),
                 start.plusMinutes(120),

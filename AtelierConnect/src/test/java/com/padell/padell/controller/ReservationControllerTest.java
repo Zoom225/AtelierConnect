@@ -11,7 +11,7 @@ import com.padell.padell.entity.Participant;
 import com.padell.padell.entity.Reservation;
 import com.padell.padell.mapper.ReservationMapper;
 import com.padell.padell.repository.AdministrateurRepository;
-import com.padell.padell.repository.MembreRepository;
+import com.padell.padell.repository.ParticipantRepository;
 import com.padell.padell.service.ReservationService;
 import com.padell.padell.service.impl.CurrentMemberService;
 import jakarta.servlet.ServletException;
@@ -60,7 +60,7 @@ class ReservationControllerTest {
     @MockitoBean
     private AdministrateurRepository administrateurRepository;
     @MockitoBean
-    private MembreRepository membreRepository;
+    private ParticipantRepository membreRepository;
     @MockitoBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
     private ReservationRequest reservationRequest;

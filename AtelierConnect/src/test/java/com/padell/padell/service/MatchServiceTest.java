@@ -40,9 +40,9 @@ import static org.mockito.Mockito.*;
 class MatchServiceTest {
 
     @Mock
-    private MatchRepository matchRepository;
+    private AtelierRepository matchRepository;
     @Mock
-    private MembreRepository membreRepository;
+    private ParticipantRepository membreRepository;
     @Mock
     private ReservationRepository reservationRepository;
     @Mock
@@ -153,7 +153,7 @@ class MatchServiceTest {
         when(terrainService.getById(terrain.getId())).thenReturn(terrain);
         when(membreService.hasOutstandingBalance(organisateur.getId())).thenReturn(false);
         when(membreService.hasActivePenalty(organisateur.getId())).thenReturn(false);
-        when(matchRepository.findOverlappingMatches(any(), any(), any(), any())).thenReturn(Collections.emptyList());
+        when(matchRepository.findOverlappingAteliers(any(), any(), any(), any())).thenReturn(Collections.emptyList());
         when(matchRepository.save(any(Atelier.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(reservationRepository.save(any(Reservation.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(paiementRepository.save(any(Paiement.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -248,7 +248,7 @@ class MatchServiceTest {
         // Arrange
         when(membreRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
         when(terrainService.getById(terrain.getId())).thenReturn(terrain);
-        when(matchRepository.findOverlappingMatches(any(), any(), any(), any())).thenReturn(Collections.singletonList(new Atelier()));
+        when(matchRepository.findOverlappingAteliers(any(), any(), any(), any())).thenReturn(Collections.singletonList(new Atelier()));
 
         // Act & Assert
         BusinessException exception = assertThrows(BusinessException.class, () -> {

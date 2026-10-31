@@ -10,7 +10,7 @@ import com.padell.padell.entity.Centre;
 import com.padell.padell.entity.enums.TypeAdministrateur;
 import com.padell.padell.repository.AdministrateurRepository;
 import com.padell.padell.repository.JourFermetureRepository;
-import com.padell.padell.repository.MembreRepository;
+import com.padell.padell.repository.ParticipantRepository;
 import com.padell.padell.service.SiteService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -60,7 +60,7 @@ class JourFermetureControllerTest {
     private AdministrateurRepository administrateurRepository;
 
     @MockitoBean
-    private MembreRepository membreRepository;
+    private ParticipantRepository membreRepository;
 
     @MockitoBean
     private JwtConfig jwtConfig;

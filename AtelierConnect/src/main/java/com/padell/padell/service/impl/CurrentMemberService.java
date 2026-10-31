@@ -2,7 +2,7 @@ package com.padell.padell.service.impl;
 
 import com.padell.padell.entity.Participant;
 import com.padell.padell.exception.BusinessException;
-import com.padell.padell.repository.MembreRepository;
+import com.padell.padell.repository.ParticipantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CurrentMemberService {
 
-    private final MembreRepository membreRepository;
+    private final ParticipantRepository membreRepository;
 
     public Participant currentMember() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

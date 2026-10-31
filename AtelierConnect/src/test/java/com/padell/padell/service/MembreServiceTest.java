@@ -5,7 +5,7 @@ import com.padell.padell.entity.Centre;
 import com.padell.padell.entity.enums.TypeParticipant;
 import com.padell.padell.exception.BusinessException;
 import com.padell.padell.exception.ResourceNotFoundException;
-import com.padell.padell.repository.MembreRepository;
+import com.padell.padell.repository.ParticipantRepository;
 import com.padell.padell.repository.PenaliteRepository;
 import com.padell.padell.service.impl.MembreServiceImpl;
 import com.padell.padell.service.SiteService;
@@ -33,7 +33,7 @@ import static org.mockito.Mockito.*;
 class MembreServiceTest {
 
     @Mock
-    private MembreRepository membreRepository;
+    private ParticipantRepository membreRepository;
 
     @Mock
     private PenaliteRepository penaliteRepository;

@@ -30,8 +30,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MatchServiceImpl implements MatchService {
 
-    private final MatchRepository matchRepository;
-    private final MembreRepository membreRepository;
+    private final AtelierRepository matchRepository;
+    private final ParticipantRepository membreRepository;
     private final ReservationRepository reservationRepository;
     private final PaiementRepository paiementRepository;
     private final JourFermetureRepository jourFermetureRepository;
@@ -101,7 +101,7 @@ public class MatchServiceImpl implements MatchService {
 
     @Override
     public List<MatchDto> getPublicAvailableMatches() {
-        return matchRepository.findByTypeMatchAndStatut(TypeAtelier.PUBLIC, StatutAtelier.PLANIFIE)
+        return matchRepository.findByTypeAtelierAndStatut(TypeAtelier.PUBLIC, StatutAtelier.PLANIFIE)
                 .stream()
                 .map(matchMapper::toMatchDto)
                 .collect(Collectors.toList());
@@ -117,7 +117,7 @@ public class MatchServiceImpl implements MatchService {
 
     @Override
     public List<MatchDto> findBySite(Long siteId) {
-        return matchRepository.findByTerrainSiteId(siteId)
+        return matchRepository.findBySalleCentreId(siteId)
                 .stream()
                 .map(matchMapper::toMatchDto)
                 .collect(Collectors.toList());
@@ -291,7 +291,7 @@ public class MatchServiceImpl implements MatchService {
     //la règle des 15 minutes entre deux matchs
     private boolean isSlotAvailable(Salle terrain, LocalDateTime start, LocalDateTime end) {
         int breakMinutes = AtelierRules.PAUSE_MINUTES;
-        List<Atelier> existingMatches = matchRepository.findOverlappingMatches(
+        List<Atelier> existingMatches = matchRepository.findOverlappingAteliers(
                 terrain.getId(),
                 start.minusMinutes(breakMinutes),
                 end.plusMinutes(breakMinutes),
@@ -302,7 +302,7 @@ public class MatchServiceImpl implements MatchService {
 
     private boolean isSlotAvailableExcluding(Salle terrain, LocalDateTime start, LocalDateTime end, Long excludedMatchId) {
         int breakMinutes = AtelierRules.PAUSE_MINUTES;
-        List<Atelier> existingMatches = matchRepository.findOverlappingMatches(
+        List<Atelier> existingMatches = matchRepository.findOverlappingAteliers(
                 terrain.getId(),
                 start.minusMinutes(breakMinutes),
                 end.plusMinutes(breakMinutes),

@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface MatchRepository extends JpaRepository<Atelier, Long> {
+public interface AtelierRepository extends JpaRepository<Atelier, Long> {
 
     @EntityGraph(attributePaths = {"terrain", "terrain.site", "organisateur"})
     List<Atelier> findAll();
@@ -25,10 +25,12 @@ public interface MatchRepository extends JpaRepository<Atelier, Long> {
     Optional<Atelier> findById(Long id);
 
     @EntityGraph(attributePaths = {"terrain", "terrain.site", "organisateur"})
-    List<Atelier> findByTypeMatchAndStatut(TypeAtelier type, StatutAtelier statut);
+    @Query("SELECT a FROM Atelier a WHERE a.typeMatch = :type AND a.statut = :statut")
+    List<Atelier> findByTypeAtelierAndStatut(@Param("type") TypeAtelier type, @Param("statut") StatutAtelier statut);
 
     @EntityGraph(attributePaths = {"terrain", "terrain.site", "organisateur"})
-    List<Atelier> findByTerrainSiteId(Long siteId);
+    @Query("SELECT a FROM Atelier a WHERE a.terrain.site.id = :siteId")
+    List<Atelier> findBySalleCentreId(@Param("siteId") Long siteId);
 
     @EntityGraph(attributePaths = {"terrain", "terrain.site", "organisateur"})
     List<Atelier> findByOrganisateurId(Long organisateurId);
@@ -56,7 +58,7 @@ public interface MatchRepository extends JpaRepository<Atelier, Long> {
            "AND m.statut <> :statut " +
            "AND m.dateDebut < :end " +
            "AND m.dateFin > :start")
-    List<Atelier> findOverlappingMatches(
+    List<Atelier> findOverlappingAteliers(
             @Param("terrainId") Long terrainId,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end,

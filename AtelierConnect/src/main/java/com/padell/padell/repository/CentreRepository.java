@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SiteRepository extends JpaRepository<Centre, Long> {
+public interface CentreRepository extends JpaRepository<Centre, Long> {
     // La méthode standard findAll() héritée de JpaRepository est maintenant sûre
     // à utiliser grâce au chargement LAZY des collections dans l'entité Site.
     // Si un chargement spécifique est nécessaire à l'avenir, il faudra utiliser

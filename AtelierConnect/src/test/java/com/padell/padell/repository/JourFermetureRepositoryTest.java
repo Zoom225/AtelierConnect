@@ -20,7 +20,7 @@ class JourFermetureRepositoryTest {
     private JourFermetureRepository jourFermetureRepository;
 
     @Autowired
-    private SiteRepository siteRepository;
+    private CentreRepository siteRepository;
 
     @Test
     @DisplayName("existsByDateAndGlobalTrue détecte une fermeture globale")
