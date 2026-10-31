@@ -55,8 +55,14 @@ jobs:
           cache: maven
           cache-dependency-path: AtelierConnect/pom.xml
 
-      - name: Générer une clé JWT éphémère pour les tests
-        run: echo "JWT_SECRET=$(openssl rand -hex 48)" >> "$GITHUB_ENV"
+      - name: Générer les identifiants éphémères du jeu de démonstration
+        shell: bash
+        run: |
+          for variable in JWT_SECRET APP_DEMO_MEMBER_PASSWORD APP_DEMO_ADMIN_PASSWORD; do
+            valeur="$(openssl rand -hex 48)"
+            echo "::add-mask::$valeur"
+            echo "$variable=$valeur" >> "$GITHUB_ENV"
+          done
 
       - name: Compilation et tests (dont concurrence PostgreSQL)
         run: mvn -B -ntp -f AtelierConnect/pom.xml clean verify
