@@ -89,7 +89,7 @@ class DataInitializerTest {
     }
 
     @Test
-    void run_shouldBackfillDemoAdminPasswordHashes() {
+    void run_shouldPreserveExistingDemoAdminPasswordHashes() {
         Administrateur adminLyon = Administrateur.builder()
                 .email("admin.lyon@padel.com")
                 .nom("Admin")
@@ -121,13 +121,40 @@ class DataInitializerTest {
         });
         when(penaliteRepository.existsByMembreIdAndDateFinAfter(any(), any(LocalDate.class))).thenReturn(true);
         when(passwordEncoder.encode("Membre1234!")).thenReturn("hashed-member-password");
-        when(passwordEncoder.encode("Admin1234!")).thenReturn("hashed-admin-password");
+
 
         dataInitializer.run();
 
-        verify(administrateurRepository).save(adminLyon);
-        verify(administrateurRepository).save(adminParis);
-        assertThat(adminLyon.getPasswordHash()).isEqualTo("hashed-admin-password");
-        assertThat(adminParis.getPasswordHash()).isEqualTo("hashed-admin-password");
+        verify(administrateurRepository, never()).save(adminLyon);
+        verify(administrateurRepository, never()).save(adminParis);
+        assertThat(adminLyon.getPasswordHash()).isEqualTo("old-hash");
+        assertThat(adminParis.getPasswordHash()).isEqualTo("old-hash-2");
+    }
+
+    @Test
+    void run_shouldPreserveExistingParticipantCredentials() {
+        Participant existing = Participant.builder()
+                .matricule("L10002")
+                .nom("Test")
+                .prenom("Demo")
+                .email("adresse.personnalisee@example.com")
+                .passwordHash("mon-hachage-bcrypt-existant")
+                .typeMembre(TypeParticipant.VISITEUR)
+                .solde(0.0)
+                .build();
+        existing.setId(50L);
+
+        when(siteRepository.count()).thenReturn(1L);
+        when(matchRepository.count()).thenReturn(1L);
+        when(membreRepository.findAll()).thenReturn(List.of(existing));
+        when(membreRepository.findByMatriculeIgnoreCase("L10002")).thenReturn(Optional.of(existing));
+        when(penaliteRepository.existsByMembreIdAndDateFinAfter(eq(50L), any(LocalDate.class)))
+                .thenReturn(true);
+
+        dataInitializer.run();
+
+        assertThat(existing.getEmail()).isEqualTo("adresse.personnalisee@example.com");
+        assertThat(existing.getPasswordHash()).isEqualTo("mon-hachage-bcrypt-existant");
+        verify(membreRepository, never()).save(existing);
     }
 }
