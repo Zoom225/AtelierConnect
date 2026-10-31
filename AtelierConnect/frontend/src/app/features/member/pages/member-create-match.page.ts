@@ -14,7 +14,7 @@ import { SitesApiService } from '../../../core/api/sites-api.service';
 import { TerrainsApiService } from '../../../core/api/terrains-api.service';
 import { MemberSessionService } from '../../../core/auth/member-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
-import { TypeMembre } from '../../../shared/models/enums.model';
+import { TypeMembre, toParticipantCategory } from '../../../shared/models/enums.model';
 import { BOOKING_MAX_DAYS } from '../../../shared/models/atelier-rules';
 import { MatchResponse } from '../../../shared/models/match.model';
 import { SiteResponse, TerrainResponse } from '../../../shared/models/site-terrain.model';
@@ -219,7 +219,7 @@ export class MemberCreateMatchPage {
   readonly bookingDelayProfileErrorMessage = computed(() => {
     const memberType = this.member()?.typeMembre ?? 'LIBRE';
     return this.language.t('member.create.bookingLimitProfileError', {
-      type: memberType,
+      type: this.member()?.categorie ?? toParticipantCategory(memberType),
       days: getMaxBookingDays(memberType),
       date: this.maxBookingDate()
     });
