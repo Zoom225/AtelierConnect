@@ -10,6 +10,7 @@ import com.atelierconnect.exception.BusinessException;
 import com.atelierconnect.exception.ResourceNotFoundException;
 import com.atelierconnect.mapper.AtelierMapper;
 import com.atelierconnect.dto.request.CreateAtelierRequest;
+import com.atelierconnect.dto.request.AtelierRequest;
 import com.atelierconnect.dto.response.AtelierDto;
 import com.atelierconnect.repository.*;
 import com.atelierconnect.service.impl.AtelierServiceImpl;
@@ -110,6 +111,59 @@ class AtelierServiceTest {
                 15.0,
                 null  // dateConversionPublic
         );
+    }
+
+    @Test
+    void modificationRefuseUnDelaiDepassantLaCategorie() {
+        Atelier existant = new Atelier();
+        existant.setId(21L);
+        existant.setOrganisateur(organisateur);
+        existant.setStatut(StatutAtelier.PLANIFIE);
+        when(matchRepository.findById(21L)).thenReturn(Optional.of(existant));
+        when(terrainService.getById(1L)).thenReturn(terrain);
+
+        AtelierRequest demande = AtelierRequest.builder()
+                .terrainId(1L)
+                .organisateurId(1L)
+                .date(LocalDate.now().plusDays(AtelierRules.VISITEUR_JOURS + 1))
+                .heureDebut(LocalTime.of(11, 0))
+                .typeMatch(TypeAtelier.PUBLIC)
+                .build();
+
+        BusinessException erreur = assertThrows(BusinessException.class,
+                () -> matchService.updateMatch(21L, demande));
+
+        assertTrue(erreur.getMessage().contains("7 jours"));
+        verify(matchRepository, never()).save(any());
+    }
+
+    @Test
+    void modificationRefuseUnCentreEtrangerPourAbonne() {
+        organisateur.setTypeMembre(TypeParticipant.ABONNE);
+        organisateur.setSite(site);
+        Centre autreCentre = new Centre();
+        autreCentre.setId(2L);
+        Salle autreSalle = new Salle();
+        autreSalle.setId(2L);
+        autreSalle.setSite(autreCentre);
+        Atelier existant = new Atelier();
+        existant.setId(22L);
+        existant.setOrganisateur(organisateur);
+        existant.setStatut(StatutAtelier.PLANIFIE);
+        when(matchRepository.findById(22L)).thenReturn(Optional.of(existant));
+        when(terrainService.getById(2L)).thenReturn(autreSalle);
+
+        AtelierRequest demande = AtelierRequest.builder()
+                .terrainId(2L)
+                .organisateurId(1L)
+                .date(LocalDate.now().plusDays(3))
+                .heureDebut(LocalTime.of(11, 0))
+                .typeMatch(TypeAtelier.PUBLIC)
+                .build();
+
+        assertThrows(BusinessException.class,
+                () -> matchService.updateMatch(22L, demande));
+        verify(matchRepository, never()).save(any());
     }
 
     @Test
