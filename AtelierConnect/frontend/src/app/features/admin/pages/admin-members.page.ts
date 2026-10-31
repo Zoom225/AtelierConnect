@@ -12,8 +12,8 @@ import { catchError, forkJoin, map, of } from 'rxjs';
 import { MembresApiService } from '../../../core/api/membres-api.service';
 import { SitesApiService } from '../../../core/api/sites-api.service';
 import { AdminSessionService } from '../../../core/auth/admin-session.service';
-import { MembreRequest, MembreResponse } from '../../../shared/models/membre.model';
-import { TypeMembre } from '../../../shared/models/enums.model';
+import { MembreRequest, MembreResponse, categorieParticipant } from '../../../shared/models/membre.model';
+import { TypeMembre, toParticipantCategory } from '../../../shared/models/enums.model';
 import { SiteResponse } from '../../../shared/models/site-terrain.model';
 import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
 import { LanguageService } from '../../../core/i18n/language.service';
@@ -33,11 +33,11 @@ import { LanguageService } from '../../../core/i18n/language.service';
     MatProgressSpinnerModule
   ],
   template: `
-    <!-- En-tête padel admin -->
+    <!-- Gestion des participants AtelierConnect -->
     <div class="adm-header">
       <div class="adm-header-content">
         <div class="adm-header-left">
-          <span class="adm-icon">🎾</span>
+          <span class="adm-icon">🧩</span>
           <div>
             <h1 class="adm-title ds-section-title">{{ language.t('admin.members.title') }}</h1>
             <p class="adm-sub ds-subtitle">{{ language.t('admin.members.subtitle') }}</p>
@@ -154,7 +154,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
       <!-- Liste des membres -->
       @if (displayedMembers().length === 0) {
         <div class="adm-empty">
-          <span class="adm-empty-icon">🎾</span>
+          <span class="adm-empty-icon">🧩</span>
           <p class="adm-empty-title">{{ language.t('admin.members.empty') }}</p>
           <p class="adm-empty-sub">
             {{ searchQuery() ? language.t('admin.members.searchNoResult', { query: searchQuery() }) : language.t('admin.members.emptySub') }}
@@ -174,7 +174,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
                 <div class="adm-member-matricule">{{ member.matricule }}</div>
               </div>
               <span class="ds-badge" [class]="typeBadgeClass(member.typeMembre)">
-                {{ member.typeMembre }}
+                {{ categorieParticipant(member) }}
               </span>
               @if (hasActivePenalty(member.id)) {
                 <span class="adm-penalty-badge">{{ language.t('admin.members.penalty') }}</span>
@@ -335,6 +335,7 @@ export class AdminMembersPage {
   private readonly sitesApi = inject(SitesApiService);
   private readonly adminSession = inject(AdminSessionService);
   readonly language = inject(LanguageService);
+  readonly categorieParticipant = categorieParticipant;
 
   readonly loading = signal(false);
   readonly message = signal('');
@@ -482,6 +483,8 @@ export class AdminMembersPage {
       payload.siteId = this.adminSession.siteId() ?? undefined;
       payload.typeMembre = 'SITE';
     }
+    // Catégorie métier native + ancien code maintenu pour l'API transitoire.
+    payload.categorie = toParticipantCategory(payload.typeMembre);
 
     const request$ = this.editingId()
       ? this.membresApi.update(this.editingId()!, payload)
