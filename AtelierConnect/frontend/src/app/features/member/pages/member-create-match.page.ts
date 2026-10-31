@@ -15,15 +15,10 @@ import { TerrainsApiService } from '../../../core/api/terrains-api.service';
 import { MemberSessionService } from '../../../core/auth/member-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { TypeMembre } from '../../../shared/models/enums.model';
+import { BOOKING_MAX_DAYS } from '../../../shared/models/atelier-rules';
 import { MatchResponse } from '../../../shared/models/match.model';
 import { SiteResponse, TerrainResponse } from '../../../shared/models/site-terrain.model';
 import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
-
-const BOOKING_MAX_DAYS: Record<TypeMembre, number> = {
-  GLOBAL: 21,
-  SITE: 14,
-  LIBRE: 5
-};
 
 const formatDateForInput = (date: Date): string => {
   const year = date.getFullYear();
@@ -155,6 +150,14 @@ const createMaxBookingDateValidator = (getMaxDate: () => string): ValidatorFn =>
                     <mat-label>{{ language.t('member.create.player4') }}</mat-label>
                     <input matInput formControlName="player3" />
                   </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>{{ language.t('member.create.player5') }}</mat-label>
+                    <input matInput formControlName="player4" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>{{ language.t('member.create.player6') }}</mat-label>
+                    <input matInput formControlName="player5" />
+                  </mat-form-field>
                 </div>
               </div>
             }
@@ -236,7 +239,9 @@ export class MemberCreateMatchPage {
     }),
     player1: new FormControl('', { nonNullable: true }),
     player2: new FormControl('', { nonNullable: true }),
-    player3: new FormControl('', { nonNullable: true })
+    player3: new FormControl('', { nonNullable: true }),
+    player4: new FormControl('', { nonNullable: true }),
+    player5: new FormControl('', { nonNullable: true })
   });
 
   constructor() {
@@ -432,7 +437,9 @@ export class MemberCreateMatchPage {
     const invitees = [
       this.form.controls.player1.getRawValue(),
       this.form.controls.player2.getRawValue(),
-      this.form.controls.player3.getRawValue()
+      this.form.controls.player3.getRawValue(),
+      this.form.controls.player4.getRawValue(),
+      this.form.controls.player5.getRawValue()
     ]
       .map((value) => value.trim().toUpperCase())
       .filter(Boolean);
