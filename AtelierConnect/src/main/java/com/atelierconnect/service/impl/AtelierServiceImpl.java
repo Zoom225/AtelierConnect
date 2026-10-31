@@ -284,7 +284,9 @@ public class AtelierServiceImpl implements AtelierService {
     @Override
     @Transactional
     public void decrementPlayers(Long matchId) {
-        Atelier match = getMatchEntityById(matchId);
+        // Le paiement et l'annulation ajustent le compteur sous le même verrou d'atelier.
+        Atelier match = matchRepository.findByIdForUpdate(matchId)
+                .orElseThrow(() -> new ResourceNotFoundException("Atelier introuvable avec l'ID : " + matchId));
         // Regle metier : impossible de retirer un joueur d'un match vide.
         if (match.getNbJoueursActuels() <= 0) {
             throw new BusinessException("Le match n'a aucun joueur.");
