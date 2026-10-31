@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/terrains")
+@RequestMapping({"/api/salles", "/api/terrains"})
 @RequiredArgsConstructor
 @Tag(name = "Terrains", description = "Endpoints de gestion des terrains de padel.")
 public class TerrainController {

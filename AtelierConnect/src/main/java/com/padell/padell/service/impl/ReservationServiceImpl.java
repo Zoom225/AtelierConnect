@@ -12,6 +12,7 @@ import com.padell.padell.repository.ReservationRepository;
 import com.padell.padell.service.MatchService;
 import com.padell.padell.service.MembreService;
 import com.padell.padell.service.ReservationService;
+import com.padell.padell.service.AtelierRules;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Slf4j
 @Service
@@ -43,6 +47,13 @@ public class ReservationServiceImpl implements ReservationService {
         // Regle metier : impossible de reserver un match annule.
         if (match.getStatut() == StatutMatch.ANNULE) {
             throw new BusinessException("Le match est annulé.");
+        }
+        if (!match.getDateDebut().isAfter(LocalDateTime.now())) {
+            throw new BusinessException("Un atelier passé ne peut plus être réservé.");
+        }
+        long joursAvant = ChronoUnit.DAYS.between(LocalDate.now(), match.getDateDebut().toLocalDate());
+        if (joursAvant > AtelierRules.delaiReservation(membre.getTypeMembre())) {
+            throw new BusinessException("Ce participant ne peut pas réserver aussi tôt pour sa catégorie.");
         }
 
         // Regle metier : un membre ne peut pas etre inscrit deux fois au meme match.
@@ -79,6 +90,10 @@ public class ReservationServiceImpl implements ReservationService {
             if (!membreSiteId.equals(matchSiteId)) {
                 throw new BusinessException("Un membre SITE ne peut réserver que sur son propre site.");
             }
+        }
+        if (membre.getTypeMembre() == TypeMembre.LIBRE
+                && !Boolean.TRUE.equals(match.getTerrain().getSite().getOuvertVisiteurs())) {
+            throw new BusinessException("Ce centre n'est pas ouvert aux visiteurs.");
         }
 
         Reservation reservation = Reservation.builder()

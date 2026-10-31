@@ -60,6 +60,9 @@ public class MatchServiceImpl implements MatchService {
         validateSiteAccessForOrganizer(organisateur, terrain);
         //Service metier debut et fin match
         LocalDateTime dateDebut = request.matchDate();
+        if (dateDebut.isBefore(LocalDateTime.now())) {
+            throw new BusinessException("Un atelier ne peut pas être créé dans le passé.");
+        }
         LocalDateTime dateFin = dateDebut.plusMinutes(AtelierRules.DUREE_MINUTES);
 
         validateSiteNotClosed(terrain, dateDebut.toLocalDate());
@@ -347,6 +350,10 @@ public class MatchServiceImpl implements MatchService {
             if (organisateur.getSite() == null || !organisateur.getSite().getId().equals(terrain.getSite().getId())) {
                 throw new BusinessException("Un membre SITE ne peut créer un match que sur son propre site.");
             }
+        }
+        if (organisateur.getTypeMembre() == TypeMembre.LIBRE
+                && !Boolean.TRUE.equals(terrain.getSite().getOuvertVisiteurs())) {
+            throw new BusinessException("Ce centre n'est pas ouvert aux visiteurs.");
         }
     }
 

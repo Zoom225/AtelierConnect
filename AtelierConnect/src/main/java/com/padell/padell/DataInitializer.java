@@ -84,6 +84,7 @@ public class DataInitializer implements CommandLineRunner {
                 .dureeMatchMinutes(AtelierRules.DUREE_MINUTES)
                 .dureeEntreMatchMinutes(AtelierRules.PAUSE_MINUTES)
                 .anneeCivile(2025)
+                .ouvertVisiteurs(true)
                 .build());
 
         Site siteParis = siteRepository.save(Site.builder()
@@ -94,6 +95,7 @@ public class DataInitializer implements CommandLineRunner {
                 .dureeMatchMinutes(AtelierRules.DUREE_MINUTES)
                 .dureeEntreMatchMinutes(AtelierRules.PAUSE_MINUTES)
                 .anneeCivile(2025)
+                .ouvertVisiteurs(true)
                 .build());
 
         log.info("DataInitializer : {} sites crees", siteRepository.count());

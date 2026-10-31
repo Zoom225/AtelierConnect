@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/membres")
+@RequestMapping({"/api/participants", "/api/membres"})
 @RequiredArgsConstructor
 @Tag(name = "Membres", description = "Endpoints de gestion des membres de padel. " +
         "Les membres se connectent avec leur matricule via /api/membres/login.")

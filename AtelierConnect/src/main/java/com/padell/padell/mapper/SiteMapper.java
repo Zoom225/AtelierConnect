@@ -20,6 +20,7 @@ public class SiteMapper {
                 .dureeMatchMinutes(request.getDureeMatchMinutes())
                 .dureeEntreMatchMinutes(request.getDureeEntreMatchMinutes())
                 .anneeCivile(request.getAnneeCivile())
+                .ouvertVisiteurs(Boolean.TRUE.equals(request.getOuvertVisiteurs()))
                 .build();
     }
 
@@ -40,6 +41,7 @@ public class SiteMapper {
                 .dureeMatchMinutes(site.getDureeMatchMinutes())
                 .dureeEntreMatchMinutes(site.getDureeEntreMatchMinutes())
                 .anneeCivile(site.getAnneeCivile())
+                .ouvertVisiteurs(Boolean.TRUE.equals(site.getOuvertVisiteurs()))
                 .build();
     }
 }

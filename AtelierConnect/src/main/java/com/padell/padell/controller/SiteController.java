@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/sites")
+@RequestMapping({"/api/centres", "/api/sites"})
 @RequiredArgsConstructor
 @Tag(name = "Sites", description = "Endpoints de gestion des sites de padel.")
 public class SiteController {

@@ -18,4 +18,5 @@ public class SiteResponse {
     private Integer dureeMatchMinutes;
     private Integer dureeEntreMatchMinutes;
     private Integer anneeCivile;
+    private Boolean ouvertVisiteurs;
 }

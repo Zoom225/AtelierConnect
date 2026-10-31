@@ -43,6 +43,7 @@ public class SiteServiceImpl implements SiteService {
         existing.setDureeMatchMinutes(site.getDureeMatchMinutes());
         existing.setDureeEntreMatchMinutes(site.getDureeEntreMatchMinutes());
         existing.setAnneeCivile(site.getAnneeCivile());
+        existing.setOuvertVisiteurs(site.getOuvertVisiteurs());
         return siteRepository.save(existing);
     }
 

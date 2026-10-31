@@ -36,4 +36,6 @@ public class SiteRequest {
 
     @NotNull(message = "L'année civile est obligatoire.")
     private Integer anneeCivile;
+
+    private Boolean ouvertVisiteurs;
 }

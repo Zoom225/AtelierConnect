@@ -308,6 +308,7 @@ class ReservationServiceTest {
         @Test
         @DisplayName("❌ doit lever une BusinessException quand un membre SITE réserve sur le mauvais site")
         void shouldThrowWhenSiteMemberBooksOnWrongSite() {
+            matchPublic.setDateDebut(LocalDate.now().plusDays(10).atTime(15, 0));
             // joueurSiteB est rattaché à Paris → ne peut pas réserver sur Lyon
             when(matchService.getMatchEntityById(11L)).thenReturn(matchPublic); // MODIFIÉ
             when(membreService.getById(3L)).thenReturn(joueurSiteB);
@@ -319,6 +320,19 @@ class ReservationServiceTest {
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("propre site");
 
+            verify(reservationRepository, never()).save(any());
+        }
+
+        @Test
+        void visiteurRefuseSiCentreFermeAuxVisiteurs() {
+            joueur.setTypeMembre(TypeMembre.LIBRE);
+            matchPublic.setDateDebut(LocalDate.now().plusDays(3).atTime(15, 0));
+            when(matchService.getMatchEntityById(11L)).thenReturn(matchPublic);
+            when(membreService.getById(2L)).thenReturn(joueur);
+
+            assertThatThrownBy(() -> reservationService.create(11L, 2L, 2L))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("ouvert aux visiteurs");
             verify(reservationRepository, never()).save(any());
         }
 

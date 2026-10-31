@@ -23,10 +23,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/matches")
+@RequestMapping({"/api/ateliers", "/api/matches"})
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Matchs", description = "Endpoints de gestion des matchs de padel.")
+@Tag(name = "Ateliers", description = "Gestion des ateliers collaboratifs ; /api/matches reste un alias transitoire.")
 public class MatchController {
 
     private final MatchService matchService;
@@ -124,6 +124,7 @@ public class MatchController {
             @Parameter(description = "ID du match", required = true)
             @PathVariable Long id,
             @Valid @RequestBody MatchRequest request) {
+        currentMemberService.requireCurrentMember(request.getOrganisateurId());
         return ResponseEntity.ok(matchService.updateMatch(id, request));
     }
 

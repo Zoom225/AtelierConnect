@@ -73,6 +73,7 @@ class MatchServiceTest {
         site.setDureeEntreMatchMinutes(AtelierRules.PAUSE_MINUTES);
         site.setHeureOuverture(LocalTime.of(9, 0));
         site.setHeureFermeture(LocalTime.of(22, 0));
+        site.setOuvertVisiteurs(true);
 
         organisateur = new Membre();
         organisateur.setId(1L);
@@ -222,6 +223,23 @@ class MatchServiceTest {
             matchService.createMatch(tooFarRequest, "user123");
         });
         assertTrue(exception.getMessage().contains("ne peut pas réserver plus de 7 jours à l'avance"));
+    }
+
+    @Test
+    void delaisDesTroisCategoriesSontAppliques() {
+        when(membreRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
+        when(terrainService.getById(terrain.getId())).thenReturn(terrain);
+
+        for (TypeMembre type : TypeMembre.values()) {
+            organisateur.setTypeMembre(type);
+            int delai = AtelierRules.delaiReservation(type);
+            CreateMatchRequest demande = new CreateMatchRequest(
+                    terrain.getId(), LocalDate.now().plusDays(delai + 1).atTime(10, 0), "PUBLIC");
+            BusinessException erreur = assertThrows(BusinessException.class,
+                    () -> matchService.createMatch(demande, "user123"));
+            assertTrue(erreur.getMessage().contains(delai + " jours"));
+        }
+        verify(matchRepository, never()).save(any());
     }
 
     @Test

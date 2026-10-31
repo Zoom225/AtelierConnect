@@ -38,6 +38,9 @@ public class Site extends BaseEntity {
     @Column(nullable = false)
     private Integer anneeCivile;
 
+    @Column(name = "ouvert_visiteurs")
+    private Boolean ouvertVisiteurs;
+
     @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference("site-terrains")
     @Builder.Default
