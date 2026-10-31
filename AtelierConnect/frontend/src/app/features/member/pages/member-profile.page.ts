@@ -9,7 +9,7 @@ import { forkJoin } from 'rxjs';
 import { MembresApiService } from '../../../core/api/membres-api.service';
 import { MemberSessionService } from '../../../core/auth/member-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
-import { MembreResponse } from '../../../shared/models/membre.model';
+import { MembreResponse, categorieParticipant } from '../../../shared/models/membre.model';
 
 @Component({
   selector: 'app-member-profile-page',
@@ -45,7 +45,7 @@ import { MembreResponse } from '../../../shared/models/membre.model';
               </div>
 
               <div class="ds-data-list">
-                <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.profile.type') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="memberTypeBadgeClass(profile()!.typeMembre)">{{ profile()!.typeMembre }}</span></span></div>
+                <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.profile.type') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="memberTypeBadgeClass(profile()!.typeMembre)">{{ categorieParticipant(profile()!) }}</span></span></div>
                 <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.profile.site') }}</span><span class="ds-data-value">{{ profile()!.siteNom || language.t('member.home.tousSites') }}</span></div>
                 <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.profile.solde') }}</span><span class="ds-data-value">{{ profile()!.solde }} EUR</span></div>
               </div>
@@ -134,6 +134,7 @@ export class MemberProfilePage {
   private readonly memberSession = inject(MemberSessionService);
   private readonly router = inject(Router);
   readonly language = inject(LanguageService);
+  readonly categorieParticipant = categorieParticipant;
 
   readonly loading = signal(false);
   readonly errorMessage = signal('');
