@@ -50,4 +50,9 @@ export class MatchesApiService {
   convertToPublic(id: number): Observable<void> {
     return this.http.patch<void>(apiUrl(`/ateliers/${id}/convert-public`), {});
   }
+
+  /** Consentement explicite de l'organisateur, contrôlé côté Spring Security. */
+  consentToPublicOpening(id: number): Observable<void> {
+    return this.http.patch<void>(apiUrl(`/ateliers/${id}/consent-open-public`), {});
+  }
 }
