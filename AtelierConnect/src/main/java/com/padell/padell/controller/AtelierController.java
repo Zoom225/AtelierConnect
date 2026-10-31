@@ -4,6 +4,8 @@ import com.padell.padell.dto.request.AtelierRequest;
 import com.padell.padell.entity.Participant;
 import com.padell.padell.dto.request.CreateAtelierRequest;
 import com.padell.padell.dto.response.AtelierDto;
+import com.padell.padell.entity.enums.TypeAtelier;
+import com.padell.padell.repository.ReservationRepository;
 import com.padell.padell.service.AtelierService;
 import com.padell.padell.service.impl.AdminAuthorizationService;
 import com.padell.padell.service.impl.CurrentParticipantService;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -27,11 +30,12 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Ateliers", description = "Gestion des ateliers collaboratifs ; /api/matches reste un alias transitoire.")
-public class MatchController {
+public class AtelierController {
 
     private final AtelierService matchService;
     private final AdminAuthorizationService adminAuthorizationService;
     private final CurrentParticipantService currentMemberService;
+    private final ReservationRepository reservationRepository;
 
     @Operation(
             summary = "Créer un match",
@@ -84,7 +88,20 @@ public class MatchController {
     public ResponseEntity<AtelierDto> getById(
             @Parameter(description = "ID du match", required = true)
             @PathVariable Long id) {
-        return ResponseEntity.ok(matchService.getMatchDtoById(id));
+        AtelierDto atelier = matchService.getMatchDtoById(id);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean admin = authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+        if (admin) {
+            adminAuthorizationService.checkMatchAccess(id);
+        } else if (atelier.typeMatch() == TypeAtelier.PRIVE) {
+            Long participantId = currentMemberService.currentMemberId();
+            if (!participantId.equals(atelier.organisateurId())
+                    && !reservationRepository.existsByMatchIdAndMembreId(id, participantId)) {
+                throw new AccessDeniedException("Accès refusé à cet atelier privé.");
+            }
+        }
+        return ResponseEntity.ok(atelier);
     }
 
     @Operation(
@@ -124,7 +141,7 @@ public class MatchController {
             @Parameter(description = "ID du match", required = true)
             @PathVariable Long id,
             @Valid @RequestBody AtelierRequest request) {
-        currentMemberService.requireCurrentMember(request.getOrganisateurId());
+        currentMemberService.requireCurrentMember(matchService.getMatchEntityById(id).getOrganisateur().getId());
         return ResponseEntity.ok(matchService.updateMatch(id, request));
     }
 

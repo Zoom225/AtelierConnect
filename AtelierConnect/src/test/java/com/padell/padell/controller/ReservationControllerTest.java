@@ -54,6 +54,10 @@ class ReservationControllerTest {
     private ReservationMapper reservationMapper;
     @MockitoBean
     private CurrentParticipantService currentMemberService;
+    @MockitoBean
+    private com.padell.padell.service.AtelierService atelierService;
+    @MockitoBean
+    private com.padell.padell.service.impl.AdminAuthorizationService adminAuthorizationService;
 
     @MockitoBean
     private JwtConfig jwtConfig;

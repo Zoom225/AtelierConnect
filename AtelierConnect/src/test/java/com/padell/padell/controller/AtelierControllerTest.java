@@ -8,6 +8,7 @@ import com.padell.padell.dto.request.CreateAtelierRequest;
 import com.padell.padell.dto.response.AtelierDto;
 import com.padell.padell.repository.AdministrateurRepository;
 import com.padell.padell.repository.ParticipantRepository;
+import com.padell.padell.repository.ReservationRepository;
 import com.padell.padell.service.AtelierService;
 import com.padell.padell.service.impl.AdminAuthorizationService;
 import com.padell.padell.service.impl.CurrentParticipantService;
@@ -41,10 +42,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //@Import(SecurityConfig.class)
 // Étape 2 : Cibler le contrôleur
 @AutoConfigureMockMvc(addFilters = false)
-@WebMvcTest(controllers = MatchController.class)
+@WebMvcTest(controllers = AtelierController.class)
 @Import(TestSecurityConfig.class)
 @DisplayName("Tests de MatchController")
-class MatchControllerTest {
+class AtelierControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -58,6 +59,8 @@ class MatchControllerTest {
     private AdminAuthorizationService adminAuthorizationService;
     @MockitoBean
     private CurrentParticipantService currentMemberService;
+    @MockitoBean
+    private ReservationRepository reservationRepository;
 
     // Étape 3 : Mocker les dépendances de la chaîne de sécurité (Je wtAuthenticationFilter)
     @MockitoBean
@@ -123,6 +126,35 @@ class MatchControllerTest {
         mockMvc.perform(get("/api/ateliers/public"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(matchDto.id()));
+    }
+
+    @Test
+    @WithMockUser(roles = "MEMBER")
+    void atelierPriveRefuseAuParticipantSansInvitation() throws Exception {
+        AtelierDto privateDto = new AtelierDto(matchDto.id(), matchDto.terrainId(), matchDto.terrainNom(),
+                matchDto.siteNom(), matchDto.organisateurId(), matchDto.organisateurNom(),
+                matchDto.date(), matchDto.heureDebut(), matchDto.heureFin(), TypeAtelier.PRIVE,
+                matchDto.statut(), matchDto.nbJoueursActuels(), matchDto.prixParJoueur(), null);
+        when(matchService.getMatchDtoById(1L)).thenReturn(privateDto);
+        when(currentMemberService.currentMemberId()).thenReturn(99L);
+
+        mockMvc.perform(get("/api/ateliers/1"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "MEMBER")
+    void atelierPriveAccessibleAuParticipantInvite() throws Exception {
+        AtelierDto privateDto = new AtelierDto(matchDto.id(), matchDto.terrainId(), matchDto.terrainNom(),
+                matchDto.siteNom(), matchDto.organisateurId(), matchDto.organisateurNom(),
+                matchDto.date(), matchDto.heureDebut(), matchDto.heureFin(), TypeAtelier.PRIVE,
+                matchDto.statut(), matchDto.nbJoueursActuels(), matchDto.prixParJoueur(), null);
+        when(matchService.getMatchDtoById(1L)).thenReturn(privateDto);
+        when(currentMemberService.currentMemberId()).thenReturn(99L);
+        when(reservationRepository.existsByMatchIdAndMembreId(1L, 99L)).thenReturn(true);
+
+        mockMvc.perform(get("/api/ateliers/1"))
+                .andExpect(status().isOk());
     }
 
     @Test

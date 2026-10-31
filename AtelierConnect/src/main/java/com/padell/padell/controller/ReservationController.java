@@ -7,6 +7,8 @@ import com.padell.padell.entity.Participant;
 import com.padell.padell.entity.Reservation;
 import com.padell.padell.mapper.ReservationMapper;
 import com.padell.padell.service.ReservationService;
+import com.padell.padell.service.AtelierService;
+import com.padell.padell.service.impl.AdminAuthorizationService;
 import com.padell.padell.service.impl.CurrentParticipantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,6 +37,8 @@ public class ReservationController {
     private final ReservationService reservationService;
     private final ReservationMapper reservationMapper;
     private final CurrentParticipantService currentMemberService;
+    private final AtelierService atelierService;
+    private final AdminAuthorizationService adminAuthorizationService;
 
     @Operation(
             summary = "Créer une réservation",
@@ -123,10 +127,19 @@ public class ReservationController {
             @ApiResponse(responseCode = "404", description = "Match introuvable",
                     content = @Content)
     })
-    @GetMapping("/match/{matchId}")
+    @GetMapping({"/match/{matchId}", "/atelier/{matchId}"})
     public ResponseEntity<List<ReservationResponse>> getByMatchId(
             @Parameter(description = "ID du match", required = true)
             @PathVariable Long matchId) {
+        var authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        boolean admin = authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+        if (admin) {
+            adminAuthorizationService.checkMatchAccess(matchId);
+        } else {
+            currentMemberService.requireCurrentMember(
+                    atelierService.getMatchEntityById(matchId).getOrganisateur().getId());
+        }
         List<ReservationResponse> reservations = reservationService.getByMatchId(matchId)
                 .stream()
                 .map(reservationMapper::toResponse)
@@ -146,7 +159,7 @@ public class ReservationController {
             @ApiResponse(responseCode = "404", description = "Membre introuvable",
                     content = @Content)
     })
-    @GetMapping("/membre/{membreId}")
+    @GetMapping({"/membre/{membreId}", "/participant/{membreId}"})
     public ResponseEntity<List<ReservationResponse>> getByMembreId(
             @Parameter(description = "ID du membre", required = true)
             @PathVariable Long membreId) {

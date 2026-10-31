@@ -26,7 +26,7 @@ import java.util.List;
 @RequestMapping({"/api/salles", "/api/terrains"})
 @RequiredArgsConstructor
 @Tag(name = "Terrains", description = "Endpoints de gestion des terrains de padel.")
-public class TerrainController {
+public class SalleController {
 
     private final SalleService terrainService;
     private final SalleMapper terrainMapper;

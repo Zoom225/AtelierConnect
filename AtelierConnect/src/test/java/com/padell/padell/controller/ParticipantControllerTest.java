@@ -38,9 +38,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Import({SecurityConfig.class, TestSecurityConfig.class})
-@WebMvcTest(controllers = MembreController.class)
+@WebMvcTest(controllers = ParticipantController.class)
 @DisplayName("Tests de MembreController")
-class MembreControllerTest {
+class ParticipantControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -52,7 +52,7 @@ class MembreControllerTest {
     private ParticipantService membreService;
     @MockitoBean
     private ParticipantMapper membreMapper;
-    @MockitoBean(name = "membreAccessService")
+    @MockitoBean(name = "participantAccessService")
     private ParticipantAccessService membreAccessService;
     @MockitoBean
     private ParticipantCreationService membreCreationService;

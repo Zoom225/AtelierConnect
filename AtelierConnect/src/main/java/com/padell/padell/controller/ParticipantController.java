@@ -32,7 +32,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Membres", description = "Endpoints de gestion des membres de padel. " +
         "Les membres se connectent avec leur matricule via /api/membres/login.")
-public class MembreController {
+public class ParticipantController {
 
     private final ParticipantService membreService;
     private final ParticipantMapper membreMapper;
@@ -57,7 +57,7 @@ public class MembreController {
                     content = @Content)
     })
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') and @membreAccessService.canCreate(#request.siteId)")
+    @PreAuthorize("hasRole('ADMIN') and @participantAccessService.canCreate(#request.siteId)")
     public ResponseEntity<ParticipantResponse> create(@Valid @RequestBody ParticipantRequest request) {
         Participant saved = membreCreationService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(membreMapper.toResponse(saved));
@@ -95,7 +95,7 @@ public class MembreController {
                     content = @Content)
     })
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN') and @membreAccessService.canReadById(#id)")
+    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN') and @participantAccessService.canReadById(#id)")
     public ResponseEntity<ParticipantResponse> getById(
             @Parameter(description = "ID interne du membre", required = true)
             @PathVariable Long id) {
@@ -116,7 +116,7 @@ public class MembreController {
                     content = @Content)
     })
     @GetMapping("/matricule/{matricule}")
-    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN') and @membreAccessService.canReadByMatricule(#matricule)")
+    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN') and @participantAccessService.canReadByMatricule(#matricule)")
     public ResponseEntity<ParticipantResponse> getByMatricule(
             @Parameter(description = "Matricule unique du membre", required = true)
             @PathVariable String matricule) {
@@ -157,7 +157,7 @@ public class MembreController {
                     content = @Content)
     })
     @GetMapping("/{id}/penalty")
-    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN') and @membreAccessService.canReadById(#id)")
+    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN') and @participantAccessService.canReadById(#id)")
     public ResponseEntity<Boolean> hasActivePenalty(
             @Parameter(description = "ID du membre à vérifier", required = true)
             @PathVariable Long id) {
@@ -183,7 +183,7 @@ public class MembreController {
                     content = @Content)
     })
     @GetMapping("/{id}/balance")
-    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN') and @membreAccessService.canReadById(#id)")
+    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN') and @participantAccessService.canReadById(#id)")
     public ResponseEntity<Boolean> hasOutstandingBalance(
             @Parameter(description = "ID du membre à vérifier", required = true)
             @PathVariable Long id) {
@@ -211,7 +211,7 @@ public class MembreController {
                     content = @Content)
     })
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') and @membreAccessService.canManageById(#id)")
+    @PreAuthorize("hasRole('ADMIN') and @participantAccessService.canManageById(#id)")
     public ResponseEntity<ParticipantResponse> update(
             @Parameter(description = "ID du membre à modifier", required = true)
             @PathVariable Long id,
@@ -235,7 +235,7 @@ public class MembreController {
                     content = @Content)
     })
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') and @membreAccessService.canManageById(#id)")
+    @PreAuthorize("hasRole('ADMIN') and @participantAccessService.canManageById(#id)")
     public ResponseEntity<Void> delete(
             @Parameter(description = "ID du membre à supprimer", required = true)
             @PathVariable Long id) {

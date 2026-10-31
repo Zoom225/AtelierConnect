@@ -47,7 +47,8 @@ public class PaiementController {
             @ApiResponse(responseCode = "404", description = "Réservation ou paiement introuvable",
                     content = @Content)
     })
-    @PostMapping("/reservation/{reservationId}/membre/{membreId}")
+    @PostMapping({"/reservation/{reservationId}/membre/{membreId}",
+            "/reservation/{reservationId}/participant/{membreId}"})
     public ResponseEntity<PaiementResponse> pay(
             @Parameter(description = "ID de la réservation à payer", required = true)
             @PathVariable Long reservationId,
@@ -139,7 +140,7 @@ public class PaiementController {
             @ApiResponse(responseCode = "404", description = "Membre introuvable",
                     content = @Content)
     })
-    @GetMapping("/membre/{membreId}")
+    @GetMapping({"/membre/{membreId}", "/participant/{membreId}"})
     public ResponseEntity<List<PaiementResponse>> getByMembreId(
             @Parameter(description = "ID du membre", required = true)
             @PathVariable Long membreId) {

@@ -56,8 +56,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/matches/*/consent-open-public", "/api/ateliers/*/consent-open-public").hasRole("MEMBER")
                         .requestMatchers(HttpMethod.PATCH, "/api/matches/*/convert-public", "/api/ateliers/*/convert-public").hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.GET, "/api/reservations/membre/**").hasRole("MEMBER")
-                        .requestMatchers(HttpMethod.GET, "/api/reservations/match/**").hasAnyRole("MEMBER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/reservations/membre/**", "/api/reservations/participant/**").hasRole("MEMBER")
+                        .requestMatchers(HttpMethod.GET, "/api/reservations/match/**", "/api/reservations/atelier/**").hasAnyRole("MEMBER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/reservations/*").hasAnyRole("MEMBER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/reservations").hasRole("MEMBER")
                         .requestMatchers(HttpMethod.PATCH, "/api/reservations/*/cancel").hasRole("MEMBER")
