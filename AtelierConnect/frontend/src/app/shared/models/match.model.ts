@@ -23,6 +23,9 @@ export interface MatchResponse {
   nbJoueursActuels: number;
   prixParJoueur: number;
   dateConversionPublic: string | null;
+  /** Accord daté exposé par le backend. Optionnel pour la compatibilité des anciens tests. */
+  accordOuverturePublique?: boolean | null;
+  dateAccordOuverturePublique?: string | null;
 }
 
 export interface CreateMatchRequest {
