@@ -16,6 +16,7 @@ import com.atelierconnect.repository.ReservationRepository;
 import com.atelierconnect.service.PaiementService;
 import com.atelierconnect.service.AtelierRules;
 import com.atelierconnect.service.ReservationService;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class PaiementServiceImpl implements PaiementService {
 
     private final PaiementRepository paiementRepository;
     private final ReservationRepository reservationRepository;
+    private final EntityManager entityManager;
     private final ReservationService reservationService;
     private final ParticipantRepository membreRepository;
     private final AtelierRepository matchRepository;
@@ -158,10 +160,20 @@ public class PaiementServiceImpl implements PaiementService {
                 .filter(p -> p.getReservation().getMatch()
                         .getDateDebut().toLocalDate().equals(tomorrow))
                 .forEach(p -> {
+                    Long reservationId = p.getReservation().getId();
+                    // Le paiement peut avoir eu lieu pendant l'attente du verrou :
+                    // recharger l'état persistant avant de décider une sanction.
+                    reservationRepository.lockReservationById(reservationId);
+                    entityManager.refresh(p);
                     Reservation reservation = p.getReservation();
-                    Atelier match = reservation.getMatch();
+                    entityManager.refresh(reservation);
+                    if (p.getStatut() != StatutPaiement.EN_ATTENTE
+                            || reservation.getStatut() != StatutReservation.EN_ATTENTE) {
+                        return;
+                    }
 
-                    reservationService.cancel(reservation.getId());
+                    Atelier match = reservation.getMatch();
+                    reservationService.cancel(reservationId);
 
                     double partManquante = match.getPrixParJoueur();
                     Participant organisateur = match.getOrganisateur();
