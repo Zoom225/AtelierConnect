@@ -15,8 +15,8 @@ import { LanguageSwitcherComponent } from './shared/components/language-switcher
 <header class="app-header">
   <div class="app-header-inner">
     <a routerLink="/" class="app-logo">
-      <span class="app-logo-badge">P</span>
-      <span class="app-logo-text">PadelPlay</span>
+      <span class="app-logo-badge">A</span>
+      <span class="app-logo-text">AtelierConnect</span>
     </a>
 
     <nav class="app-nav">
