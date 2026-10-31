@@ -12,7 +12,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { MemberSessionService } from '../../../core/auth/member-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
-import { MembreResponse } from '../../../shared/models/membre.model';
+import { MembreResponse, categorieParticipant } from '../../../shared/models/membre.model';
 
 @Component({
   selector: 'app-member-home-page',
@@ -31,7 +31,7 @@ import { MembreResponse } from '../../../shared/models/membre.model';
   template: `
     <div class="padel-hero">
       <div class="padel-hero-content">
-        <div class="padel-ball">🎾</div>
+        <div class="padel-ball">🧩</div>
         <h1 class="padel-hero-title">{{ language.t('member.home.title') }}</h1>
         <p class="padel-hero-sub">{{ language.t('member.home.subtitle') }}</p>
       </div>
@@ -39,7 +39,7 @@ import { MembreResponse } from '../../../shared/models/membre.model';
 
     <section class="page-shell max-w-4xl">
       <div class="padel-login-card">
-        <div class="padel-login-icon">🏓</div>
+        <div class="padel-login-icon">🛠️</div>
         <h2 class="padel-login-title">{{ language.t('member.home.identification') }}</h2>
         <p class="padel-login-sub">{{ language.t('member.home.loginHint') }}</p>
 
@@ -114,7 +114,7 @@ import { MembreResponse } from '../../../shared/models/membre.model';
                     class="padel-badge-type"
                     [class]="'padel-badge-' + foundMember()!.typeMembre.toLowerCase()"
                   >
-                    {{ foundMember()!.typeMembre }}
+                    {{ categorieParticipant(foundMember()!) }}
                   </span>
                   <span>· {{ foundMember()!.siteNom || language.t('member.home.allSites') }}</span>
                 </div>
@@ -130,7 +130,7 @@ import { MembreResponse } from '../../../shared/models/membre.model';
                   style="display:inline-block; margin-right:8px;"
                 ></mat-spinner>
               }
-              🎾 {{ language.t('member.home.cta') }}
+              {{ language.t('member.home.cta') }}
             </button>
           </div>
         </form>
@@ -372,6 +372,7 @@ export class MemberHomePage {
   private readonly memberSession = inject(MemberSessionService);
   private readonly router = inject(Router);
   readonly language = inject(LanguageService);
+  readonly categorieParticipant = categorieParticipant;
 
   readonly loading = signal(false);
   readonly errorMessage = signal('');
