@@ -1,6 +1,6 @@
 ﻿# AtelierConnect
 
-Application Spring Boot (Java 21) et Angular 21. La phase 1 conserve les noms métier et les routes API existants.
+Application de gestion et réservation d'ateliers collaboratifs multi-centres : backend Java 21 / Spring Boot 3.5, frontend Angular 21 et base PostgreSQL. Le backend utilise le domaine Participant / Atelier / Salle / Centre et conserve temporairement les anciennes routes REST pour assurer la transition Angular.
 
 ## Prérequis
 
@@ -46,7 +46,7 @@ try { $rng.GetBytes($bytes) } finally { $rng.Dispose() }
 $env:JWT_SECRET = [Convert]::ToBase64String($bytes)
 ```
 
-La clé JWT précédemment publiée dans l'historique Git doit être révoquée/remplacée partout où elle a été utilisée. Les anciens mots de passe de démonstration publiés doivent aussi être remplacés pour les comptes déjà créés ; changer les variables ne met pas automatiquement à jour tous les comptes existants.
+La clé JWT précédemment publiée dans l'historique Git doit être révoquée/remplacée partout où elle a été utilisée. Les anciens mots de passe de démonstration publiés doivent aussi être remplacés pour les comptes déjà créés ; changer les variables ne réinitialise pas les mots de passe des comptes existants. L'initialisation de démonstration ne remplace plus les identifiants personnalisés.
 
 ## PostgreSQL
 
