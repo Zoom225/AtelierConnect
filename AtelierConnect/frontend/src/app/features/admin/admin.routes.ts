@@ -17,6 +17,34 @@ export const ADMIN_ROUTES: Routes = [
 	title: () => `AtelierConnect - ${inject(LanguageService).t('nav.dashboard')}`
   },
   {
+	path: 'participants',
+	canActivate: [adminGuard],
+	data: { roles: ['GLOBAL', 'SITE'] },
+	loadComponent: () => import('./pages/admin-members.page').then((m) => m.AdminMembersPage),
+	title: () => `AtelierConnect - ${inject(LanguageService).t('nav.members')}`
+  },
+  {
+	path: 'ateliers',
+	canActivate: [adminGuard],
+	data: { roles: ['GLOBAL', 'SITE'] },
+	loadComponent: () => import('./pages/admin-matches.page').then((m) => m.AdminMatchesPage),
+	title: () => `AtelierConnect - ${inject(LanguageService).t('nav.matches')}`
+  },
+  {
+	path: 'centres',
+	canActivate: [adminGuard],
+	data: { roles: ['GLOBAL', 'SITE'] },
+	loadComponent: () => import('./pages/admin-sites.page').then((m) => m.AdminSitesPage),
+	title: () => `AtelierConnect - ${inject(LanguageService).t('nav.sites')}`
+  },
+  {
+	path: 'salles',
+	canActivate: [adminGuard],
+	data: { roles: ['GLOBAL', 'SITE'] },
+	loadComponent: () => import('./pages/admin-terrains.page').then((m) => m.AdminTerrainsPage),
+	title: () => `AtelierConnect - ${inject(LanguageService).t('nav.courts')}`
+  },
+  {
 	path: 'members',
 	canActivate: [adminGuard],
 	data: { roles: ['GLOBAL', 'SITE'] },
