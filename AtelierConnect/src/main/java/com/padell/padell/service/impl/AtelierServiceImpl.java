@@ -189,7 +189,7 @@ public class AtelierServiceImpl implements AtelierService {
 
     @Override
     @Transactional
-    public void checkAndConvertExpiredPrivateMatches() {
+    public void checkAndConvertExpiredPrivateAteliers() {
         LocalDate openingDay = LocalDate.now().plusDays(AtelierRules.OUVERTURE_PUBLIQUE_JOURS);
         LocalDateTime startOfDay = openingDay.atStartOfDay();
         LocalDateTime endOfDay = openingDay.atTime(LocalTime.MAX);

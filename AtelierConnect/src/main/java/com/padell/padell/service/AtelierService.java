@@ -35,5 +35,5 @@ public interface AtelierService {
 
     void decrementPlayers(Long matchId);
 
-    void checkAndConvertExpiredPrivateMatches();
+    void checkAndConvertExpiredPrivateAteliers();
 }

@@ -65,7 +65,7 @@ public class DataInitializer implements CommandLineRunner {
         if (siteRepository.count() > 0) {
             if (matchRepository.count() == 0) {
                 log.info("DataInitializer : base de donnees deja initialisee, ajout des matchs d'exemple...");
-                seedMatchesFromExistingData();
+                seedAteliersFromExistingData();
             }
             ensurePenalizedDemoMember();
             ensureDemoMembersCredentials();
@@ -202,7 +202,7 @@ public class DataInitializer implements CommandLineRunner {
         log.info("DataInitializer : {} membres crees", membreRepository.count());
 
         seedActivePenalty(penalise);
-        seedMatches(courtA, courtB, courtC, court1, lucas, emma, tom, sarah, alex);
+        seedAteliers(courtA, courtB, courtC, court1, lucas, emma, tom, sarah, alex);
 //-----------------------Administrateurs--------------------//
         administrateurRepository.save(Administrateur.builder()
                 .matricule("ADMIN001")
@@ -253,11 +253,11 @@ public class DataInitializer implements CommandLineRunner {
         log.warn("DataInitializer : {} compte(s) membre legacy ont recu le mot de passe par defaut", legacyMembers.size());
     }
 
-    private void seedMatchesFromExistingData() {
-        Salle courtA = requireSeedTerrain("Court A");
-        Salle courtB = requireSeedTerrain("Court B");
-        Salle courtC = requireSeedTerrain("Court C");
-        Salle court1 = requireSeedTerrain("Court 1");
+    private void seedAteliersFromExistingData() {
+        Salle courtA = requireSeedSalle("Court A");
+        Salle courtB = requireSeedSalle("Court B");
+        Salle courtC = requireSeedSalle("Court C");
+        Salle court1 = requireSeedSalle("Court 1");
 
         Participant lucas = requireSeedMember("G1001");
         Participant emma = requireSeedMember("G1002");
@@ -265,10 +265,10 @@ public class DataInitializer implements CommandLineRunner {
         Participant sarah = requireSeedMember("S10002");
         Participant alex = requireSeedMember("L10001");
 
-        seedMatches(courtA, courtB, courtC, court1, lucas, emma, tom, sarah, alex);
+        seedAteliers(courtA, courtB, courtC, court1, lucas, emma, tom, sarah, alex);
     }
 
-    private Salle requireSeedTerrain(String nom) {
+    private Salle requireSeedSalle(String nom) {
         return terrainRepository.findAll().stream()
                 .filter(terrain -> terrain.getNom().equals(nom))
                 .findFirst()
@@ -338,7 +338,7 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
     }
 
-    private void seedMatches(
+    private void seedAteliers(
             Salle courtA,
             Salle courtB,
             Salle courtC,
@@ -349,20 +349,20 @@ public class DataInitializer implements CommandLineRunner {
             Participant sarah,
             Participant alex
     ) {
-        Atelier publicLyon = createSeedMatch(courtA, lucas, LocalDate.now().plusDays(2).atTime(10, 0),
+        Atelier publicLyon = createSeedAtelier(courtA, lucas, LocalDate.now().plusDays(2).atTime(10, 0),
                 TypeAtelier.PUBLIC, StatutAtelier.PLANIFIE, 0);
         createSeedReservation(publicLyon, lucas, StatutReservation.EN_ATTENTE, StatutPaiement.EN_ATTENTE);
 
-        Atelier privateLyon = createSeedMatch(courtB, tom, LocalDate.now().plusDays(3).atTime(14, 0),
+        Atelier privateLyon = createSeedAtelier(courtB, tom, LocalDate.now().plusDays(3).atTime(14, 0),
                 TypeAtelier.PRIVE, StatutAtelier.PLANIFIE, 1);
         createSeedReservation(privateLyon, tom, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
 
-        Atelier publicParis = createSeedMatch(court1, sarah, LocalDate.now().plusDays(4).atTime(18, 0),
+        Atelier publicParis = createSeedAtelier(court1, sarah, LocalDate.now().plusDays(4).atTime(18, 0),
                 TypeAtelier.PUBLIC, StatutAtelier.PLANIFIE, 2);
         createSeedReservation(publicParis, sarah, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
         createSeedReservation(publicParis, emma, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
 
-        Atelier completeLyon = createSeedMatch(courtC, lucas, LocalDate.now().plusDays(5).atTime(16, 0),
+        Atelier completeLyon = createSeedAtelier(courtC, lucas, LocalDate.now().plusDays(5).atTime(16, 0),
                 TypeAtelier.PUBLIC, StatutAtelier.PLANIFIE, 4);
         createSeedReservation(completeLyon, lucas, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
         createSeedReservation(completeLyon, emma, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
@@ -372,7 +372,7 @@ public class DataInitializer implements CommandLineRunner {
         log.info("DataInitializer : {} matchs crees", matchRepository.count());
     }
 
-    private Atelier createSeedMatch(
+    private Atelier createSeedAtelier(
             Salle terrain,
             Participant organisateur,
             LocalDateTime dateDebut,
