@@ -78,6 +78,9 @@ public class PaiementServiceImpl implements PaiementService {
         // La place est attribuee uniquement au moment du paiement, apres verification du match sous verrou.
         Atelier match = matchRepository.findByIdForUpdate(reservation.getMatch().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Atelier introuvable avec l'ID : " + reservation.getMatch().getId()));
+        // Rafraîchir sous verrou : l'atelier peut avoir été chargé en mémoire
+        // AVANT le SELECT FOR UPDATE d'une transaction concurrente.
+        entityManager.refresh(match);
         // Regle metier : le match doit toujours etre valide une fois verrouille.
         if (match.getStatut() == StatutAtelier.ANNULE) {
             throw new BusinessException("Cet atelier est annulé.");
