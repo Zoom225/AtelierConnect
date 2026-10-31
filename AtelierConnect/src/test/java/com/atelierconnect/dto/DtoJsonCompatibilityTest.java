@@ -1,6 +1,7 @@
 package com.atelierconnect.dto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.atelierconnect.dto.request.CreateAtelierRequest;
 import com.atelierconnect.dto.request.ReservationRequest;
@@ -16,7 +17,8 @@ import java.time.LocalTime;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DtoJsonCompatibilityTest {
-    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     @Test
     void accepteLesNouveauxNomsSansCasserLesAnciens() throws Exception {
