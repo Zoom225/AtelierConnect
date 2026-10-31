@@ -69,7 +69,7 @@ import { MembreResponse, categorieParticipant } from '../../../shared/models/mem
 
           <div class="mt-6">
             <div class="mb-3 flex items-center gap-2">
-              <span class="text-xl">🎾</span>
+              <span class="text-xl">🧩</span>
               <h3 class="m-0 text-lg font-bold text-slate-800">{{ language.t('member.profile.createQuick') }}</h3>
             </div>
             <div class="grid gap-3 md:grid-cols-2">
