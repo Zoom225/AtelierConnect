@@ -1,8 +1,17 @@
 ﻿# AtelierConnect
 
-?tat du refactoring et preuves de validation : [rapport du 1er novembre 2026](docs/refactoring-final-2026-11-01.md).
+État du refactoring et preuves de validation : [rapport du 1er novembre 2026](docs/refactoring-final-2026-11-01.md).
 
 Application de gestion et réservation d'ateliers collaboratifs multi-centres : backend Java 21 / Spring Boot 3.5, frontend Angular 21 et base PostgreSQL. Le backend utilise le domaine Participant / Atelier / Salle / Centre et conserve temporairement les anciennes routes REST pour assurer la transition Angular.
+
+## Validation full-stack et préparation du TFE
+
+Le [dossier de préparation phase 4](docs/phase-4/README.md) contient la matrice des
+onze thèmes, les diagrammes, le manuel et la référence API. Le [guide Windows et
+IntelliJ](docs/phase-4/installation-windows.md) décrit la configuration privée et
+le script de validation isolée. Le [rapport de tests](docs/phase-4/tests-limites.md)
+documente les 152 tests Java, 74 tests Angular, quatre parcours Chromium et la CI.
+La PR #2 reste en brouillon ; aucune branche phase 4 avant intégration de phase 3.
 
 ## Prérequis
 
