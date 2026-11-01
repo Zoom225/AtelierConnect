@@ -43,17 +43,17 @@ public class AtelierServiceImpl implements AtelierService {
     @Transactional
     public AtelierDto createMatch(CreateAtelierRequest request, String username) {
         Participant organisateur = membreRepository.findByMatriculeIgnoreCase(username)
-                .orElseThrow(() -> new ResourceNotFoundException("Membre non trouvé pour l'utilisateur: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("Participant introuvable pour l'utilisateur : " + username));
 
         Salle terrain = terrainService.getById(request.terrainId());
 
         // Regle metier : un membre avec un solde impaye ne peut pas creer de match.
         if (membreService.hasOutstandingBalance(organisateur.getId())) {
-            throw new BusinessException("Vous avez un solde impayé et ne pouvez pas créer de match.");
+            throw new BusinessException("Vous avez un solde impayé et ne pouvez pas créer d'atelier.");
         }
         // Regle metier : un membre penalise ne peut pas creer de match.
         if (membreService.hasActivePenalty(organisateur.getId())) {
-            throw new BusinessException("Vous avez une pénalité active et ne pouvez pas créer de match.");
+            throw new BusinessException("Vous avez une suspension active et ne pouvez pas créer d'atelier.");
         }
 
         validateBookingDelay(organisateur, request.matchDate().toLocalDate());
@@ -70,7 +70,7 @@ public class AtelierServiceImpl implements AtelierService {
 
         // Regle metier : un terrain ne peut pas avoir deux matchs sur le meme creneau horaire.
         if (!isSlotAvailable(terrain, dateDebut, dateFin)) {
-            throw new BusinessException("Ce créneau est déjà réservé sur le terrain : " + terrain.getId());
+            throw new BusinessException("Ce créneau est déjà réservé pour la salle : " + terrain.getId());
         }
 
         Atelier match = new Atelier();
@@ -87,7 +87,7 @@ public class AtelierServiceImpl implements AtelierService {
         Atelier savedMatch = matchRepository.save(match);
         // Regle metier : l'organisateur commence avec une reservation en attente et un paiement associe.
         createPendingReservationForOrganizer(savedMatch, organisateur);
-        log.info("Match créé avec succès (ID: {}) par l'utilisateur {}", savedMatch.getId(), username);
+        log.info("Atelier créé avec succès (ID: {}) par l'utilisateur {}", savedMatch.getId(), username);
 
         return matchMapper.toAtelierDto(savedMatch);
     }
@@ -126,7 +126,7 @@ public class AtelierServiceImpl implements AtelierService {
     @Override
     public Atelier getMatchEntityById(Long id) {
         return matchRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Match non trouvé avec l'ID : " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Atelier introuvable avec l'identifiant : " + id));
     }
 
     @Override
@@ -141,11 +141,11 @@ public class AtelierServiceImpl implements AtelierService {
 
         // Regle metier : un match annule ne peut plus etre modifie.
         if (match.getStatut() == StatutAtelier.ANNULE) {
-            throw new BusinessException("Impossible de modifier un match annulé.");
+            throw new BusinessException("Impossible de modifier un atelier annulé.");
         }
         // Regle metier : seul l'organisateur peut modifier son match.
         if (!match.getOrganisateur().getId().equals(request.getOrganisateurId())) {
-            throw new BusinessException("Seul l'organisateur peut modifier ce match.");
+            throw new BusinessException("Seul l'organisateur peut modifier cet atelier.");
         }
 
         Salle terrain = terrainService.getById(request.getTerrainId());
@@ -164,7 +164,7 @@ public class AtelierServiceImpl implements AtelierService {
 
         // Regle metier : la modification ne doit pas creer de chevauchement de creneau.
         if (!isSlotAvailableExcluding(terrain, dateDebut, dateFin, matchId)) {
-            throw new BusinessException("Ce créneau est déjà réservé sur le terrain : " + terrain.getId());
+            throw new BusinessException("Ce créneau est déjà réservé pour la salle : " + terrain.getId());
         }
 
         match.setTerrain(terrain);
@@ -182,16 +182,16 @@ public class AtelierServiceImpl implements AtelierService {
 
         // Regle metier : un match deja annule ne peut pas etre annule une seconde fois.
         if (match.getStatut() == StatutAtelier.ANNULE) {
-            throw new BusinessException("Ce match est déjà annulé.");
+            throw new BusinessException("Cet atelier est déjà annulé.");
         }
         // Regle metier : seul l'organisateur peut annuler son match.
         if (!match.getOrganisateur().getId().equals(requesterId)) {
-            throw new BusinessException("Seul l'organisateur peut annuler ce match.");
+            throw new BusinessException("Seul l'organisateur peut annuler cet atelier.");
         }
 
         match.setStatut(StatutAtelier.ANNULE);
         matchRepository.save(match);
-        log.info("Match {} annulé par l'organisateur {}", matchId, requesterId);
+        log.info("Atelier {} annulé par l'organisateur {}", matchId, requesterId);
     }
 
     @Override
@@ -225,7 +225,7 @@ public class AtelierServiceImpl implements AtelierService {
         Atelier match = getMatchEntityById(matchId);
         // Regle metier : un match deja public ne peut pas etre converti en public.
         if (match.getTypeMatch() == TypeAtelier.PUBLIC) {
-            throw new BusinessException("Le match est déjà public.");
+            throw new BusinessException("Cet atelier est déjà public.");
         }
         if (!Boolean.TRUE.equals(match.getAccordOuverturePublique())) {
             throw new BusinessException("L'accord explicite de l'organisateur est requis pour ouvrir cet atelier au public.");
@@ -272,7 +272,7 @@ public class AtelierServiceImpl implements AtelierService {
         // Regle metier : un match de padel doit contenir exactement 4 joueurs.
         // Des que les 4 places sont occupees, le match devient complet.
         if (match.getNbJoueursActuels() >= AtelierRules.CAPACITE) {
-            throw new BusinessException("Le match est déjà complet.");
+            throw new BusinessException("Cet atelier est déjà complet.");
         }
         match.setNbJoueursActuels(match.getNbJoueursActuels() + 1);
         if (match.getNbJoueursActuels() == AtelierRules.CAPACITE) {
@@ -291,7 +291,7 @@ public class AtelierServiceImpl implements AtelierService {
                 .orElseThrow(() -> new ResourceNotFoundException("Atelier introuvable avec l'ID : " + matchId));
         // Regle metier : impossible de retirer un joueur d'un match vide.
         if (match.getNbJoueursActuels() <= 0) {
-            throw new BusinessException("Le match n'a aucun joueur.");
+            throw new BusinessException("Cet atelier ne comporte aucun participant confirmé.");
         }
         match.setNbJoueursActuels(match.getNbJoueursActuels() - 1);
         if (match.getStatut() == StatutAtelier.COMPLET) {
@@ -328,11 +328,11 @@ public class AtelierServiceImpl implements AtelierService {
 
         // Regle metier : la date du match ne peut pas etre dans le passe.
         if (daysUntilMatch < 0) {
-            throw new BusinessException("La date du match est déjà passée.");
+            throw new BusinessException("La date de l'atelier est déjà passée.");
         }
         // Regle metier : le delai de reservation depend du type de membre.
         if (daysUntilMatch > maxDaysAhead) {
-            throw new BusinessException("Le membre " + membre.getTypeMembre()
+            throw new BusinessException("Le participant " + membre.getTypeMembre()
                     + " ne peut pas réserver plus de " + maxDaysAhead + " jours à l'avance.");
         }
     }
@@ -342,7 +342,7 @@ public class AtelierServiceImpl implements AtelierService {
         boolean closedForSite = jourFermetureRepository.existsByDateAndSiteId(date, terrain.getSite().getId());
         // Regle metier : aucun match ne peut etre cree sur un site ferme .jour fermeture globaux.
         if (closedGlobally || closedForSite) {
-            throw new BusinessException("Le site est fermé à la date : " + date);
+            throw new BusinessException("Le centre est fermé à la date : " + date);
         }
     }
         //methode les horaires d'ouverture propre pour un site
@@ -351,7 +351,7 @@ public class AtelierServiceImpl implements AtelierService {
         LocalTime closingTime = terrain.getSite().getHeureFermeture();
         // Regle metier : le match doit respecter les horaires d'ouverture du site.
         if (heureDebut.isBefore(openingTime) || heureFin.isAfter(closingTime)) {
-            throw new BusinessException("Le match est en dehors des heures d'ouverture du site (" + openingTime + " - " + closingTime + ").");
+            throw new BusinessException("L'atelier est en dehors des horaires d'ouverture du centre (" + openingTime + " - " + closingTime + ").");
         }
     }
 
@@ -359,7 +359,7 @@ public class AtelierServiceImpl implements AtelierService {
         if (organisateur.getTypeMembre() == TypeParticipant.SITE) {
             // Regle metier : un membre SITE ne peut creer un match que sur son propre site.
             if (organisateur.getSite() == null || !organisateur.getSite().getId().equals(terrain.getSite().getId())) {
-                throw new BusinessException("Un membre SITE ne peut créer un match que sur son propre site.");
+                throw new BusinessException("Un abonné ne peut créer un atelier que dans son centre de rattachement.");
             }
         }
         if (organisateur.getTypeMembre() == TypeParticipant.LIBRE
