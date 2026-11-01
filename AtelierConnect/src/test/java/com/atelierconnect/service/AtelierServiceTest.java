@@ -38,7 +38,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Tests de MatchServiceImpl")
+@DisplayName("Tests de AtelierServiceImpl")
 class AtelierServiceTest {
 
     @Mock
@@ -301,7 +301,7 @@ class AtelierServiceTest {
         BusinessException exception = assertThrows(BusinessException.class, () -> {
             matchService.createMatch(createMatchRequest, "user123");
         });
-        assertEquals("Vous avez un solde impayé et ne pouvez pas créer de match.", exception.getMessage());
+        assertEquals("Vous avez un solde impayé et ne pouvez pas créer d'atelier.", exception.getMessage());
         verify(matchRepository, never()).save(any());
     }
 
@@ -318,7 +318,7 @@ class AtelierServiceTest {
         BusinessException exception = assertThrows(BusinessException.class, () -> {
             matchService.createMatch(createMatchRequest, "user123");
         });
-        assertEquals("Vous avez une pénalité active et ne pouvez pas créer de match.", exception.getMessage());
+        assertEquals("Vous avez une suspension active et ne pouvez pas créer d'atelier.", exception.getMessage());
     }
 
     @Test
@@ -365,7 +365,7 @@ class AtelierServiceTest {
         BusinessException exception = assertThrows(BusinessException.class, () -> {
             matchService.createMatch(createMatchRequest, "user123");
         });
-        assertEquals("Ce créneau est déjà réservé sur le terrain : " + terrain.getId(), exception.getMessage());
+        assertEquals("Ce créneau est déjà réservé pour la salle : " + terrain.getId(), exception.getMessage());
     }
 
     @Test
@@ -378,6 +378,6 @@ class AtelierServiceTest {
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
             matchService.createMatch(createMatchRequest, "unknownUser");
         });
-        assertEquals("Membre non trouvé pour l'utilisateur: unknownUser", exception.getMessage());
+        assertEquals("Participant introuvable pour l'utilisateur : unknownUser", exception.getMessage());
     }
 }
