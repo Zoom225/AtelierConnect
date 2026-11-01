@@ -50,6 +50,40 @@ première installation, créer et conserver les secrets dans un gestionnaire pri
 Un fichier `.env` n'est pas automatiquement chargé par Spring Boot : exporter les
 variables dans le processus qui lance Java.
 
+## Démarrage simplifié (Docker + backend + frontend)
+
+Depuis le dossier backend `AtelierConnect`, le lanceur sans secrets suivis
+permet de charger les variables dans **le même processus** que Maven :
+
+```powershell
+.\scripts\run-local.ps1 -Component Backend -Build
+```
+
+Le lanceur appelle `set-local-environment.ps1` pour les variables absentes,
+demande les valeurs privées sans les afficher, réutilise le conteneur
+`atelierconnect-db` s'il existe et ne supprime pas son volume.
+`-Build` effectue le packaging **sans exécuter de tests** : les tests d'intégration
+doivent rester sur la base de validation dédiée via `validate-fullstack.ps1`.
+Si les anciennes valeurs PostgreSQL sont différentes, fournir les valeurs
+réellement utilisées par le volume existant. Changer une variable d'environnement
+ne change pas le mot de passe d'un rôle PostgreSQL déjà créé.
+
+Dans un **second terminal** ouvert au même endroit :
+
+```powershell
+.\scripts\run-local.ps1 -Component Frontend -Build
+```
+
+Le frontend écoute sur http://localhost:4200 et relaie les requêtes `/api` au
+backend sur http://localhost:8082. Après la première compilation, retirer
+`-Build` pour les lancements rapides.
+
+**Attention à la flèche verte IntelliJ :** lancer l'application directement
+avec une configuration Application ne charge pas les variables PowerShell.
+Utiliser `run-local.ps1` depuis le terminal IntelliJ, ou renseigner une
+configuration Run/Debug privée avec les variables requises. Ne pas enregistrer
+les secrets dans une configuration Git partagée.
+
 ## PostgreSQL existant
 
 Depuis le dossier contenant le Compose :
