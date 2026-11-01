@@ -201,18 +201,20 @@ public class AtelierServiceImpl implements AtelierService {
         LocalDateTime startOfDay = openingDay.atStartOfDay();
         LocalDateTime endOfDay = openingDay.atTime(LocalTime.MAX);
 
-        // Regle metier : a J-1, un match prive incomplet redevient public et penalise son organisateur.
+        // À J-2 : conversion uniquement des ateliers privés planifiés,
+        // incomplets et avec accord explicite enregistré de l'organisateur.
         List<Atelier> expiredMatches = matchRepository
                 .findByDateDebutBetweenAndStatut(startOfDay, endOfDay, StatutAtelier.PLANIFIE)
                 .stream()
                 .filter(m -> m.getTypeMatch() == TypeAtelier.PRIVE
                         && Boolean.TRUE.equals(m.getAccordOuverturePublique())
-                        && m.getNbJoueursActuels() < AtelierRules.CAPACITE)
+                        && (m.getNbJoueursActuels() == null
+                                || m.getNbJoueursActuels() < AtelierRules.CAPACITE))
                 .toList();
-        //sheduler active converti en public la veille
+        // Le scheduler applique la même validation métier que l'API.
         if (!expiredMatches.isEmpty()) {
             expiredMatches.forEach(m -> convertToPublic(m.getId()));
-            log.info("Scheduler : {} match(s) privé(s) ont été converti(s) en public", expiredMatches.size());
+            log.info("Scheduler : {} atelier(s) privé(s) ouvert(s) au public", expiredMatches.size());
         }
     }
 
