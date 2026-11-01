@@ -85,10 +85,10 @@ public class ReservationServiceImpl implements ReservationService {
         }
 
         if (participant.getTypeParticipant() == TypeParticipant.ABONNE) {
-            Long participantCentreId = participant.getCentre().getId();
+            Long participantCentreId = participant.getCentre() == null ? null : participant.getCentre().getId();
             Long atelierCentreId = atelier.getSalle().getCentre().getId();
             // Regle metier : un participant SITE ne reserve que sur son centre.
-            if (!participantCentreId.equals(atelierCentreId)) {
+            if (participantCentreId == null || !participantCentreId.equals(atelierCentreId)) {
                 throw new BusinessException("Un abonné ne peut réserver que dans son centre de rattachement.");
             }
         }

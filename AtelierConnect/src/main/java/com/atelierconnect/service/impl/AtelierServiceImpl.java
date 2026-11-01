@@ -15,6 +15,7 @@ import com.atelierconnect.service.SalleService;
 import com.atelierconnect.service.AtelierRules;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +39,7 @@ public class AtelierServiceImpl implements AtelierService {
     private final SalleService salleService;
     private final ParticipantService participantService;
     private final AtelierMapper atelierMapper;
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -45,7 +47,8 @@ public class AtelierServiceImpl implements AtelierService {
         Participant organisateur = participantRepository.findByMatriculeIgnoreCase(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Participant introuvable pour l'utilisateur : " + username));
 
-        Salle salle = salleService.getById(request.salleId());
+        // Serialize slot validation and insertion for this room, including the break.
+        Salle salle = salleService.getByIdForUpdate(request.salleId());
 
         // Regle metier : un participant avec un solde impaye ne peut pas creer de atelier.
         if (participantService.hasOutstandingBalance(organisateur.getId())) {
@@ -132,8 +135,11 @@ public class AtelierServiceImpl implements AtelierService {
     @Override
     @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
     public Atelier getAtelierEntityByIdForUpdate(Long id) {
-        return atelierRepository.findByIdForUpdate(id)
+        Atelier atelier = atelierRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Atelier introuvable avec l'identifiant : " + id));
+        // A scheduler or controller may have loaded the entity before a concurrent commit.
+        entityManager.refresh(atelier);
+        return atelier;
     }
 
     @Override
@@ -144,7 +150,7 @@ public class AtelierServiceImpl implements AtelierService {
     @Override
     @Transactional
     public AtelierDto updateAtelier(Long atelierId, AtelierRequest request) {
-        Atelier atelier = getAtelierEntityById(atelierId);
+        Atelier atelier = getAtelierEntityByIdForUpdate(atelierId);
 
         // Regle metier : un atelier annule ne peut plus etre modifie.
         if (atelier.getStatut() == StatutAtelier.ANNULE) {
@@ -155,7 +161,7 @@ public class AtelierServiceImpl implements AtelierService {
             throw new BusinessException("Seul l'organisateur peut modifier cet atelier.");
         }
 
-        Salle salle = salleService.getById(request.getSalleId());
+        Salle salle = salleService.getByIdForUpdate(request.getSalleId());
         // Modifier un atelier ne doit pas contourner les contrôles de sa création.
         validateBookingDelay(atelier.getOrganisateur(), request.getDate());
         validateCentreAccessForOrganizer(atelier.getOrganisateur(), salle);
@@ -185,7 +191,7 @@ public class AtelierServiceImpl implements AtelierService {
     @Override
     @Transactional
     public void cancelAtelier(Long atelierId, Long requesterId) {
-        Atelier atelier = getAtelierEntityById(atelierId);
+        Atelier atelier = getAtelierEntityByIdForUpdate(atelierId);
 
         // Regle metier : un atelier deja annule ne peut pas etre annule une seconde fois.
         if (atelier.getStatut() == StatutAtelier.ANNULE) {
@@ -215,6 +221,7 @@ public class AtelierServiceImpl implements AtelierService {
                 .stream()
                 .filter(m -> m.getTypeAtelier() == TypeAtelier.PRIVE
                         && Boolean.TRUE.equals(m.getAccordOuverturePublique())
+                        && m.getDateAccordOuverturePublique() != null
                         && (m.getNbParticipantsActuels() == null
                                 || m.getNbParticipantsActuels() < AtelierRules.CAPACITE))
                 .toList();
@@ -229,16 +236,20 @@ public class AtelierServiceImpl implements AtelierService {
     @Override
     @Transactional
     public void convertToPublic(Long atelierId) {
-        Atelier atelier = getAtelierEntityById(atelierId);
+        Atelier atelier = getAtelierEntityByIdForUpdate(atelierId);
         // Regle metier : un atelier deja public ne peut pas etre converti en public.
         if (atelier.getTypeAtelier() == TypeAtelier.PUBLIC) {
             throw new BusinessException("Cet atelier est déjà public.");
         }
-        if (!Boolean.TRUE.equals(atelier.getAccordOuverturePublique())) {
+        if (!Boolean.TRUE.equals(atelier.getAccordOuverturePublique())
+                || atelier.getDateAccordOuverturePublique() == null) {
             throw new BusinessException("L'accord explicite de l'organisateur est requis pour ouvrir cet atelier au public.");
         }
         if (atelier.getStatut() != StatutAtelier.PLANIFIE || !atelier.getDateDebut().isAfter(LocalDateTime.now())) {
             throw new BusinessException("Seul un atelier privé planifié à venir peut être ouvert au public.");
+        }
+        if (atelier.getNbParticipantsActuels() != null && atelier.getNbParticipantsActuels() >= AtelierRules.CAPACITE) {
+            throw new BusinessException("Un atelier complet ne peut pas être ouvert au public.");
         }
         if (atelier.getDateDebut().toLocalDate().isAfter(LocalDate.now().plusDays(AtelierRules.OUVERTURE_PUBLIQUE_JOURS))) {
             throw new BusinessException("L'ouverture au public est possible à partir de J-2.");
@@ -252,7 +263,7 @@ public class AtelierServiceImpl implements AtelierService {
     @Override
     @Transactional
     public void consentToPublicOpening(Long atelierId, Long requesterId) {
-        Atelier atelier = getAtelierEntityById(atelierId);
+        Atelier atelier = getAtelierEntityByIdForUpdate(atelierId);
         if (!atelier.getOrganisateur().getId().equals(requesterId)) {
             throw new BusinessException("Seul l'organisateur peut autoriser l'ouverture au public.");
         }
@@ -271,7 +282,7 @@ public class AtelierServiceImpl implements AtelierService {
     @Override
     @Transactional
     public void incrementParticipants(Long atelierId) {
-        Atelier atelier = getAtelierEntityById(atelierId);
+        Atelier atelier = getAtelierEntityByIdForUpdate(atelierId);
         incrementParticipantsForAtelier(atelier, true);
     }
 
@@ -294,8 +305,7 @@ public class AtelierServiceImpl implements AtelierService {
     @Transactional
     public void decrementParticipants(Long atelierId) {
         // Le paiement et l'annulation ajustent le compteur sous le même verrou d'atelier.
-        Atelier atelier = atelierRepository.findByIdForUpdate(atelierId)
-                .orElseThrow(() -> new ResourceNotFoundException("Atelier introuvable avec l'ID : " + atelierId));
+        Atelier atelier = getAtelierEntityByIdForUpdate(atelierId);
         // Regle metier : impossible de retirer un participant d'un atelier vide.
         if (atelier.getNbParticipantsActuels() <= 0) {
             throw new BusinessException("Cet atelier ne comporte aucun participant confirmé.");
@@ -357,7 +367,8 @@ public class AtelierServiceImpl implements AtelierService {
         LocalTime openingTime = salle.getCentre().getHeureOuverture();
         LocalTime closingTime = salle.getCentre().getHeureFermeture();
         // Regle metier : l'atelier doit respecter les horaires d'ouverture du centre.
-        if (heureDebut.isBefore(openingTime) || heureFin.isAfter(closingTime)) {
+        if (heureDebut.isBefore(openingTime) || heureFin.isAfter(closingTime)
+                || (openingTime.isBefore(closingTime) && heureFin.isBefore(heureDebut))) {
             throw new BusinessException("L'atelier est en dehors des horaires d'ouverture du centre (" + openingTime + " - " + closingTime + ").");
         }
     }

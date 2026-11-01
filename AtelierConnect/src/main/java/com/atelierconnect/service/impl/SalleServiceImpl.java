@@ -36,6 +36,13 @@ public class SalleServiceImpl implements SalleService {
     }
 
     @Override
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public Salle getByIdForUpdate(Long id) {
+        return salleRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Salle introuvable avec l'ID : " + id));
+    }
+
+    @Override
     public List<Salle> getAll() {
         return salleRepository.findAll();
     }

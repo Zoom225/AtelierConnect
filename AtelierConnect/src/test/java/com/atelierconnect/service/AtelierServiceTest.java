@@ -58,6 +58,9 @@ class AtelierServiceTest {
     @Mock
     private AtelierMapper atelierMapper;
 
+    @Mock
+    private jakarta.persistence.EntityManager entityManager;
+
     @InjectMocks
     private AtelierServiceImpl atelierService;
 
@@ -120,8 +123,8 @@ class AtelierServiceTest {
         existant.setId(21L);
         existant.setOrganisateur(organisateur);
         existant.setStatut(StatutAtelier.PLANIFIE);
-        when(atelierRepository.findById(21L)).thenReturn(Optional.of(existant));
-        when(salleService.getById(1L)).thenReturn(salle);
+        when(atelierRepository.findByIdForUpdate(21L)).thenReturn(Optional.of(existant));
+        when(salleService.getByIdForUpdate(1L)).thenReturn(salle);
 
         AtelierRequest demande = AtelierRequest.builder()
                 .salleId(1L)
@@ -151,8 +154,8 @@ class AtelierServiceTest {
         existant.setId(22L);
         existant.setOrganisateur(organisateur);
         existant.setStatut(StatutAtelier.PLANIFIE);
-        when(atelierRepository.findById(22L)).thenReturn(Optional.of(existant));
-        when(salleService.getById(2L)).thenReturn(autreSalle);
+        when(atelierRepository.findByIdForUpdate(22L)).thenReturn(Optional.of(existant));
+        when(salleService.getByIdForUpdate(2L)).thenReturn(autreSalle);
 
         AtelierRequest demande = AtelierRequest.builder()
                 .salleId(2L)
@@ -176,7 +179,7 @@ class AtelierServiceTest {
         prive.setStatut(StatutAtelier.PLANIFIE);
         prive.setNbParticipantsActuels(1);
         prive.setDateDebut(LocalDate.now().plusDays(AtelierRules.OUVERTURE_PUBLIQUE_JOURS).atTime(10, 0));
-        when(atelierRepository.findById(10L)).thenReturn(Optional.of(prive));
+        when(atelierRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(prive));
 
         assertThrows(BusinessException.class, () -> atelierService.convertToPublic(10L));
         verify(atelierRepository, never()).save(any());
@@ -200,6 +203,7 @@ class AtelierServiceTest {
         consenti.setStatut(StatutAtelier.PLANIFIE);
         consenti.setDateDebut(date);
         consenti.setAccordOuverturePublique(true);
+        consenti.setDateAccordOuverturePublique(LocalDateTime.now().minusDays(1));
         consenti.setNbParticipantsActuels(1);
 
         Atelier sansAccord = new Atelier();
@@ -212,7 +216,7 @@ class AtelierServiceTest {
 
         when(atelierRepository.findByDateDebutBetweenAndStatut(any(), any(), eq(StatutAtelier.PLANIFIE)))
                 .thenReturn(List.of(consenti, sansAccord));
-        when(atelierRepository.findById(31L)).thenReturn(Optional.of(consenti));
+        when(atelierRepository.findByIdForUpdate(31L)).thenReturn(Optional.of(consenti));
 
         atelierService.checkAndConvertExpiredPrivateAteliers();
 
@@ -233,11 +237,12 @@ class AtelierServiceTest {
         consenti.setStatut(StatutAtelier.PLANIFIE);
         consenti.setDateDebut(LocalDate.now().plusDays(AtelierRules.OUVERTURE_PUBLIQUE_JOURS).atTime(10, 0));
         consenti.setAccordOuverturePublique(true);
+        consenti.setDateAccordOuverturePublique(LocalDateTime.now().minusDays(1));
         consenti.setNbParticipantsActuels(null);
 
         when(atelierRepository.findByDateDebutBetweenAndStatut(any(), any(), eq(StatutAtelier.PLANIFIE)))
                 .thenReturn(List.of(consenti));
-        when(atelierRepository.findById(33L)).thenReturn(Optional.of(consenti));
+        when(atelierRepository.findByIdForUpdate(33L)).thenReturn(Optional.of(consenti));
 
         atelierService.checkAndConvertExpiredPrivateAteliers();
 
@@ -250,7 +255,7 @@ class AtelierServiceTest {
         Atelier prive = new Atelier();
         prive.setId(10L);
         prive.setOrganisateur(organisateur);
-        when(atelierRepository.findById(10L)).thenReturn(Optional.of(prive));
+        when(atelierRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(prive));
 
         assertThrows(BusinessException.class, () -> atelierService.consentToPublicOpening(10L, 999L));
         verify(atelierRepository, never()).save(any());
@@ -261,7 +266,7 @@ class AtelierServiceTest {
     void createAtelier_ShouldSucceed_WhenAllRulesAreMet() {
         // Arrange
         when(participantRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
-        when(salleService.getById(salle.getId())).thenReturn(salle);
+        when(salleService.getByIdForUpdate(salle.getId())).thenReturn(salle);
         when(participantService.hasOutstandingBalance(organisateur.getId())).thenReturn(false);
         when(participantService.hasActivePenalty(organisateur.getId())).thenReturn(false);
         when(atelierRepository.findOverlappingAteliers(any(), any(), any(), any())).thenReturn(Collections.emptyList());
@@ -294,7 +299,7 @@ class AtelierServiceTest {
     void createAtelier_ShouldFail_WhenParticipantHasOutstandingBalance() {
         // Arrange
         when(participantRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
-        when(salleService.getById(salle.getId())).thenReturn(salle);
+        when(salleService.getByIdForUpdate(salle.getId())).thenReturn(salle);
         when(participantService.hasOutstandingBalance(organisateur.getId())).thenReturn(true);
 
         // Act & Assert
@@ -310,7 +315,7 @@ class AtelierServiceTest {
     void createAtelier_ShouldFail_WhenParticipantHasActivePenalty() {
         // Arrange
         when(participantRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
-        when(salleService.getById(salle.getId())).thenReturn(salle);
+        when(salleService.getByIdForUpdate(salle.getId())).thenReturn(salle);
         when(participantService.hasOutstandingBalance(organisateur.getId())).thenReturn(false);
         when(participantService.hasActivePenalty(organisateur.getId())).thenReturn(true);
 
@@ -327,7 +332,7 @@ class AtelierServiceTest {
         // Arrange
         CreateAtelierRequest tooFarRequest = new CreateAtelierRequest(salle.getId(), LocalDateTime.now().plusDays(8), "PUBLIC");
         when(participantRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
-        when(salleService.getById(salle.getId())).thenReturn(salle);
+        when(salleService.getByIdForUpdate(salle.getId())).thenReturn(salle);
 
         // Act & Assert
         BusinessException exception = assertThrows(BusinessException.class, () -> {
@@ -339,7 +344,7 @@ class AtelierServiceTest {
     @Test
     void delaisDesTroisCategoriesSontAppliques() {
         when(participantRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
-        when(salleService.getById(salle.getId())).thenReturn(salle);
+        when(salleService.getByIdForUpdate(salle.getId())).thenReturn(salle);
 
         for (TypeParticipant type : TypeParticipant.values()) {
             organisateur.setTypeParticipant(type);
@@ -358,7 +363,7 @@ class AtelierServiceTest {
     void createAtelier_ShouldFail_WhenSlotIsAlreadyBooked() {
         // Arrange
         when(participantRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
-        when(salleService.getById(salle.getId())).thenReturn(salle);
+        when(salleService.getByIdForUpdate(salle.getId())).thenReturn(salle);
         when(atelierRepository.findOverlappingAteliers(any(), any(), any(), any())).thenReturn(Collections.singletonList(new Atelier()));
 
         // Act & Assert

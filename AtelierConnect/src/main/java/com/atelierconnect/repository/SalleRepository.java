@@ -1,6 +1,8 @@
 package com.atelierconnect.repository;
 
 import com.atelierconnect.entity.Salle;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,6 +14,9 @@ import java.util.Optional;
 
 @Repository
 public interface SalleRepository extends JpaRepository<Salle, Long> {
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM Salle s WHERE s.id = :id")
+    Optional<Salle> findByIdForUpdate(@Param("id") Long id);
     // Les DTO utilisent centre.nom alors que spring.jpa.open-in-view=false.
     // Le graphe charge le centre dans la transaction de lecture JPA.
     @Override
