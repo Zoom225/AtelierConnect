@@ -7,7 +7,8 @@ export default defineConfig({
   fullyParallel: false,
   retries: 0,
   workers: 1,
-  reporter: [['list'], ['html', { open: 'never', outputFolder: '../playwright-report' }]],
+  reporter: [['list'], ['html', { open: 'never', outputFolder: '../playwright-report' }],
+    ['json', { outputFile: process.env.PLAYWRIGHT_JSON_OUTPUT_NAME ?? '../playwright-report/results.json' }]],
   use: {
     baseURL: 'http://127.0.0.1:4200',
     ...devices['Desktop Chrome'],

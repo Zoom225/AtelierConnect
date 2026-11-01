@@ -169,7 +169,7 @@ jobs:
         shell: bash
         run: |
           npm ci --prefix AtelierConnect/frontend
-          npm install --prefix AtelierConnect/frontend/e2e --no-package-lock --no-audit --no-fund
+          npm ci --prefix AtelierConnect/frontend/e2e --no-audit --no-fund
           (cd AtelierConnect/frontend/e2e && npx playwright install --with-deps chromium)
 
       - name: Démarrer la vraie application et exécuter Chromium

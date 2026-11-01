@@ -35,6 +35,14 @@ function dateDansSixJours(): string {
   return `${date.toISOString().slice(0, 10)}T09:00:00`;
 }
 
+async function loginParticipantInBrowser(page: import('@playwright/test').Page, matricule: string) {
+  await page.goto('/member');
+  await page.locator('input[formControlName="matricule"]').fill(matricule);
+  await page.locator('input[formControlName="password"]').fill(demoPassword!);
+  await page.locator('form button[type="submit"]').click();
+  await expect(page.locator('input[formControlName="password"]')).toHaveCount(0);
+}
+
 test('parcours complet : identité, atelier privé, invitation, paiement et consentement persistant', async ({ page }) => {
   test.setTimeout(120_000);
 
@@ -261,4 +269,98 @@ test('administrateur global : créer, modifier et supprimer un centre dans Angul
   await expect(fiche).toHaveCount(0, { timeout: 15_000 });
   const reponseSuppression = await page.request.get('/api/centres/' + centre!.id);
   expect(reponseSuppression.status()).toBe(404);
+});
+
+test('création Angular, paiement et annulation visibles et persistants', async ({ page }) => {
+  await loginParticipantInBrowser(page, 'G1002');
+  await page.goto('/member/ateliers/nouveau');
+  await page.locator('mat-select[formControlName="centreId"]').click();
+  await page.getByRole('option').filter({ hasText: 'Bruxelles' }).click();
+  await page.locator('mat-select[formControlName="salleId"]').click();
+  await page.getByRole('option', { name: /^Salle Création A\b/ }).click();
+  const date = new Date();
+  date.setDate(date.getDate() + 5);
+  await page.locator('input[formControlName="date"]').fill(date.toISOString().slice(0, 10));
+  await page.locator('input[formControlName="heureDebut"]').fill('12:00');
+  const creationResponse = page.waitForResponse(response =>
+    response.url().endsWith('/api/ateliers') && response.request().method() === 'POST');
+  await page.locator('form button[type="submit"]').click();
+  const creation = await creationResponse;
+  expect(creation.status(), await creation.text()).toBe(201);
+  const atelier = await creation.json() as Atelier;
+  expect(atelier.typeAtelier).toBe('PUBLIC');
+  expect(atelier.nbParticipantsActuels).toBe(0);
+  await expect(page).toHaveURL(/\/member\/reservations/);
+
+  const organiser = await login(page.request, 'G1002');
+  const reservations = await page.request.get(`/api/reservations/participant/${organiser.id}`,
+    { headers: bearer(organiser.token) });
+  const reservation = (await reservations.json() as Reservation[]).find(item => item.atelierId === atelier.id)!;
+  expect(reservation.statut).toBe('EN_ATTENTE');
+  const card = page.locator('mat-card').filter({
+    has: page.locator('mat-card-title').filter({ hasText: new RegExp(`#${reservation.id}$`) })
+  });
+  const paid = page.waitForResponse(response => response.url().endsWith(`/reservation/${reservation.id}/pay`));
+  await card.getByRole('button', { name: /Payer/ }).click();
+  expect((await paid).status()).toBe(200);
+  await expect(card.getByRole('button', { name: /Payer/ })).toBeDisabled();
+  const cancelled = page.waitForResponse(response => response.url().endsWith(`/reservations/${reservation.id}/cancel`));
+  await card.getByRole('button', { name: /Annuler/ }).click();
+  expect((await cancelled).status()).toBe(204);
+  await page.reload();
+  await expect(card.getByRole('button', { name: /Annuler/ })).toBeDisabled();
+  const after = await page.request.get(`/api/reservations/${reservation.id}`, { headers: bearer(organiser.token) });
+  const persisted = await after.json() as Reservation;
+  expect(persisted.statut).toBe('ANNULEE');
+  expect(persisted.paiement?.statut).toBe('REMBOURSE');
+
+  const visitor = await login(page.request, 'L10001');
+  const joined = await page.request.post('/api/reservations', { headers: bearer(visitor.token),
+    data: { atelierId: atelier.id, participantId: visitor.id, requesterId: visitor.id } });
+  expect(joined.status(), await joined.text()).toBe(201);
+  const duplicate = await page.request.post('/api/reservations', { headers: bearer(visitor.token),
+    data: { atelierId: atelier.id, participantId: visitor.id, requesterId: visitor.id } });
+  expect(duplicate.status()).toBe(400);
+  expect((await duplicate.json()).message).toContain('déjà inscrit');
+});
+
+test('salles administrables, Swagger et refus HTTP réels', async ({ page }) => {
+  await page.goto('/admin/login');
+  await page.locator('input[formControlName="email"]').fill('admin@atelierconnect.example');
+  await page.locator('input[formControlName="password"]').fill(adminPassword!);
+  await page.locator('form button[type="submit"]').click();
+  await expect(page).toHaveURL(/\/admin\/?$/);
+  await page.goto('/admin/salles');
+  const name = 'Salle validation ' + Date.now();
+  await page.locator('input[formControlName="nom"]').fill(name);
+  await page.locator('mat-select[formControlName="centreId"]').click();
+  await page.getByRole('option').filter({ hasText: 'Bruxelles' }).click();
+  await page.locator('form button[type="submit"]').click();
+  const card = page.locator('.adm-ter-card').filter({ hasText: name });
+  await expect(card).toBeVisible();
+  await card.locator('button.adm-ter-action-edit').click();
+  await page.locator('input[formControlName="nom"]').fill(name + ' modifiée');
+  await page.locator('form button[type="submit"]').click();
+  await expect(card).toContainText(name + ' modifiée');
+  const salles = await (await page.request.get('/api/salles')).json() as Salle[];
+  const salle = salles.find(item => item.nom === name + ' modifiée')!;
+  expect(salle).toBeDefined();
+  page.once('dialog', dialog => dialog.accept());
+  await card.locator('button.adm-ter-action-delete').click();
+  await expect(card).toHaveCount(0);
+  expect((await page.request.get(`/api/salles/${salle.id}`)).status()).toBe(404);
+
+  expect((await page.request.get('/swagger-ui.html')).status()).toBe(200);
+  expect((await page.request.get('/v3/api-docs')).status()).toBe(200);
+  expect((await page.request.post('/api/salles', { data: { nom: 'Interdit', centreId: salle.centreId } })).status()).toBe(403);
+  const invalidLogin = await page.request.post('/api/participants/login',
+    { data: { matricule: 'INEXISTANT', password: 'incorrect' } });
+  expect(invalidLogin.status()).toBe(400);
+  expect((await invalidLogin.json()).message).toBe('Identifiants invalides.');
+  const preflight = await page.request.fetch('/api/reservations', { method: 'OPTIONS', headers: {
+    Origin: 'http://localhost:4200', 'Access-Control-Request-Method': 'POST',
+    'Access-Control-Request-Headers': 'authorization,content-type'
+  } });
+  expect(preflight.status()).toBe(200);
+  expect(preflight.headers()['access-control-allow-origin']).toBeTruthy();
 });
