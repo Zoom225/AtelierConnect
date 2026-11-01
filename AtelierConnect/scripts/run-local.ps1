@@ -62,11 +62,18 @@ try {
     Invoke-Native 'docker' @('compose', 'config', '--quiet')
     Write-Host 'PostgreSQL container available. Existing volume preserved.'
 
+    # A healthy container alone does not prove JDBC credentials work.
+    # Ask for the existing role password before attempting Hibernate startup.
+    & (Join-Path $PSScriptRoot 'verify-postgres-login.ps1')
+
     if ($Build) {
         # Never run integration tests against the existing application database.
         Invoke-Native (Join-Path $root 'mvnw.cmd') @('-DskipTests', 'package')
     }
 
+    # With DevTools restart enabled, a failed application startup may still
+    # produce Maven BUILD SUCCESS. Disable only the restart classloader here.
+    $env:SPRING_DEVTOOLS_RESTART_ENABLED = 'false'
     Write-Host 'Starting Spring Boot at http://localhost:8082 (Swagger: /swagger-ui.html)'
     Invoke-Native (Join-Path $root 'mvnw.cmd') @('spring-boot:run')
 }
