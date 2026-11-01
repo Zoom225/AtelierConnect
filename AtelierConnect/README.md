@@ -17,7 +17,23 @@ La PR #2 reste en brouillon ; aucune branche phase 4 avant intégration de phase
 
 ## Prérequis
 
-Java 21, Docker Desktop, Node.js compatible Angular 21 et npm. Exécuter les commandes ci-dessous depuis `AtelierConnect/` dans Windows PowerShell.
+Java 21, Docker Desktop démarré, Node.js 22 >= 22.12 ou Node.js 24, et npm.
+Les commandes ci-dessous utilisent **Windows PowerShell**.
+
+Le dépôt contient un sous-dossier `AtelierConnect` : depuis la racine Git,
+se placer dans le dossier backend contenant `pom.xml` et `docker-compose.yml` :
+
+```powershell
+cd .\AtelierConnect
+java -version
+.\mvnw.cmd -version
+node --version
+npm --version
+docker version
+```
+
+Les sections Docker et backend partent de ce dossier. La section frontend utilise
+un second terminal, dont le dossier de départ est indiqué séparément.
 
 ## Configuration locale
 
@@ -32,68 +48,145 @@ Variables requises :
 | `APP_DEMO_ADMIN_PASSWORD` | Mot de passe initial des administrateurs du jeu de démonstration |
 | `SPRING_DATASOURCE_URL` | Facultatif ; défaut `jdbc:postgresql://localhost:5441/atelierconnect_db` |
 
-Définir les variables dans chaque terminal qui lance Docker Compose ou le backend. Les commandes ci-dessous demandent les valeurs sans les afficher. Conserver les mêmes valeurs lors des redémarrages : le volume PostgreSQL conserve son mot de passe initial, et changer la clé JWT invalide les jetons existants. Garder ces valeurs dans un gestionnaire de secrets, jamais dans Git.
+Dans le terminal utilisé pour Docker et le backend, charger les variables avec le
+script existant. Il conserve les valeurs déjà définies et demande les secrets
+manquants sans les afficher ni les enregistrer dans un fichier :
 
 ```powershell
-$env:POSTGRES_USER = 'atelierconnect'
-$secure = Read-Host 'POSTGRES_PASSWORD' -AsSecureString
-$ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-try { $env:POSTGRES_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
-$secure = Read-Host 'JWT_SECRET (au moins 32 octets)' -AsSecureString
-$ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-try { $env:JWT_SECRET = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
-$secure = Read-Host 'APP_DEMO_MEMBER_PASSWORD' -AsSecureString
-$ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-try { $env:APP_DEMO_MEMBER_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
-$secure = Read-Host 'APP_DEMO_ADMIN_PASSWORD' -AsSecureString
-$ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-try { $env:APP_DEMO_ADMIN_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
+.\scripts\set-local-environment.ps1
 ```
 
-Pour créer une nouvelle clé JWT aléatoire, la générer localement et la stocker dans le gestionnaire de secrets avant de fermer le terminal :
+Pour vérifier une configuration déjà chargée sans saisie interactive :
 
 ```powershell
-$bytes = New-Object byte[] 64
-$rng = [Security.Cryptography.RandomNumberGenerator]::Create()
-try { $rng.GetBytes($bytes) } finally { $rng.Dispose() }
-$env:JWT_SECRET = [Convert]::ToBase64String($bytes)
+.\scripts\set-local-environment.ps1 -NonInteractive
 ```
 
-La clé JWT précédemment publiée dans l'historique Git doit être révoquée/remplacée partout où elle a été utilisée. Les anciens mots de passe de démonstration publiés doivent aussi être remplacés pour les comptes déjà créés ; changer les variables ne réinitialise pas les mots de passe des comptes existants. L'initialisation de démonstration ne remplace plus les identifiants personnalisés.
+Utiliser les identifiants du volume PostgreSQL existant et conserver la clé JWT
+privée prévue pour cette installation. Changer les variables de démonstration ne
+réinitialise pas les mots de passe des comptes existants. Ne pas commiter les secrets.
 
-## PostgreSQL
+## Docker : démarrer PostgreSQL
 
-`docker-compose.yml` crée la base `atelierconnect_db`, le conteneur `atelierconnect-db` et le volume distinct `atelierconnect-postgres-data`. Le port hôte est `5441`. Aucun ancien volume n'est supprimé.
+Le Compose utilise l'image prête à l'emploi `postgres:15` : **aucune compilation
+Docker n'est nécessaire**. Il ne contient pas de services backend ou frontend ;
+Java et Angular se compilent avec les commandes des sections suivantes.
+
+Base : `atelierconnect_db`, conteneur : `atelierconnect-db`, volume persistant :
+`atelierconnect-postgres-data` (préfixé par Compose), port hôte : `5441`.
+
+Vérifier la configuration et l'état :
 
 ```powershell
 docker compose config --quiet
-docker compose up -d postgres
 docker compose ps
 ```
 
-Pour arrêter le conteneur en conservant les données : `docker compose down`. Ne pas utiliser `down -v` si les données doivent être conservées.
-
-## Backend
-
-`spring.jpa.hibernate.ddl-auto=update` reste actif. Depuis un terminal configuré avec les variables ci-dessus :
+Si le conteneur existe et est arrêté, le réutiliser :
 
 ```powershell
-.\mvnw.cmd test
-.\mvnw.cmd clean package
+docker compose start postgres
+```
+
+Uniquement pour une première installation sans ce conteneur :
+
+```powershell
+docker compose pull postgres
+docker compose up -d postgres
+```
+
+Contrôler le démarrage, puis arrêter sans supprimer le conteneur ni ses données si nécessaire :
+
+```powershell
+docker compose ps
+docker compose logs --tail 50 postgres
+```
+
+```powershell
+docker compose stop postgres
+```
+
+## Backend : compiler et démarrer
+
+Depuis le dossier backend, avec les variables chargées et PostgreSQL démarré.
+Compiler le JAR sans lancer les tests qui nécessitent une base dédiée :
+
+```powershell
+.\mvnw.cmd -B -ntp -DskipTests clean package
+```
+
+Les tests complets sont exécutés par la procédure isolée ci-dessous. Pour démarrer
+le backend avec Maven :
+
+```powershell
 .\mvnw.cmd spring-boot:run
 ```
 
-Backend : `http://localhost:8082` ; Swagger : `http://localhost:8082/swagger-ui.html`.
-
-## Frontend
-
-Depuis `AtelierConnect/frontend/` :
+Ou, à la place de Maven, démarrer le JAR compilé :
 
 ```powershell
+java -jar .\target\atelierconnect-backend-0.0.1-SNAPSHOT.jar
+```
+
+Utiliser une seule de ces deux méthodes à la fois. Arrêter le serveur avec `Ctrl+C`.
+`spring.jpa.hibernate.ddl-auto=update` est conservé ; aucun Flyway n'est utilisé.
+Avant un démarrage sur des données existantes, suivre la procédure de sauvegarde du
+[guide Windows](docs/phase-4/installation-windows.md).
+
+Depuis une autre console, vérifier l'API :
+
+```powershell
+Invoke-RestMethod http://localhost:8082/api/ateliers/public
+```
+
+Backend : `http://localhost:8082` ; Swagger : `http://localhost:8082/swagger-ui.html`.
+Le [guide IntelliJ](docs/phase-4/installation-windows.md) décrit aussi le lancement
+de `com.atelierconnect.AtelierConnectApplication` avec une configuration privée.
+
+## Frontend : installer, tester, compiler et démarrer
+
+Dans **un second terminal ouvert à la racine Git**, pendant que le backend tourne :
+
+```powershell
+cd .\AtelierConnect\frontend
 npm ci
-npm test
+npm test -- --maxWorkers=2
 npm run build
 npm start
 ```
 
-Frontend : `http://localhost:4200`. Le proxy de développement redirige `/api` vers le backend sur le port `8082`.
+`npm ci` installe les versions du lockfile ; Vitest exécute tous les tests avec deux
+workers pour limiter la mémoire. `npm run build` produit le build de production
+dans `dist/frontend/`. `npm start` lance le serveur de développement et son proxy.
+
+Frontend : `http://localhost:4200`. `/api` est redirigé vers
+`http://localhost:8082`. Arrêter Angular avec `Ctrl+C`.
+
+## Validation complète sur bases dédiées
+
+Revenir dans le dossier backend contenant `pom.xml`. Arrêter d'abord vos serveurs
+Java et Angular avec `Ctrl+C` pour libérer `8082` et `4200` ; laisser Docker Desktop
+actif. Ne pas lancer les tests Java avec les variables de la base applicative.
+
+Dans l'environnement actuel, réutiliser le serveur PostgreSQL de test déjà présent :
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate-fullstack.ps1 -TestContainer atelierconnect-refactor-test-20261101 -PostgresPort 5549
+```
+
+Sur une nouvelle installation, si le port de test `5549` est libre, le script peut
+créer son serveur dédié par défaut :
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate-fullstack.ps1
+```
+
+Le script exécute le wrapper Maven `clean verify` (dont les tests PostgreSQL de
+concurrence), `npm ci`, Vitest, le build Angular et les six parcours Playwright.
+Il démarre les vrais serveurs, contrôle la persistance après redémarrage du serveur
+de test, puis arrête les processus Java/Angular qu'il a lancés. Il conserve les
+bases et volumes, sans toucher à `atelierconnect_db`.
+
+Rapports : `.local/validation/<date>/summary.json`, `target/surefire-reports/` et
+`frontend/playwright-report/`. Après une installation réussie, l'option `-SkipInstall`
+évite uniquement de réinstaller les dépendances ; elle n'ignore aucun test.
