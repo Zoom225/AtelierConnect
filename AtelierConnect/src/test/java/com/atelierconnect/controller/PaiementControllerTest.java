@@ -47,14 +47,14 @@ class PaiementControllerTest {
     @MockitoBean
     private PaiementMapper paiementMapper;
     @MockitoBean
-    private CurrentParticipantService currentMemberService;
+    private CurrentParticipantService currentParticipantService;
 
     @MockitoBean
     private JwtConfig jwtConfig;
     @MockitoBean
     private AdministrateurRepository administrateurRepository;
     @MockitoBean
-    private ParticipantRepository membreRepository;
+    private ParticipantRepository participantRepository;
 
     private Paiement paiement;
     private PaiementResponse paiementResponse;
@@ -72,11 +72,11 @@ class PaiementControllerTest {
 
     @Test
     @WithMockUser(roles = "MEMBER")
-    @DisplayName("POST /paiements/reservation/{resId}/membre/{memId} - Doit traiter un paiement")
+    @DisplayName("POST /paiements/reservation/{resId}/participant/{memId} - Doit traiter un paiement")
     void pay_ShouldProcessPayment_AndReturnOk() throws Exception {
         when(paiementService.pay(anyLong(), anyLong())).thenReturn(paiement);
         when(paiementMapper.toResponse(any(Paiement.class))).thenReturn(paiementResponse);
-        when(currentMemberService.currentMemberId()).thenReturn(1L);
+        when(currentParticipantService.currentParticipantId()).thenReturn(1L);
 
         mockMvc.perform(post("/api/paiements/reservation/1/membre/1")
                         .with(csrf())
@@ -92,7 +92,7 @@ class PaiementControllerTest {
     void getById_ShouldReturnPayment_WhenFound() throws Exception {
         when(paiementService.getById(1L)).thenReturn(paiement);
         when(paiementMapper.toResponse(any(Paiement.class))).thenReturn(paiementResponse);
-        when(currentMemberService.currentMemberId()).thenReturn(1L);
+        when(currentParticipantService.currentParticipantId()).thenReturn(1L);
 
         mockMvc.perform(get("/api/paiements/1"))
                 .andExpect(status().isOk())

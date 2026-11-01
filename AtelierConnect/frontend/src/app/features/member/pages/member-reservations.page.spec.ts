@@ -3,74 +3,76 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MatchesApiService } from '../../../core/api/matches-api.service';
+import { AteliersApiService } from '../../../core/api/ateliers-api.service';
 import { PaiementsApiService } from '../../../core/api/paiements-api.service';
 import { ReservationsApiService } from '../../../core/api/reservations-api.service';
 import { MemberSessionService } from '../../../core/auth/member-session.service';
-import { MatchResponse } from '../../../shared/models/match.model';
+import { AtelierResponse } from '../../../shared/models/atelier.model';
 import { MemberReservationsPage } from './member-reservations.page';
 
 describe('MemberReservationsPage', () => {
-  const organizedMatches: MatchResponse[] = [
+  const organizedAteliers: AtelierResponse[] = [
     {
       id: 1,
-      terrainId: 1,
-      terrainNom: 'Court A',
-      siteNom: 'Lyon',
+      salleId: 1,
+      salleNom: 'Court A',
+      centreNom: 'Lyon',
       organisateurId: 1,
       organisateurNom: 'Tom Bernard',
       date: '2026-05-14',
       heureDebut: '09:00:00',
       heureFin: '10:30:00',
-      typeMatch: 'PUBLIC',
+      typeAtelier: 'PUBLIC',
       statut: 'PLANIFIE',
-      nbJoueursActuels: 2,
-      prixParJoueur: 15,
+      nbParticipantsActuels: 2,
+      prixParParticipant: 15,
       dateConversionPublic: null
     },
     {
       id: 2,
-      terrainId: 1,
-      terrainNom: 'Court A',
-      siteNom: 'Lyon',
+      salleId: 1,
+      salleNom: 'Court A',
+      centreNom: 'Lyon',
       organisateurId: 1,
       organisateurNom: 'Tom Bernard',
       date: '2026-05-20',
       heureDebut: '11:00:00',
       heureFin: '12:30:00',
-      typeMatch: 'PRIVE',
+      typeAtelier: 'PRIVE',
       statut: 'PLANIFIE',
-      nbJoueursActuels: 1,
-      prixParJoueur: 15,
+      nbParticipantsActuels: 1,
+      prixParParticipant: 15,
       dateConversionPublic: null
     }
   ];
 
-  let matchesApiMock: {
+  let ateliersApiMock: {
     getByOrganisateur: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
     cancel: ReturnType<typeof vi.fn>;
+    consentToPublicOpening: ReturnType<typeof vi.fn>;
   };
   let reservationsApiMock: {
-    getByMembre: ReturnType<typeof vi.fn>;
-    getByMatch: ReturnType<typeof vi.fn>;
+    getByParticipant: ReturnType<typeof vi.fn>;
+    getByAtelier: ReturnType<typeof vi.fn>;
     create: ReturnType<typeof vi.fn>;
     createPrivateInvites: ReturnType<typeof vi.fn>;
     cancel: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(async () => {
-    matchesApiMock = {
-      getByOrganisateur: vi.fn().mockReturnValue(of(organizedMatches)),
-      update: vi.fn().mockImplementation((id: number, payload: Partial<MatchResponse>) =>
-        of({ ...organizedMatches.find((m) => m.id === id)!, ...payload } as MatchResponse)
+    ateliersApiMock = {
+      getByOrganisateur: vi.fn().mockReturnValue(of(organizedAteliers)),
+      update: vi.fn().mockImplementation((id: number, payload: Partial<AtelierResponse>) =>
+        of({ ...organizedAteliers.find((m) => m.id === id)!, ...payload } as AtelierResponse)
       ),
-      cancel: vi.fn().mockReturnValue(of(void 0))
+      cancel: vi.fn().mockReturnValue(of(void 0)),
+      consentToPublicOpening: vi.fn().mockReturnValue(of(void 0))
     };
 
     reservationsApiMock = {
-      getByMembre: vi.fn().mockReturnValue(of([])),
-      getByMatch: vi.fn().mockReturnValue(of([])),
+      getByParticipant: vi.fn().mockReturnValue(of([])),
+      getByAtelier: vi.fn().mockReturnValue(of([])),
       create: vi.fn().mockReturnValue(of({ id: 1 })),
       createPrivateInvites: vi.fn().mockReturnValue(of([])),
       cancel: vi.fn().mockReturnValue(of(void 0))
@@ -81,7 +83,7 @@ describe('MemberReservationsPage', () => {
       providers: [
         provideRouter([]),
         provideNoopAnimations(),
-        { provide: MatchesApiService, useValue: matchesApiMock },
+        { provide: AteliersApiService, useValue: ateliersApiMock },
         { provide: ReservationsApiService, useValue: reservationsApiMock },
         { provide: PaiementsApiService, useValue: { pay: vi.fn() } },
         { provide: MemberSessionService, useValue: { memberId: vi.fn().mockReturnValue(1) } }
@@ -92,15 +94,15 @@ describe('MemberReservationsPage', () => {
     vi.spyOn(router, 'getCurrentNavigation').mockReturnValue({
       extras: {
         state: {
-          createdMatchId: 2,
-          successMessage: 'Match privé créé. Les invitations sont en attente de paiement des joueurs.'
+          createdAtelierId: 2,
+          successMessage: 'Atelier privé créé. Les invitations sont en attente de paiement des participants.'
         }
       }
     } as any);
     window.history.replaceState(
       {
-        createdMatchId: 2,
-        successMessage: 'Match privé créé. Les invitations sont en attente de paiement des joueurs.'
+        createdAtelierId: 2,
+        successMessage: 'Atelier privé créé. Les invitations sont en attente de paiement des participants.'
       },
       ''
     );
@@ -111,63 +113,120 @@ describe('MemberReservationsPage', () => {
     TestBed.resetTestingModule();
   });
 
-  it('n expose que les matchs PRIVE dans la gestion des joueurs', () => {
+  it('n expose que les matchs PRIVE dans la gestion des participants', () => {
     const fixture = TestBed.createComponent(MemberReservationsPage);
     const component = fixture.componentInstance;
     fixture.detectChanges();
 
-    expect(component.organisedMatches()).toHaveLength(2);
-    expect(component.managedMatches()).toHaveLength(1);
-    expect(component.managedMatches()[0].id).toBe(2);
-    expect(component.managedMatchId()).toBe(2);
-    expect(component.message()).toContain('Match privé créé');
+    expect(component.organisedAteliers()).toHaveLength(2);
+    expect(component.managedAteliers()).toHaveLength(1);
+    expect(component.managedAteliers()[0].id).toBe(2);
+    expect(component.managedAtelierId()).toBe(2);
+    expect(component.message()).toContain('Atelier privé créé');
     expect(fixture.nativeElement.textContent).toContain('Court A');
     expect(fixture.nativeElement.textContent).toContain('Planifie');
   });
 
-  it('bloque la selection d un match PUBLIC dans la gestion des joueurs', () => {
+  it('bloque la selection d un atelier PUBLIC dans la gestion des participants', () => {
     const fixture = TestBed.createComponent(MemberReservationsPage);
     const component = fixture.componentInstance;
-    reservationsApiMock.getByMatch.mockClear();
+    reservationsApiMock.getByAtelier.mockClear();
 
-    component.onManagedMatchChange(1);
+    component.onManagedAtelierChange(1);
 
-    expect(component.managedMatchId()).toBeNull();
-    expect(component.errorMessage()).toContain('réservée aux matchs PRIVÉS');
-    expect(reservationsApiMock.getByMatch).not.toHaveBeenCalled();
+    expect(component.managedAtelierId()).toBeNull();
+    expect(component.errorMessage()).toContain('réservée aux ateliers PRIVÉS');
+    expect(reservationsApiMock.getByAtelier).not.toHaveBeenCalled();
   });
 
-  it('modifie un match PRIVÉ organisé', () => {
+  it('modifie un atelier PRIVÉ organisé', () => {
     const fixture = TestBed.createComponent(MemberReservationsPage);
     const component = fixture.componentInstance;
 
-    component.onManagedMatchChange(2);
-    component.managedMatchForm.patchValue({ date: '2026-05-22', heureDebut: '13:30', typeMatch: 'PRIVE' });
-    component.updateManagedMatch();
+    component.onManagedAtelierChange(2);
+    component.managedAtelierForm.patchValue({ date: '2026-05-22', heureDebut: '13:30', typeAtelier: 'PRIVE' });
+    component.updateManagedAtelier();
 
-    expect(matchesApiMock.update).toHaveBeenCalledWith(
+    expect(ateliersApiMock.update).toHaveBeenCalledWith(
       2,
       expect.objectContaining({
-        terrainId: 1,
+        salleId: 1,
         organisateurId: 1,
         date: '2026-05-22',
         heureDebut: '13:30',
-        typeMatch: 'PRIVE'
+        typeAtelier: 'PRIVE'
       })
     );
-    expect(component.message()).toContain('Match mis à jour');
+    expect(component.message()).toContain('Atelier mis à jour');
   });
 
-  it('supprime (annule) un match PRIVÉ organisé', () => {
+  it('enregistre uniquement un consentement explicitement confirmé', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const component = TestBed.createComponent(MemberReservationsPage).componentInstance;
+
+    component.onManagedAtelierChange(2);
+    component.consentToPublicOpening();
+
+    expect(ateliersApiMock.consentToPublicOpening).toHaveBeenCalledWith(2);
+    expect(component.selectedManagedAtelier()?.accordOuverturePublique).toBe(true);
+    expect(component.message()).toContain('accord');
+  });
+
+  it('ne transmet aucun consentement si l’organisateur refuse de confirmer', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const component = TestBed.createComponent(MemberReservationsPage).componentInstance;
+
+    component.onManagedAtelierChange(2);
+    component.consentToPublicOpening();
+
+    expect(ateliersApiMock.consentToPublicOpening).not.toHaveBeenCalled();
+  });
+
+  it('ne marque pas un autre atelier privé comme consenti', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const secondPrivate = { ...organizedAteliers.find(atelier => atelier.id === 2)!, id: 3,
+      accordOuverturePublique: false };
+    ateliersApiMock.getByOrganisateur.mockReturnValue(of([...organizedAteliers, secondPrivate]));
+    const component = TestBed.createComponent(MemberReservationsPage).componentInstance;
+    component.onManagedAtelierChange(2);
+    component.consentToPublicOpening();
+    expect(component.organisedAteliers().find(atelier => atelier.id === 2)?.accordOuverturePublique).toBe(true);
+    expect(component.organisedAteliers().find(atelier => atelier.id === 3)?.accordOuverturePublique).toBe(false);
+  });
+
+  it('restaure l’accord depuis le DTO après rechargement et empêche son renvoi', () => {
+    const ateliersWithPersistedConsent: AtelierResponse[] = organizedAteliers.map(atelier =>
+      atelier.id === 2
+        ? { ...atelier, accordOuverturePublique: true, dateAccordOuverturePublique: '2026-10-31T12:00:00' }
+        : atelier
+    );
+    ateliersApiMock.getByOrganisateur.mockReturnValue(of(ateliersWithPersistedConsent));
+
+    const fixture = TestBed.createComponent(MemberReservationsPage);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    expect(component.selectedManagedAtelier()?.accordOuverturePublique).toBe(true);
+    const consentButton = Array.from(
+      fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>
+    ).find(button => button.textContent?.includes('accord pour une éventuelle ouverture'));
+    expect(consentButton).toBeDefined();
+    expect(consentButton?.disabled).toBe(true);
+
+    component.consentToPublicOpening();
+    expect(ateliersApiMock.consentToPublicOpening).not.toHaveBeenCalled();
+  });
+
+  it('supprime (annule) un atelier PRIVÉ organisé', () => {
     const fixture = TestBed.createComponent(MemberReservationsPage);
     const component = fixture.componentInstance;
 
-    component.onManagedMatchChange(2);
-    component.requestDeleteManagedMatch();
-    component.deleteManagedMatch();
+    component.onManagedAtelierChange(2);
+    component.requestDeleteManagedAtelier();
+    component.deleteManagedAtelier();
 
-    expect(matchesApiMock.cancel).toHaveBeenCalledWith(2, 1);
-    expect(component.managedMatchId()).toBeNull();
-    expect(matchesApiMock.getByOrganisateur).toHaveBeenCalled();
+    expect(ateliersApiMock.cancel).toHaveBeenCalledWith(2, 1);
+    expect(component.managedAtelierId()).toBeNull();
+    expect(ateliersApiMock.getByOrganisateur).toHaveBeenCalled();
   });
 });

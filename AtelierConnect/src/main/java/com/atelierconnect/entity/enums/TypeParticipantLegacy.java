@@ -1,8 +1,8 @@
 package com.atelierconnect.entity.enums;
 
 public enum TypeParticipantLegacy {
-    GLOBAL,   // Gxxxx — tous les sites, 3 semaines avant
-    SITE,     // Sxxxxx — son site uniquement, 2 semaines avant
+    GLOBAL,   // Code SQL historique de PARTENAIRE (30 jours).
+    SITE,     // Code SQL historique de ABONNE (15 jours).
     LIBRE;    // Valeurs SQL historiques conservées pour les lignes existantes.
 
     public TypeParticipant toCategorie() {

@@ -46,54 +46,54 @@ class PaiementServiceTest {
     private EntityManager entityManager;
 
     @Mock
-    private ParticipantRepository membreRepository;
+    private ParticipantRepository participantRepository;
 
     @Mock
-    private AtelierRepository matchRepository;
+    private AtelierRepository atelierRepository;
 
     @InjectMocks
     private PaiementServiceImpl paiementService;
 
-    private Centre site;
-    private Salle terrain;
+    private Centre centre;
+    private Salle salle;
     private Participant organisateur;
-    private Participant joueur;
-    private Atelier match;
+    private Participant participant;
+    private Atelier atelier;
     private Reservation reservation;
     private Paiement paiement;
 
     @BeforeEach
     void setUp() {
-        site = Centre.builder().nom("Padel Club Lyon").build();
-        terrain = Salle.builder().nom("Court A").site(site).build();
+        centre = Centre.builder().nom("Centre collaboratif Lyon").build();
+        salle = Salle.builder().nom("Court A").centre(centre).build();
 
         organisateur = Participant.builder()
                 .matricule("G1001").nom("Martin").prenom("Lucas")
-                .typeMembre(TypeParticipant.GLOBAL).solde(0.0).build();
+                .typeParticipant(TypeParticipant.PARTENAIRE).solde(0.0).build();
         organisateur.setId(1L);
 
-        joueur = Participant.builder()
+        participant = Participant.builder()
                 .matricule("G1002").nom("Dupont").prenom("Julie")
-                .typeMembre(TypeParticipant.GLOBAL).solde(0.0).build();
-        joueur.setId(2L);
+                .typeParticipant(TypeParticipant.PARTENAIRE).solde(0.0).build();
+        participant.setId(2L);
 
         // Correction : Utiliser uniquement dateDebut et dateFin
-        LocalDateTime matchStart = LocalDate.now().plusDays(25).atTime(15, 0);
-        match = Atelier.builder()
-                .terrain(terrain)
+        LocalDateTime atelierStart = LocalDate.now().plusDays(25).atTime(15, 0);
+        atelier = Atelier.builder()
+                .salle(salle)
                 .organisateur(organisateur)
-                .dateDebut(matchStart)
-                .dateFin(matchStart.plusMinutes(90))
-                .typeMatch(TypeAtelier.PUBLIC)
+                .dateDebut(atelierStart)
+                .dateFin(atelierStart.plusMinutes(90))
+                .typeAtelier(TypeAtelier.PUBLIC)
                 .statut(StatutAtelier.PLANIFIE)
-                .nbJoueursActuels(1)
+                .nbParticipantsActuels(1)
                 .prixTotal(60.0)
-                .prixParJoueur(15.0)
+                .prixParParticipant(15.0)
                 .build();
-        match.setId(10L);
+        atelier.setId(10L);
 
         reservation = Reservation.builder()
-                .match(match).membre(joueur).statut(StatutReservation.EN_ATTENTE).build();
+                .atelier(atelier).participant(participant).statut(StatutReservation.EN_ATTENTE).build();
         reservation.setId(1L);
 
         paiement = Paiement.builder()
@@ -110,23 +110,23 @@ class PaiementServiceTest {
         @DisplayName("verrouille la réservation avant toute lecture du paiement")
         void shouldLockReservationBeforeReadingItsPayment() {
             when(reservationService.getById(1L)).thenReturn(reservation);
-            when(matchRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(match));
+            when(atelierRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(atelier));
 
             paiementService.pay(1L, 2L);
 
-            var order = inOrder(reservationRepository, reservationService, matchRepository);
+            var order = inOrder(reservationRepository, reservationService, atelierRepository);
             order.verify(reservationRepository).lockReservationById(1L);
             order.verify(reservationService).getById(1L);
-            order.verify(matchRepository).findByIdForUpdate(10L);
+            order.verify(atelierRepository).findByIdForUpdate(10L);
         }
 
         @Test
         @DisplayName("✅ doit traiter le paiement et confirmer la réservation")
         void shouldProcessPayment() {
             when(reservationService.getById(1L)).thenReturn(reservation);
-            when(matchRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(match));
+            when(atelierRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(atelier));
             when(paiementRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-            when(matchRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(atelierRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
             doAnswer(inv -> {
                 reservation.setStatut(StatutReservation.CONFIRMEE);
                 return null;
@@ -136,27 +136,27 @@ class PaiementServiceTest {
 
             assertThat(result.getStatut()).isEqualTo(StatutPaiement.PAYE);
             assertThat(reservation.getStatut()).isEqualTo(StatutReservation.CONFIRMEE);
-            assertThat(match.getNbJoueursActuels()).isEqualTo(2);
-            assertThat(match.getStatut()).isEqualTo(StatutAtelier.PLANIFIE);
-            verify(matchRepository).findByIdForUpdate(10L);
+            assertThat(atelier.getNbParticipantsActuels()).isEqualTo(2);
+            assertThat(atelier.getStatut()).isEqualTo(StatutAtelier.PLANIFIE);
+            verify(atelierRepository).findByIdForUpdate(10L);
             verify(reservationService).confirm(1L);
-            verify(matchRepository).save(match);
+            verify(atelierRepository).save(atelier);
         }
 
         @Test
         @DisplayName("✅ doit ajouter le solde impayé et l'effacer")
         void shouldAddOutstandingBalanceToPayment() {
-            joueur.setSolde(15.0);
+            participant.setSolde(15.0);
             when(reservationService.getById(1L)).thenReturn(reservation);
-            when(matchRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(match));
-            when(membreRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(atelierRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(atelier));
+            when(participantRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
             when(paiementRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
             Paiement result = paiementService.pay(1L, 2L);
 
             assertThat(result.getMontant()).isEqualTo(30.0);
-            assertThat(joueur.getSolde()).isEqualTo(0.0);
-            verify(membreRepository).save(joueur);
+            assertThat(participant.getSolde()).isEqualTo(0.0);
+            verify(participantRepository).save(participant);
         }
 
         @Test
@@ -171,13 +171,13 @@ class PaiementServiceTest {
         }
 
         @Test
-        @DisplayName("✅ doit faire passer le match à COMPLET au quatrième paiement")
-        void shouldCompleteMatchOnFourthPayment() {
-            match.setNbJoueursActuels(5);
+        @DisplayName("✅ doit faire passer l'atelier à COMPLET au quatrième paiement")
+        void shouldCompleteAtelierOnFourthPayment() {
+            atelier.setNbParticipantsActuels(5);
             when(reservationService.getById(1L)).thenReturn(reservation);
-            when(matchRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(match));
+            when(atelierRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(atelier));
             when(paiementRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-            when(matchRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(atelierRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
             doAnswer(inv -> {
                 reservation.setStatut(StatutReservation.CONFIRMEE);
                 return null;
@@ -187,32 +187,32 @@ class PaiementServiceTest {
 
             assertThat(result.getStatut()).isEqualTo(StatutPaiement.PAYE);
             assertThat(reservation.getStatut()).isEqualTo(StatutReservation.CONFIRMEE);
-            assertThat(match.getNbJoueursActuels()).isEqualTo(6);
-            assertThat(match.getStatut()).isEqualTo(StatutAtelier.COMPLET);
+            assertThat(atelier.getNbParticipantsActuels()).isEqualTo(6);
+            assertThat(atelier.getStatut()).isEqualTo(StatutAtelier.COMPLET);
             verify(reservationService).confirm(1L);
-            verify(matchRepository).findByIdForUpdate(10L);
-            verify(matchRepository).save(match);
+            verify(atelierRepository).findByIdForUpdate(10L);
+            verify(atelierRepository).save(atelier);
         }
 
         @Test
-        @DisplayName("❌ doit refuser le paiement quand le match est déjà complet")
-        void shouldThrowWhenMatchIsAlreadyFull() {
-            match.setNbJoueursActuels(6);
-            match.setStatut(StatutAtelier.COMPLET);
+        @DisplayName("❌ doit refuser le paiement quand l'atelier est déjà complet")
+        void shouldThrowWhenAtelierIsAlreadyFull() {
+            atelier.setNbParticipantsActuels(6);
+            atelier.setStatut(StatutAtelier.COMPLET);
             when(reservationService.getById(1L)).thenReturn(reservation);
-            when(matchRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(match));
+            when(atelierRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(atelier));
 
             assertThatThrownBy(() -> paiementService.pay(1L, 2L))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("déjà complet");
 
-            assertThat(match.getNbJoueursActuels()).isEqualTo(6);
+            assertThat(atelier.getNbParticipantsActuels()).isEqualTo(6);
             assertThat(reservation.getStatut()).isEqualTo(StatutReservation.EN_ATTENTE);
             assertThat(paiement.getStatut()).isEqualTo(StatutPaiement.EN_ATTENTE);
-            verify(matchRepository).findByIdForUpdate(10L);
+            verify(atelierRepository).findByIdForUpdate(10L);
             verify(paiementRepository, never()).save(any());
             verify(reservationService, never()).confirm(any());
-            verify(matchRepository, never()).save(any());
+            verify(atelierRepository, never()).save(any());
         }
 
         @Test
@@ -225,7 +225,7 @@ class PaiementServiceTest {
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("réservation annulée");
 
-            verify(matchRepository, never()).findByIdForUpdate(any());
+            verify(atelierRepository, never()).findByIdForUpdate(any());
             verify(paiementRepository, never()).save(any());
             verify(reservationService, never()).confirm(any());
         }
@@ -257,24 +257,24 @@ class PaiementServiceTest {
         @Test
         @DisplayName("✅ doit annuler la réservation impayée et ajouter le solde")
         void shouldCancelUnpaidReservationAndAddBalanceToOrganizer() {
-            // Correction : Utiliser setDateDebut pour modifier la date du match
+            // Correction : Utiliser setDateDebut pour modifier la date de l'atelier
             LocalDateTime tomorrowStart = LocalDate.now().plusDays(1).atStartOfDay();
-            match.setDateDebut(tomorrowStart);
+            atelier.setDateDebut(tomorrowStart);
 
             when(paiementRepository.findByStatut(StatutPaiement.EN_ATTENTE)).thenReturn(List.of(paiement));
-            when(membreRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(participantRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-            paiementService.checkUnpaidBeforeMatch();
+            paiementService.checkUnpaidBeforeAtelier();
 
             verify(reservationService).cancel(reservation.getId());
             assertThat(organisateur.getSolde()).isEqualTo(15.0);
-            verify(membreRepository).save(organisateur);
+            verify(participantRepository).save(organisateur);
         }
 
         @Test
         @DisplayName("ne pénalise pas un paiement confirmé juste avant le verrou")
         void shouldSkipPenaltyWhenPaymentWasJustConfirmed() {
-            match.setDateDebut(LocalDate.now().plusDays(1).atStartOfDay());
+            atelier.setDateDebut(LocalDate.now().plusDays(1).atStartOfDay());
             when(paiementRepository.findByStatut(StatutPaiement.EN_ATTENTE))
                     .thenReturn(List.of(paiement));
             doAnswer(invocation -> {
@@ -283,25 +283,25 @@ class PaiementServiceTest {
                 return null;
             }).when(entityManager).refresh(paiement);
 
-            paiementService.checkUnpaidBeforeMatch();
+            paiementService.checkUnpaidBeforeAtelier();
 
             verify(reservationRepository).lockReservationById(reservation.getId());
             verify(reservationService, never()).cancel(any());
-            verify(membreRepository, never()).save(any());
+            verify(participantRepository, never()).save(any());
         }
 
         @Test
-        @DisplayName("✅ NE doit PAS annuler quand le match n'est pas demain")
-        void shouldNotCancelWhenMatchIsNotTomorrow() {
-            // Correction : S'assurer que la date du match n'est pas demain
-            match.setDateDebut(LocalDate.now().plusDays(5).atStartOfDay());
+        @DisplayName("✅ NE doit PAS annuler quand l'atelier n'est pas demain")
+        void shouldNotCancelWhenAtelierIsNotTomorrow() {
+            // Correction : S'assurer que la date de l'atelier n'est pas demain
+            atelier.setDateDebut(LocalDate.now().plusDays(5).atStartOfDay());
 
             when(paiementRepository.findByStatut(StatutPaiement.EN_ATTENTE)).thenReturn(List.of(paiement));
 
-            paiementService.checkUnpaidBeforeMatch();
+            paiementService.checkUnpaidBeforeAtelier();
 
             verify(reservationService, never()).cancel(any());
-            verify(membreRepository, never()).save(any());
+            verify(participantRepository, never()).save(any());
         }
     }
 }

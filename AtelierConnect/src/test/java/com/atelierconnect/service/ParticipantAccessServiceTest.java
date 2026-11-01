@@ -28,10 +28,10 @@ class ParticipantAccessServiceTest {
     private AdminAuthorizationService adminAuthorizationService;
 
     @Mock
-    private CurrentParticipantService currentMemberService;
+    private CurrentParticipantService currentParticipantService;
 
     @InjectMocks
-    private ParticipantAccessService membreAccessService;
+    private ParticipantAccessService participantAccessService;
 
     @AfterEach
     void tearDown() {
@@ -42,51 +42,51 @@ class ParticipantAccessServiceTest {
     @DisplayName("Un administrateur délègue l'accès lecture au service admin")
     void adminReadAccessDelegatesToAdminAuthorization() {
         authenticate("admin@padel.com", "ROLE_ADMIN");
-        Participant membre = new Participant();
-        membre.setId(12L);
+        Participant participant = new Participant();
+        participant.setId(12L);
 
-        membreAccessService.assertCanRead(membre);
+        participantAccessService.assertCanRead(participant);
 
-        verify(adminAuthorizationService).checkMembreAccess(membre);
-        verifyNoInteractions(currentMemberService);
+        verify(adminAuthorizationService).checkParticipantAccess(participant);
+        verifyNoInteractions(currentParticipantService);
     }
 
     @Test
-    @DisplayName("Un membre délègue l'accès lecture à son propre contrôle")
-    void memberReadAccessDelegatesToCurrentMemberCheck() {
+    @DisplayName("Un participant délègue l'accès lecture à son propre contrôle")
+    void memberReadAccessDelegatesToCurrentParticipantCheck() {
         authenticate("S10001", "ROLE_MEMBER");
-        Participant membre = new Participant();
-        membre.setId(7L);
+        Participant participant = new Participant();
+        participant.setId(7L);
 
-        membreAccessService.assertCanRead(membre);
+        participantAccessService.assertCanRead(participant);
 
-        verify(currentMemberService).requireCurrentMember(7L);
+        verify(currentParticipantService).requireCurrentParticipant(7L);
         verifyNoInteractions(adminAuthorizationService);
     }
 
     @Test
-    @DisplayName("La création d'un membre passe par la vérification admin")
+    @DisplayName("La création d'un participant passe par la vérification admin")
     void createAccessDelegatesToAdminAuthorization() {
         authenticate("admin@padel.com", "ROLE_ADMIN");
 
-        membreAccessService.assertCanCreate(3L);
+        participantAccessService.assertCanCreate(3L);
 
-        verify(adminAuthorizationService).checkMembreAccess(3L);
-        verifyNoInteractions(currentMemberService);
+        verify(adminAuthorizationService).checkParticipantAccess(3L);
+        verifyNoInteractions(currentParticipantService);
     }
 
     @Test
-    @DisplayName("La liste des membres est filtrée par le service admin")
-    void filterMembersDelegatesToAdminAuthorization() {
+    @DisplayName("La liste des participants est filtrée par le service admin")
+    void filterParticipantsDelegatesToAdminAuthorization() {
         authenticate("admin@padel.com", "ROLE_ADMIN");
-        Participant membre = new Participant();
-        membre.setId(1L);
-        List<Participant> membres = List.of(membre);
+        Participant participant = new Participant();
+        participant.setId(1L);
+        List<Participant> participants = List.of(participant);
 
-        membreAccessService.filterMembres(membres);
+        participantAccessService.filterParticipants(participants);
 
-        verify(adminAuthorizationService).filterMembres(membres);
-        verifyNoInteractions(currentMemberService);
+        verify(adminAuthorizationService).filterParticipants(participants);
+        verifyNoInteractions(currentParticipantService);
     }
 
     private void authenticate(String name, String authority) {

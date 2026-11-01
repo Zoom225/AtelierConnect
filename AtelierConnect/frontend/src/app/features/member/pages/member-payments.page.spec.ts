@@ -26,13 +26,13 @@ describe('MemberPaymentsPage', () => {
   };
 
   let paiementsApiMock: {
-    getByMembre: ReturnType<typeof vi.fn>;
+    getByParticipant: ReturnType<typeof vi.fn>;
     pay: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(async () => {
     paiementsApiMock = {
-      getByMembre: vi.fn().mockReturnValue(of([pendingPayment])),
+      getByParticipant: vi.fn().mockReturnValue(of([pendingPayment])),
       pay: vi.fn().mockReturnValue(of(paidPayment))
     };
 

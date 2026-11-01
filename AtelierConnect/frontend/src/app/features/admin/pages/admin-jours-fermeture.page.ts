@@ -11,10 +11,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { JoursFermetureApiService } from '../../../core/api/jours-fermeture-api.service';
-import { SitesApiService } from '../../../core/api/sites-api.service';
+import { CentresApiService } from '../../../core/api/centres-api.service';
 import { AdminSessionService } from '../../../core/auth/admin-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
-import { JourFermetureResponse, SiteResponse } from '../../../shared/models/site-terrain.model';
+import { JourFermetureResponse, CentreResponse } from '../../../shared/models/centre-salle.model';
 import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
 
 @Component({
@@ -67,9 +67,9 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
 
           <mat-form-field appearance="outline">
             <mat-label>{{ language.t('admin.closures.site') }}</mat-label>
-            <mat-select formControlName="siteId" [disabled]="form.controls.global.value">
+            <mat-select formControlName="centreId" [disabled]="form.controls.global.value">
               <mat-option [value]="null">{{ language.t('admin.closures.noneGlobal') }}</mat-option>
-              @for (site of sites(); track site.id) {
+              @for (site of centres(); track site.id) {
                 <mat-option [value]="site.id">{{ site.nom }}</mat-option>
               }
             </mat-select>
@@ -111,7 +111,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
               </span>
             </div>
             @if (!jour.global) {
-              <div class="adm-fer-site">🏟️ {{ jour.siteNom }}</div>
+              <div class="adm-fer-site">🏟️ {{ jour.centreNom }}</div>
             }
             <div class="adm-fer-raison">
               📝 {{ jour.raison || language.t('admin.closures.reasonEmpty') }}
@@ -218,7 +218,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
 })
 export class AdminJoursFermeturePage {
   private readonly joursFermetureApi = inject(JoursFermetureApiService);
-  private readonly sitesApi = inject(SitesApiService);
+  private readonly centresApi = inject(CentresApiService);
   private readonly adminSession = inject(AdminSessionService);
   readonly language = inject(LanguageService);
   private static readonly HIDDEN_GENERIC_ERROR = 'Une erreur inattendue est survenue';
@@ -227,27 +227,27 @@ export class AdminJoursFermeturePage {
   readonly message = signal('');
   readonly errorMessage = signal('');
   readonly jours = signal<JourFermetureResponse[]>([]);
-  readonly sites = signal<SiteResponse[]>([]);
+  readonly centres = signal<CentreResponse[]>([]);
 
   readonly filteredJours = computed(() => {
     if (this.adminSession.isGlobalAdmin()) {
       return this.jours();
     }
-    const siteId = this.adminSession.siteId();
-    return this.jours().filter((j) => j.global || j.siteId === siteId);
+    const centreId = this.adminSession.centreId();
+    return this.jours().filter((j) => j.global || j.centreId === centreId);
   });
 
   readonly form = new FormGroup({
     date: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     raison: new FormControl('', { nonNullable: true }),
     global: new FormControl(false, { nonNullable: true }),
-    siteId: new FormControl<number | null>(null)
+    centreId: new FormControl<number | null>(null)
   });
 
   constructor() {
     this.loadData();
-    if (this.adminSession.isSiteAdmin()) {
-      this.form.controls.siteId.setValue(this.adminSession.siteId());
+    if (this.adminSession.isCentreAdmin()) {
+      this.form.controls.centreId.setValue(this.adminSession.centreId());
     }
   }
 
@@ -260,23 +260,23 @@ export class AdminJoursFermeturePage {
   loadData(): void {
     this.loading.set(true);
     this.errorMessage.set('');
-    const siteId = this.adminSession.siteId();
-    const sitesRequest$ =
-      this.adminSession.isSiteAdmin() && siteId
-        ? this.sitesApi.getById(siteId)
-        : this.sitesApi.getAll();
+    const centreId = this.adminSession.centreId();
+    const centresRequest$ =
+      this.adminSession.isCentreAdmin() && centreId
+        ? this.centresApi.getById(centreId)
+        : this.centresApi.getAll();
 
     forkJoin({
       jours: this.joursFermetureApi.getAll(),
-      sites: sitesRequest$
+      centres: centresRequest$
     }).subscribe({
-      next: ({ jours, sites }) => {
+      next: ({ jours, centres }) => {
         this.jours.set(jours);
-        const availableSites = Array.isArray(sites) ? sites : [sites];
-        this.sites.set(
+        const availableCentres = Array.isArray(centres) ? centres : [centres];
+        this.centres.set(
           this.adminSession.isGlobalAdmin()
-            ? availableSites
-            : availableSites.filter((s) => s.id === siteId)
+            ? availableCentres
+            : availableCentres.filter((s) => s.id === centreId)
         );
         this.loading.set(false);
       },
@@ -289,7 +289,7 @@ export class AdminJoursFermeturePage {
 
   onGlobalChange(isGlobal: boolean): void {
     if (isGlobal) {
-      this.form.controls.siteId.setValue(null);
+      this.form.controls.centreId.setValue(null);
     }
   }
 
@@ -300,7 +300,7 @@ export class AdminJoursFermeturePage {
       date: '',
       raison: '',
       global: false,
-      siteId: this.adminSession.isSiteAdmin() ? this.adminSession.siteId() : null
+      centreId: this.adminSession.isCentreAdmin() ? this.adminSession.centreId() : null
     });
   }
 
@@ -318,7 +318,7 @@ export class AdminJoursFermeturePage {
       date: raw.date,
       raison: raw.raison,
       global: raw.global,
-      siteId: raw.global ? null : raw.siteId
+      centreId: raw.global ? null : raw.centreId
     }).subscribe({
       next: () => {
         this.loading.set(false);

@@ -5,9 +5,9 @@ import com.atelierconnect.entity.Centre;
 import java.util.List;
 
 public interface CentreService {
-    Centre create(Centre site);
+    Centre create(Centre centre);
     Centre getById(Long id);
     List<Centre> getAll();
-    Centre update(Long id, Centre site);
+    Centre update(Long id, Centre centre);
     void delete(Long id);
 }

@@ -25,11 +25,11 @@ public class Salle extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id", nullable = false)
     @JsonBackReference("site-terrains")
-    private Centre site;
+    private Centre centre;
 
-    @OneToMany(mappedBy = "terrain", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "salle", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("terrain-matches")
-    private List<Atelier> matches;
+    private List<Atelier> ateliers;
 
     public Double getPrix() {
         return prix;

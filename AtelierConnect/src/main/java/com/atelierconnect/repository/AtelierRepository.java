@@ -18,21 +18,21 @@ import java.util.Optional;
 @Repository
 public interface AtelierRepository extends JpaRepository<Atelier, Long> {
 
-    @EntityGraph(attributePaths = {"terrain", "terrain.site", "organisateur"})
+    @EntityGraph(attributePaths = {"salle", "salle.centre", "organisateur"})
     List<Atelier> findAll();
 
-    @EntityGraph(attributePaths = {"terrain", "terrain.site", "organisateur"})
+    @EntityGraph(attributePaths = {"salle", "salle.centre", "organisateur"})
     Optional<Atelier> findById(Long id);
 
-    @EntityGraph(attributePaths = {"terrain", "terrain.site", "organisateur"})
-    @Query("SELECT a FROM Atelier a WHERE a.typeMatch = :type AND a.statut = :statut")
+    @EntityGraph(attributePaths = {"salle", "salle.centre", "organisateur"})
+    @Query("SELECT a FROM Atelier a WHERE a.typeAtelier = :type AND a.statut = :statut")
     List<Atelier> findByTypeAtelierAndStatut(@Param("type") TypeAtelier type, @Param("statut") StatutAtelier statut);
 
-    @EntityGraph(attributePaths = {"terrain", "terrain.site", "organisateur"})
-    @Query("SELECT a FROM Atelier a WHERE a.terrain.site.id = :siteId")
-    List<Atelier> findBySalleCentreId(@Param("siteId") Long siteId);
+    @EntityGraph(attributePaths = {"salle", "salle.centre", "organisateur"})
+    @Query("SELECT a FROM Atelier a WHERE a.salle.centre.id = :centreId")
+    List<Atelier> findBySalleCentreId(@Param("centreId") Long centreId);
 
-    @EntityGraph(attributePaths = {"terrain", "terrain.site", "organisateur"})
+    @EntityGraph(attributePaths = {"salle", "salle.centre", "organisateur"})
     List<Atelier> findByOrganisateurId(Long organisateurId);
 
     List<Atelier> findByDateDebutBetweenAndStatut(LocalDateTime start, LocalDateTime end, StatutAtelier statut);
@@ -42,24 +42,24 @@ public interface AtelierRepository extends JpaRepository<Atelier, Long> {
     Optional<Atelier> findByIdForUpdate(@Param("id") Long id);
 
     /**
-     * Trouve les matchs sur un terrain donné qui chevauchent un créneau horaire spécifié,
+     * Trouve les atelier sur une salle donné qui chevauchent un créneau horaire spécifié,
      * en excluant un certain statut (typiquement ANNULE).
      *
      * Un chevauchement se produit si :
      * (startA < endB) et (endA > startB)
      *
-     * @param terrainId L'ID du terrain.
+     * @param terrainId L'ID de la salle.
      * @param start     La date et l'heure de début du créneau à vérifier.
      * @param end       La date et l'heure de fin du créneau à vérifier.
      * @param statut    Le statut à exclure de la recherche.
-     * @return Une liste de matchs qui se chevauchent.
+     * @return Une liste de atelier qui se chevauchent.
      */
-    @Query("SELECT m FROM Atelier m WHERE m.terrain.id = :terrainId " +
+    @Query("SELECT m FROM Atelier m WHERE m.salle.id = :salleId " +
            "AND m.statut <> :statut " +
            "AND m.dateDebut < :end " +
            "AND m.dateFin > :start")
     List<Atelier> findOverlappingAteliers(
-            @Param("terrainId") Long terrainId,
+            @Param("salleId") Long salleId,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end,
             @Param("statut") StatutAtelier statut

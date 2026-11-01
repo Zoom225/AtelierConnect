@@ -18,11 +18,11 @@ public class Reservation extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "match_id", nullable = false)
     @JsonBackReference("match-reservations")
-    private Atelier match;
+    private Atelier atelier;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "membre_id", nullable = false)
-    private Participant membre;
+    private Participant participant;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { AuthApiService } from '../api/auth-api.service';
 import { LoginRequest as AdminLoginRequest, LoginResponse as AdminLoginResponse } from '../../shared/models/auth.model';
-import { LoginRequest as MemberLoginRequest, LoginResponse as MemberLoginResponse } from '../../shared/models/membre.model';
+import { LoginRequest as MemberLoginRequest, LoginResponse as MemberLoginResponse } from '../../shared/models/participant.model';
 import { AuthSessionService } from './auth-session.service';
 import { AdminSessionService } from './admin-session.service';
 import { MemberSessionService } from './member-session.service';
@@ -26,7 +26,7 @@ export class AuthService {
   }
 
   loginMember(payload: MemberLoginRequest): Observable<MemberLoginResponse> {
-    return this.authApi.loginMembre(payload).pipe(
+    return this.authApi.loginParticipant(payload).pipe(
       tap((response) => {
         this.adminSession.clearSession();
         this.memberSession.setMember(response, response.token);

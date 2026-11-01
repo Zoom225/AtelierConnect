@@ -15,8 +15,8 @@ import { LanguageSwitcherComponent } from './shared/components/language-switcher
 <header class="app-header">
   <div class="app-header-inner">
     <a routerLink="/" class="app-logo">
-      <span class="app-logo-badge">P</span>
-      <span class="app-logo-text">PadelPlay</span>
+      <span class="app-logo-badge">A</span>
+      <span class="app-logo-text">AtelierConnect</span>
     </a>
 
     <nav class="app-nav">
@@ -35,13 +35,13 @@ import { LanguageSwitcherComponent } from './shared/components/language-switcher
       @if (memberSession.isAuthenticated()) {
         <div class="nav-divider"></div>
         <a routerLink="/member/profile" routerLinkActive="nav-active" class="nav-link">{{ navText().profile }}</a>
-        <a routerLink="/member/matches" routerLinkActive="nav-active" class="nav-link">{{ navText().matches }}</a>
+        <a routerLink="/member/ateliers" routerLinkActive="nav-active" class="nav-link">{{ navText().ateliers }}</a>
         <a routerLink="/member/reservations" routerLinkActive="nav-active" class="nav-link">{{ navText().reservations }}</a>
         <a routerLink="/member/payments" routerLinkActive="nav-active" class="nav-link">{{ navText().payments }}</a>
         <div class="nav-divider"></div>
-        <a routerLink="/member/matches/new" class="nav-btn-create">{{ navText().create }}</a>
-        <a routerLink="/member/matches/new" [queryParams]="{type:'PUBLIC'}" class="nav-btn-green">{{ navText().public }}</a>
-        <a routerLink="/member/matches/new" [queryParams]="{type:'PRIVE'}" class="nav-btn-purple">{{ navText().private }}</a>
+        <a routerLink="/member/ateliers/nouveau" class="nav-btn-create">{{ navText().create }}</a>
+        <a routerLink="/member/ateliers/nouveau" [queryParams]="{type:'PUBLIC'}" class="nav-btn-green">{{ navText().public }}</a>
+        <a routerLink="/member/ateliers/nouveau" [queryParams]="{type:'PRIVE'}" class="nav-btn-purple">{{ navText().private }}</a>
         <div class="nav-divider"></div>
         <button class="nav-btn-logout" type="button" (click)="logoutMember()">{{ navText().logout }}</button>
       }
@@ -49,10 +49,10 @@ import { LanguageSwitcherComponent } from './shared/components/language-switcher
       @if (adminSession.isAuthenticated()) {
         <div class="nav-divider"></div>
         <a routerLink="/admin" routerLinkActive="nav-active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">{{ navText().dashboard }}</a>
-        <a routerLink="/admin/members" routerLinkActive="nav-active" class="nav-link">{{ navText().members }}</a>
-        <a routerLink="/admin/matches" routerLinkActive="nav-active" class="nav-link">{{ navText().matches }}</a>
-        <a routerLink="/admin/sites" routerLinkActive="nav-active" class="nav-link">{{ navText().sites }}</a>
-        <a routerLink="/admin/terrains" routerLinkActive="nav-active" class="nav-link">{{ navText().courts }}</a>
+        <a routerLink="/admin/participants" routerLinkActive="nav-active" class="nav-link">{{ navText().members }}</a>
+        <a routerLink="/admin/ateliers" routerLinkActive="nav-active" class="nav-link">{{ navText().ateliers }}</a>
+        <a routerLink="/admin/centres" routerLinkActive="nav-active" class="nav-link">{{ navText().centres }}</a>
+        <a routerLink="/admin/salles" routerLinkActive="nav-active" class="nav-link">{{ navText().courts }}</a>
         <a routerLink="/admin/fermetures" routerLinkActive="nav-active" class="nav-link">{{ navText().closures }}</a>
         <div class="nav-divider"></div>
         <button class="nav-btn-logout" type="button" (click)="logoutAdmin()">{{ navText().logout }}</button>
@@ -260,10 +260,10 @@ export class App {
     admin: this.language.t('nav.admin'),
     member: this.language.t('nav.member'),
     profile: this.language.t('nav.profile'),
-    matches: this.language.t('nav.matches'),
+    ateliers: this.language.t('nav.ateliers'),
     dashboard: this.language.t('nav.dashboard'),
     members: this.language.t('nav.members'),
-    sites: this.language.t('nav.sites'),
+    centres: this.language.t('nav.centres'),
     courts: this.language.t('nav.courts'),
     closures: this.language.t('nav.closures'),
     reservations: this.language.t('nav.reservations'),

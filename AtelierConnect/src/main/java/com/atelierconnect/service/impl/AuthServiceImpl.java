@@ -46,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
                 .nom(admin.getNom())
                 .prenom(admin.getPrenom())
                 .role(admin.getTypeAdministrateur())
-                .siteId(admin.getSite() != null ? admin.getSite().getId() : null)
+                .centreId(admin.getCentre() != null ? admin.getCentre().getId() : null)
                 .build();
     }
 }

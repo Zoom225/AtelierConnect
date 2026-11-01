@@ -32,20 +32,20 @@ class ReservationMapperTest {
     private ReservationMapper reservationMapper;
 
     private Reservation reservation;
-    private Atelier match;
-    private Participant membre;
+    private Atelier atelier;
+    private Participant participant;
     private Paiement paiement;
 
     @BeforeEach
     void setUp() {
-        match = new Atelier();
-        match.setId(1L);
-        match.setDateDebut(LocalDateTime.of(2024, 8, 20, 19, 0));
+        atelier = new Atelier();
+        atelier.setId(1L);
+        atelier.setDateDebut(LocalDateTime.of(2024, 8, 20, 19, 0));
 
-        membre = new Participant();
-        membre.setId(10L);
-        membre.setNom("Doe");
-        membre.setPrenom("John");
+        participant = new Participant();
+        participant.setId(10L);
+        participant.setNom("Doe");
+        participant.setPrenom("John");
 
         paiement = new Paiement();
         paiement.setId(100L);
@@ -53,8 +53,8 @@ class ReservationMapperTest {
 
         reservation = new Reservation();
         reservation.setId(1L);
-        reservation.setMatch(match);
-        reservation.setMembre(membre);
+        reservation.setAtelier(atelier);
+        reservation.setParticipant(participant);
         reservation.setStatut(StatutReservation.EN_ATTENTE);
         reservation.setPaiement(paiement);
     }
@@ -75,10 +75,10 @@ class ReservationMapperTest {
         // Assert
         assertNotNull(response);
         assertEquals(1L, response.getId());
-        assertEquals(1L, response.getMatchId());
-        assertEquals(LocalDateTime.of(2024, 8, 20, 19, 0), response.getMatchDateTime());
-        assertEquals(10L, response.getMembreId());
-        assertEquals("John Doe", response.getMembreNom()); // Correction de l'ordre
+        assertEquals(1L, response.getAtelierId());
+        assertEquals(LocalDateTime.of(2024, 8, 20, 19, 0), response.getAtelierDateTime());
+        assertEquals(10L, response.getParticipantId());
+        assertEquals("John Doe", response.getParticipantNom()); // Correction de l'ordre
         assertEquals(StatutReservation.EN_ATTENTE, response.getStatut());
         assertNotNull(response.getPaiement());
         assertEquals(100L, response.getPaiement().getId());
@@ -99,25 +99,25 @@ class ReservationMapperTest {
     }
 
     @Test
-    @DisplayName("Doit lever une exception si Match ou Membre est null")
+    @DisplayName("Doit lever une exception si Atelier ou Participant est null")
     void shouldThrowExceptionIfRequiredEntitiesAreNull() {
         // Arrange 1
-        reservation.setMatch(null);
+        reservation.setAtelier(null);
 
         // Act & Assert 1
         IllegalArgumentException ex1 = assertThrows(IllegalArgumentException.class, () -> {
             reservationMapper.toResponse(reservation);
         });
-        assertEquals("La réservation doit avoir un match et un membre associés.", ex1.getMessage());
+        assertEquals("La réservation doit avoir un atelier et un participant associés.", ex1.getMessage());
 
         // Arrange 2
-        reservation.setMatch(match); // Rétablir le match
-        reservation.setMembre(null);
+        reservation.setAtelier(atelier); // Rétablir l'atelier
+        reservation.setParticipant(null);
 
         // Act & Assert 2
         IllegalArgumentException ex2 = assertThrows(IllegalArgumentException.class, () -> {
             reservationMapper.toResponse(reservation);
         });
-        assertEquals("La réservation doit avoir un match et un membre associés.", ex2.getMessage());
+        assertEquals("La réservation doit avoir un atelier et un participant associés.", ex2.getMessage());
     }
 }

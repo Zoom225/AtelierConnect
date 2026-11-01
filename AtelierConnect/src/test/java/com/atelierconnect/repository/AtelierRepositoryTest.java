@@ -22,32 +22,32 @@ import static org.assertj.core.api.Assertions.assertThat;
 class AtelierRepositoryTest {
 
     @Autowired
-    private AtelierRepository matchRepository;
+    private AtelierRepository atelierRepository;
 
     @Autowired
-    private CentreRepository siteRepository;
+    private CentreRepository centreRepository;
 
     @Autowired
-    private SalleRepository terrainRepository;
+    private SalleRepository salleRepository;
 
     @Autowired
-    private ParticipantRepository membreRepository;
+    private ParticipantRepository participantRepository;
 
     @Test
-    @DisplayName("findOverlappingMatches retourne les matchs planifiés qui chevauchent le créneau")
-    void shouldFindOverlappingMatches() {
-        Salle terrain = terrainRepository.save(Salle.builder()
+    @DisplayName("findOverlappingMatches retourne les atelier planifiés qui chevauchent le créneau")
+    void shouldFindOverlappingAteliers() {
+        Salle salle = salleRepository.save(Salle.builder()
                 .nom("Court A")
-                .site(siteRepository.save(site()))
+                .centre(centreRepository.save(centre()))
                 .prix(60.0)
                 .build());
-        Participant organisateur = membreRepository.save(membre("G1001"));
+        Participant organisateur = participantRepository.save(participant("G1001"));
 
         LocalDateTime start = LocalDateTime.of(2026, 7, 10, 10, 0);
-        matchRepository.save(match(terrain, organisateur, start, StatutAtelier.PLANIFIE));
+        atelierRepository.save(atelier(salle, organisateur, start, StatutAtelier.PLANIFIE));
 
-        assertThat(matchRepository.findOverlappingAteliers(
-                terrain.getId(),
+        assertThat(atelierRepository.findOverlappingAteliers(
+                salle.getId(),
                 start.plusMinutes(30),
                 start.plusMinutes(120),
                 StatutAtelier.ANNULE
@@ -55,60 +55,60 @@ class AtelierRepositoryTest {
     }
 
     @Test
-    @DisplayName("findOverlappingMatches ignore les matchs annulés")
-    void shouldIgnoreCancelledMatches() {
-        Salle terrain = terrainRepository.save(Salle.builder()
+    @DisplayName("findOverlappingMatches ignore les atelier annulés")
+    void shouldIgnoreCancelledAteliers() {
+        Salle salle = salleRepository.save(Salle.builder()
                 .nom("Court A")
-                .site(siteRepository.save(site()))
+                .centre(centreRepository.save(centre()))
                 .prix(60.0)
                 .build());
-        Participant organisateur = membreRepository.save(membre("G1001"));
+        Participant organisateur = participantRepository.save(participant("G1001"));
 
         LocalDateTime start = LocalDateTime.of(2026, 7, 10, 10, 0);
-        matchRepository.save(match(terrain, organisateur, start, StatutAtelier.ANNULE));
+        atelierRepository.save(atelier(salle, organisateur, start, StatutAtelier.ANNULE));
 
-        assertThat(matchRepository.findOverlappingAteliers(
-                terrain.getId(),
+        assertThat(atelierRepository.findOverlappingAteliers(
+                salle.getId(),
                 start.plusMinutes(30),
                 start.plusMinutes(120),
                 StatutAtelier.ANNULE
         )).isEmpty();
     }
 
-    private Centre site() {
+    private Centre centre() {
         return Centre.builder()
-                .nom("Padel Club Lyon")
+                .nom("Centre collaboratif Lyon")
                 .adresse("12 rue de la République")
                 .heureOuverture(LocalTime.of(8, 0))
                 .heureFermeture(LocalTime.of(22, 0))
-                .dureeMatchMinutes(90)
-                .dureeEntreMatchMinutes(15)
+                .dureeAtelierMinutes(90)
+                .dureeEntreAtelierMinutes(15)
                 .anneeCivile(2026)
                 .build();
     }
 
-    private Participant membre(String matricule) {
+    private Participant participant(String matricule) {
         return Participant.builder()
                 .matricule(matricule)
                 .nom("Martin")
                 .prenom("Lucas")
                 .email(matricule.toLowerCase() + "@example.com")
-                .typeMembre(TypeParticipant.GLOBAL)
+                .typeParticipant(TypeParticipant.PARTENAIRE)
                 .solde(0.0)
                 .build();
     }
 
-    private Atelier match(Salle terrain, Participant organisateur, LocalDateTime start, StatutAtelier statut) {
+    private Atelier atelier(Salle salle, Participant organisateur, LocalDateTime start, StatutAtelier statut) {
         return Atelier.builder()
-                .terrain(terrain)
+                .salle(salle)
                 .organisateur(organisateur)
                 .dateDebut(start)
                 .dateFin(start.plusMinutes(90))
-                .typeMatch(TypeAtelier.PUBLIC)
+                .typeAtelier(TypeAtelier.PUBLIC)
                 .statut(statut)
-                .nbJoueursActuels(1)
+                .nbParticipantsActuels(1)
                 .prixTotal(60.0)
-                .prixParJoueur(15.0)
+                .prixParParticipant(15.0)
                 .build();
     }
 }

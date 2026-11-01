@@ -23,70 +23,70 @@ class ReservationRepositoryTest {
     private ReservationRepository reservationRepository;
 
     @Autowired
-    private AtelierRepository matchRepository;
+    private AtelierRepository atelierRepository;
 
     @Autowired
-    private ParticipantRepository membreRepository;
+    private ParticipantRepository participantRepository;
 
     @Autowired
-    private CentreRepository siteRepository;
+    private CentreRepository centreRepository;
 
     @Autowired
-    private SalleRepository terrainRepository;
+    private SalleRepository salleRepository;
 
     @Test
-    @DisplayName("existsByMatchIdAndMembreId détecte un membre déjà inscrit")
-    void shouldFindExistingReservationForMemberAndMatch() {
-        Centre site = siteRepository.save(site());
-        Salle terrain = terrainRepository.save(Salle.builder().nom("Court A").site(site).prix(60.0).build());
-        Participant organisateur = membreRepository.save(membre("G1001"));
-        Participant joueur = membreRepository.save(membre("G1002"));
-        Atelier match = matchRepository.save(match(terrain, organisateur));
+    @DisplayName("existsByMatchIdAndMembreId détecte un participant déjà inscrit")
+    void shouldFindExistingReservationForParticipantAndAtelier() {
+        Centre centre = centreRepository.save(centre());
+        Salle salle = salleRepository.save(Salle.builder().nom("Court A").centre(centre).prix(60.0).build());
+        Participant organisateur = participantRepository.save(participant("G1001"));
+        Participant participant = participantRepository.save(participant("G1002"));
+        Atelier atelier = atelierRepository.save(atelier(salle, organisateur));
 
         reservationRepository.save(Reservation.builder()
-                .match(match)
-                .membre(joueur)
+                .atelier(atelier)
+                .participant(participant)
                 .statut(StatutReservation.EN_ATTENTE)
                 .build());
 
-        assertThat(reservationRepository.existsByMatchIdAndMembreId(match.getId(), joueur.getId())).isTrue();
+        assertThat(reservationRepository.existsByAtelierIdAndParticipantId(atelier.getId(), participant.getId())).isTrue();
     }
 
-    private Centre site() {
+    private Centre centre() {
         return Centre.builder()
-                .nom("Padel Club Lyon")
+                .nom("Centre collaboratif Lyon")
                 .adresse("12 rue de la République")
                 .heureOuverture(LocalTime.of(8, 0))
                 .heureFermeture(LocalTime.of(22, 0))
-                .dureeMatchMinutes(90)
-                .dureeEntreMatchMinutes(15)
+                .dureeAtelierMinutes(90)
+                .dureeEntreAtelierMinutes(15)
                 .anneeCivile(2026)
                 .build();
     }
 
-    private Participant membre(String matricule) {
+    private Participant participant(String matricule) {
         return Participant.builder()
                 .matricule(matricule)
                 .nom("Martin")
                 .prenom("Lucas")
                 .email(matricule.toLowerCase() + "@example.com")
-                .typeMembre(TypeParticipant.GLOBAL)
+                .typeParticipant(TypeParticipant.PARTENAIRE)
                 .solde(0.0)
                 .build();
     }
 
-    private Atelier match(Salle terrain, Participant organisateur) {
+    private Atelier atelier(Salle salle, Participant organisateur) {
         LocalDateTime start = LocalDateTime.of(2026, 7, 10, 10, 0);
         return Atelier.builder()
-                .terrain(terrain)
+                .salle(salle)
                 .organisateur(organisateur)
                 .dateDebut(start)
                 .dateFin(start.plusMinutes(90))
-                .typeMatch(TypeAtelier.PUBLIC)
+                .typeAtelier(TypeAtelier.PUBLIC)
                 .statut(StatutAtelier.PLANIFIE)
-                .nbJoueursActuels(1)
+                .nbParticipantsActuels(1)
                 .prixTotal(60.0)
-                .prixParJoueur(15.0)
+                .prixParParticipant(15.0)
                 .build();
     }
 }

@@ -5,7 +5,7 @@ export type TranslationKey =
   | 'nav.admin'
   | 'nav.member'
   | 'nav.profile'
-  | 'nav.matches'
+  | 'nav.ateliers'
   | 'nav.reservations'
   | 'nav.payments'
   | 'nav.create'
@@ -16,7 +16,7 @@ export type TranslationKey =
   | 'nav.adminLogin'
   | 'nav.dashboard'
   | 'nav.members'
-  | 'nav.sites'
+  | 'nav.centres'
   | 'nav.courts'
   | 'nav.closures'
   | 'common.back'
@@ -29,9 +29,9 @@ export type TranslationKey =
   | 'common.confirm'
   | 'common.loading'
   | 'common.none'
-  | 'common.matchPlanned'
-  | 'common.matchFull'
-  | 'common.matchCanceled'
+  | 'common.atelierPlanned'
+  | 'common.atelierFull'
+  | 'common.atelierCanceled'
   | 'common.reservationPending'
   | 'common.reservationConfirmed'
   | 'common.reservationCanceled'
@@ -39,7 +39,7 @@ export type TranslationKey =
   | 'common.paymentPaid'
   | 'common.paymentRefunded'
   | 'common.paymentCanceled'
-  | 'common.allSites'
+  | 'common.allCentres'
   | 'common.profile'
   | 'common.refresh'
   | 'switcher.label'
@@ -63,12 +63,12 @@ export type TranslationKey =
   | 'landing.feature3.body'
   | 'landing.feature4.title'
   | 'landing.feature4.body'
-  | 'landing.matchPublic'
-  | 'landing.matchAvailable'
+  | 'landing.atelierPublic'
+  | 'landing.atelierAvailable'
   | 'landing.reservation'
   | 'landing.reservationBody'
   | 'landing.simpleReservation'
-  | 'landing.matchPreviewLabel'
+  | 'landing.atelierPreviewLabel'
   | 'admin.login.heroTitle'
   | 'admin.login.heroSubtitle'
   | 'admin.login.formTitle'
@@ -82,7 +82,7 @@ export type TranslationKey =
   | 'admin.home.title'
   | 'admin.home.subtitle'
   | 'admin.home.loading'
-  | 'admin.home.matches'
+  | 'admin.home.ateliers'
   | 'admin.home.reservations'
   | 'admin.home.members'
   | 'admin.home.revenue'
@@ -96,39 +96,39 @@ export type TranslationKey =
   | 'admin.home.validPayments'
   | 'admin.home.reservationsLoadError'
   | 'admin.home.dashboardLoadError'
-  | 'admin.matches.title'
-  | 'admin.matches.subtitle'
+  | 'admin.ateliers.title'
+  | 'admin.ateliers.subtitle'
   | 'admin.members.title'
   | 'admin.members.subtitle'
   | 'admin.members.matricule'
   | 'admin.members.matriculeHint'
   | 'admin.members.type'
   | 'admin.members.typeGlobal'
-  | 'admin.members.typeSite'
+  | 'admin.members.typeCentre'
   | 'admin.members.typeLibre'
   | 'admin.members.nom'
   | 'admin.members.prenom'
   | 'admin.members.email'
   | 'admin.members.site'
-  | 'admin.members.siteNone'
+  | 'admin.members.centreNone'
   | 'admin.members.searchPlaceholder'
   | 'admin.members.filterAll'
   | 'admin.members.filterGlobal'
-  | 'admin.members.filterSite'
+  | 'admin.members.filterCentre'
   | 'admin.members.filterLibre'
   | 'admin.members.empty'
   | 'admin.members.emptySub'
   | 'admin.members.penalty'
   | 'admin.members.emailMissing'
-  | 'admin.members.siteAll'
+  | 'admin.members.centreAll'
   | 'admin.members.balance'
   | 'admin.members.edit'
   | 'admin.members.delete'
   | 'admin.members.count'
-  | 'admin.sites.title'
-  | 'admin.sites.subtitle'
-  | 'admin.terrains.title'
-  | 'admin.terrains.subtitle'
+  | 'admin.centres.title'
+  | 'admin.centres.subtitle'
+  | 'admin.salles.title'
+  | 'admin.salles.subtitle'
   | 'admin.closures.title'
   | 'admin.closures.subtitle'
   | 'member.home.title'
@@ -141,7 +141,7 @@ export type TranslationKey =
   | 'member.home.global'
   | 'member.home.site'
   | 'member.home.livre'
-  | 'member.home.tousSites'
+  | 'member.home.tousCentres'
   | 'member.create.title'
   | 'member.create.subtitle'
   | 'member.create.rappel'
@@ -151,25 +151,27 @@ export type TranslationKey =
   | 'member.create.submit'
   | 'member.create.mode'
   | 'member.create.site'
-  | 'member.create.terrain'
+  | 'member.create.salle'
   | 'member.create.date'
   | 'member.create.dateHint'
   | 'member.create.time'
-  | 'member.create.matchType'
+  | 'member.create.atelierType'
   | 'member.create.privatePlayers'
   | 'member.create.player2'
   | 'member.create.player3'
   | 'member.create.player4'
-  | 'member.create.noSite'
-  | 'member.create.noTerrain'
-  | 'member.create.selectedSite'
+  | 'member.create.player5'
+  | 'member.create.player6'
+  | 'member.create.noCentre'
+  | 'member.create.noSalle'
+  | 'member.create.selectedCentre'
   | 'member.create.bookingLimit'
   | 'member.create.bookingLimitProfileError'
   | 'member.create.ruleGlobal'
-  | 'member.create.ruleSite'
+  | 'member.create.ruleCentre'
   | 'member.create.ruleLibre'
-  | 'member.create.noSiteLoaded'
-  | 'member.create.noTerrainLoaded'
+  | 'member.create.noCentreLoaded'
+  | 'member.create.noSalleLoaded'
   | 'member.create.success'
   | 'member.create.successPrivate'
   | 'member.create.partialSuccess'
@@ -182,7 +184,7 @@ export type TranslationKey =
   | 'member.public.modify'
   | 'member.public.delete'
   | 'member.public.myProfile'
-  | 'member.public.myMatch'
+  | 'member.public.myAtelier'
   | 'member.public.available'
   | 'member.public.completion'
   | 'member.public.none'
@@ -194,9 +196,9 @@ export type TranslationKey =
   | 'member.public.registering'
   | 'member.public.editTitle'
   | 'member.public.editHint'
-  | 'member.public.noMatches'
+  | 'member.public.noAteliers'
   | 'member.public.searchPlaceholder'
-  | 'member.public.noMatchPrompt'
+  | 'member.public.noAtelierPrompt'
   | 'member.public.createBody'
   | 'member.public.date'
   | 'member.public.time'
@@ -205,7 +207,7 @@ export type TranslationKey =
   | 'member.reservations.subtitle'
   | 'member.reservations.createPublic'
   | 'member.reservations.createPrivate'
-  | 'member.reservations.matches'
+  | 'member.reservations.ateliers'
   | 'member.reservations.select'
   | 'member.reservations.addPlayer'
   | 'member.reservations.noOrganized'
@@ -214,7 +216,7 @@ export type TranslationKey =
   | 'member.reservations.players'
   | 'member.reservations.empty'
   | 'member.reservations.player'
-  | 'member.reservations.match'
+  | 'member.reservations.atelier'
   | 'member.reservations.reservation'
   | 'member.reservations.payment'
   | 'member.reservations.amount'
@@ -222,8 +224,13 @@ export type TranslationKey =
   | 'member.reservations.cancel'
   | 'member.reservations.organizedTitle'
   | 'member.reservations.organizedSub'
-  | 'member.reservations.chooseMatch'
+  | 'member.reservations.chooseAtelier'
   | 'member.reservations.inviteMatricule'
+  | 'member.reservations.consentInfo'
+  | 'member.reservations.consentAction'
+  | 'member.reservations.consentConfirm'
+  | 'member.reservations.consentSuccess'
+  | 'member.reservations.consentError'
   | 'member.reservations.noPlayer'
   | 'member.reservations.reservationLabel'
   | 'member.reservations.paymentLabel'
@@ -241,8 +248,8 @@ export type TranslationKey =
   | 'member.profile.title'
   | 'member.profile.subtitle'
   | 'member.profile.createQuick'
-  | 'member.profile.publicMatch'
-  | 'member.profile.privateMatch'
+  | 'member.profile.publicAtelier'
+  | 'member.profile.privateAtelier'
   | 'member.profile.quickPublic'
   | 'member.profile.quickPrivate'
   | 'member.profile.quickPublicBody'
@@ -275,19 +282,19 @@ export type TranslationKey =
   | 'member.payments.loadingState'
   | 'member.payments.errorState'
   | 'member.payments.noMemberState'
-  | 'admin.matches.organizer'
-  | 'admin.matches.status'
-  | 'admin.matches.players'
-  | 'admin.matches.reservations'
-  | 'admin.matches.noReservations'
-  | 'admin.matches.hideDetails'
-  | 'admin.matches.showDetails'
-  | 'admin.matches.convert'
-  | 'admin.matches.convertSuccess'
-  | 'admin.matches.loadError'
-  | 'admin.matches.reservationsError'
-  | 'admin.matches.convertError'
-  | 'admin.matches.empty'
+  | 'admin.ateliers.organizer'
+  | 'admin.ateliers.status'
+  | 'admin.ateliers.players'
+  | 'admin.ateliers.reservations'
+  | 'admin.ateliers.noReservations'
+  | 'admin.ateliers.hideDetails'
+  | 'admin.ateliers.showDetails'
+  | 'admin.ateliers.convert'
+  | 'admin.ateliers.convertSuccess'
+  | 'admin.ateliers.loadError'
+  | 'admin.ateliers.reservationsError'
+  | 'admin.ateliers.convertError'
+  | 'admin.ateliers.empty'
   | 'admin.closures.date'
   | 'admin.closures.reason'
   | 'admin.closures.site'
@@ -299,13 +306,13 @@ export type TranslationKey =
   | 'admin.closures.empty'
   | 'common.notProvided'
   | 'admin.home.allStatuses'
-  | 'admin.home.matchCount'
-  | 'admin.home.sitesVisible'
-  | 'admin.home.terrainsVisible'
-  | 'admin.home.completeMatches'
+  | 'admin.home.atelierCount'
+  | 'admin.home.centresVisible'
+  | 'admin.home.sallesVisible'
+  | 'admin.home.completeAteliers'
   | 'admin.home.pendingReservations'
   | 'admin.login.globalBadge'
-  | 'admin.login.siteBadge'
+  | 'admin.login.centreBadge'
   | 'admin.login.showPassword'
   | 'admin.login.hidePassword'
   | 'admin.members.searchNoResult'
@@ -316,37 +323,38 @@ export type TranslationKey =
   | 'admin.members.createSuccess'
   | 'admin.members.deleteSuccess'
   | 'admin.members.deleteConfirm'
-  | 'admin.sites.name'
-  | 'admin.sites.address'
-  | 'admin.sites.opening'
-  | 'admin.sites.closing'
-  | 'admin.sites.matchDuration'
-  | 'admin.sites.breakDuration'
-  | 'admin.sites.civilYear'
-  | 'admin.sites.hours'
-  | 'admin.sites.duration'
-  | 'admin.sites.break'
-  | 'admin.sites.year'
-  | 'admin.sites.empty'
-  | 'admin.sites.siteAdminEditBlocked'
-  | 'admin.sites.siteAdminDeleteBlocked'
-  | 'admin.sites.loadError'
-  | 'admin.sites.saveError'
-  | 'admin.sites.deleteError'
-  | 'admin.sites.deleteConfirm'
-  | 'admin.sites.updateSuccess'
-  | 'admin.sites.createSuccess'
-  | 'admin.sites.deleteSuccess'
-  | 'admin.terrains.name'
-  | 'admin.terrains.site'
-  | 'admin.terrains.empty'
-  | 'admin.terrains.loadError'
-  | 'admin.terrains.saveError'
-  | 'admin.terrains.deleteError'
-  | 'admin.terrains.deleteConfirm'
-  | 'admin.terrains.updateSuccess'
-  | 'admin.terrains.createSuccess'
-  | 'admin.terrains.deleteSuccess'
+  | 'admin.centres.name'
+  | 'admin.centres.address'
+  | 'admin.centres.opening'
+  | 'admin.centres.closing'
+  | 'admin.centres.atelierDuration'
+  | 'admin.centres.breakDuration'
+  | 'admin.centres.civilYear'
+  | 'admin.centres.openVisitors'
+  | 'admin.centres.hours'
+  | 'admin.centres.duration'
+  | 'admin.centres.break'
+  | 'admin.centres.year'
+  | 'admin.centres.empty'
+  | 'admin.centres.centreAdminEditBlocked'
+  | 'admin.centres.centreAdminDeleteBlocked'
+  | 'admin.centres.loadError'
+  | 'admin.centres.saveError'
+  | 'admin.centres.deleteError'
+  | 'admin.centres.deleteConfirm'
+  | 'admin.centres.updateSuccess'
+  | 'admin.centres.createSuccess'
+  | 'admin.centres.deleteSuccess'
+  | 'admin.salles.name'
+  | 'admin.salles.site'
+  | 'admin.salles.empty'
+  | 'admin.salles.loadError'
+  | 'admin.salles.saveError'
+  | 'admin.salles.deleteError'
+  | 'admin.salles.deleteConfirm'
+  | 'admin.salles.updateSuccess'
+  | 'admin.salles.createSuccess'
+  | 'admin.salles.deleteSuccess'
   | 'admin.closures.loadError'
   | 'admin.closures.addSuccess'
   | 'admin.closures.addError'
@@ -357,9 +365,9 @@ export type TranslationKey =
   | 'member.home.showPassword'
   | 'member.home.hidePassword'
   | 'member.home.globalHint'
-  | 'member.home.siteHint'
+  | 'member.home.centreHint'
   | 'member.home.livreHint'
-  | 'member.home.allSites'
+  | 'member.home.allCentres'
   | 'member.profile.loadError'
   | 'member.create.bookingLimitError'
   | 'member.create.invalidType'
@@ -367,9 +375,9 @@ export type TranslationKey =
   | 'member.create.outstandingBalance'
   | 'member.create.activePenalty'
   | 'member.create.slotTaken'
-  | 'member.create.siteClosed'
+  | 'member.create.centreClosed'
   | 'member.create.outOfHours'
-  | 'member.create.siteOnly'
+  | 'member.create.centreOnly'
   | 'member.create.internalError'
   | 'member.create.addPlayersError'
   | 'member.public.loadError'
@@ -407,21 +415,21 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
   fr: {
     'nav.home': 'Accueil',
     'nav.admin': 'Admin',
-    'nav.member': 'Espace membre',
+    'nav.member': 'Espace participant',
     'nav.profile': 'Profil',
-    'nav.matches': 'Matchs',
+    'nav.ateliers': 'Ateliers',
     'nav.reservations': 'Reservations',
     'nav.payments': 'Paiements',
     'nav.create': 'Creer',
     'nav.public': 'Public',
     'nav.private': 'Prive',
     'nav.logout': 'Deconnexion',
-    'nav.memberArea': 'Espace membre',
+    'nav.memberArea': 'Espace participant',
     'nav.adminLogin': 'Connexion admin',
     'nav.dashboard': 'Dashboard',
-    'nav.members': 'Membres',
-    'nav.sites': 'Sites',
-    'nav.courts': 'Terrains',
+    'nav.members': 'Participants',
+    'nav.centres': 'Centres',
+    'nav.courts': 'Salles',
     'nav.closures': 'Fermetures',
     'common.back': 'Retour',
     'common.save': 'Enregistrer',
@@ -433,9 +441,9 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'common.confirm': 'Confirmer',
     'common.loading': 'Chargement...',
     'common.none': 'Aucun',
-    'common.matchPlanned': 'Planifie',
-    'common.matchFull': 'Complet',
-    'common.matchCanceled': 'Annule',
+    'common.atelierPlanned': 'Planifie',
+    'common.atelierFull': 'Complet',
+    'common.atelierCanceled': 'Annule',
     'common.reservationPending': 'En attente',
     'common.reservationConfirmed': 'Confirmee',
     'common.reservationCanceled': 'Annulee',
@@ -443,39 +451,39 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'common.paymentPaid': 'Paye',
     'common.paymentRefunded': 'Rembourse',
     'common.paymentCanceled': 'Annule',
-    'common.allSites': 'Tous les sites',
+    'common.allCentres': 'Tous les centres',
     'common.profile': 'Profil',
     'common.refresh': 'Rafraichir',
     'switcher.label': 'Choix de langue',
     'switcher.fr': 'Francais',
     'switcher.en': 'English',
-    'landing.eyebrow': 'Gestion de club de padel',
-    'landing.title': 'PadelPlay',
+    'landing.eyebrow': 'Gestion et réservation d’ateliers collaboratifs multi-centres',
+    'landing.title': 'AtelierConnect',
     'landing.lead':
-      'Une interface claire pour reserver, rejoindre un match, suivre les paiements et piloter les sites depuis un tableau de bord admin.',
+      'Une interface claire pour reserver, rejoindre un atelier, suivre les paiements et piloter les centres depuis un tableau de bord admin.',
     'landing.memberCta': 'Entrer avec un matricule',
     'landing.memberCtaConnected': 'Ouvrir mon espace',
     'landing.adminCta': 'Connexion admin',
     'landing.testApi': "Tester l'API",
-    'landing.loadingApi': 'Verification de /api/matches/public...',
-    'landing.apiSuccess': 'Proxy OK - {count} match(s) public(s) recupere(s)',
+    'landing.loadingApi': 'Verification de /api/ateliers/public...',
+    'landing.apiSuccess': 'Proxy OK - {count} atelier(s) public(s) recupere(s)',
     'landing.apiError': "Echec de l'appel API. Verifiez que le backend tourne sur le port 8082.",
     'landing.feature1.title': 'Reservations',
-    'landing.feature1.body': 'Choix du terrain, controle des disponibilites et suivi du statut.',
-    'landing.feature2.title': 'Matchs publics et prives',
+    'landing.feature1.body': 'Choix de la salle, contrôle des disponibilités et suivi du statut.',
+    'landing.feature2.title': 'Ateliers publics et prives',
     'landing.feature2.body': 'Creation rapide avec des regles claires pour les participants.',
     'landing.feature3.title': 'Paiements',
     'landing.feature3.body': 'Vue propre des paiements, penalites et confirmations.',
     'landing.feature4.title': 'Administration',
-    'landing.feature4.body': 'Indicateurs, membres, sites, terrains et fermetures au meme endroit.',
-    'landing.matchPublic': 'Match public',
-    'landing.matchAvailable': 'match(s) disponible(s)',
+    'landing.feature4.body': 'Indicateurs, participants, centres, salles et fermetures au meme endroit.',
+    'landing.atelierPublic': 'Atelier public',
+    'landing.atelierAvailable': 'atelier(s) disponible(s)',
     'landing.reservation': 'Reservation',
-    'landing.reservationBody': 'membre, terrain, paiement',
+    'landing.reservationBody': 'participant, salle, paiement',
     'landing.simpleReservation': 'Simple',
-    'landing.matchPreviewLabel': 'Apercu des matchs',
-    'admin.login.heroTitle': 'PadelPlay Admin',
-    'admin.login.heroSubtitle': 'Espace reserve aux administrateurs de sites et superviseurs globaux',
+    'landing.atelierPreviewLabel': 'Apercu des ateliers',
+    'admin.login.heroTitle': 'AtelierConnect Administration',
+    'admin.login.heroSubtitle': 'Espace reserve aux administrateurs de centres et superviseurs globaux',
     'admin.login.formTitle': 'Connexion',
     'admin.login.formSubtitle': 'Acces reserve aux administrateurs',
     'admin.login.email': 'Email',
@@ -484,15 +492,15 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'admin.login.back': 'Retour',
     'admin.login.error': "Echec de connexion. Verifiez l'e-mail et le mot de passe.",
     'admin.home.eyebrow': 'Tableau de bord',
-    'admin.home.title': 'Administration PadelPlay',
-    'admin.home.subtitle': 'Vue {scope} des matchs, reservations, membres et ressources du club.',
+    'admin.home.title': 'Administration AtelierConnect',
+    'admin.home.subtitle': 'Vue {scope} des ateliers, reservations, participants et ressources du centre.',
     'admin.home.loading': 'Chargement du tableau de bord...',
-    'admin.home.matches': 'Matchs',
+    'admin.home.ateliers': 'Ateliers',
     'admin.home.reservations': 'Reservations',
-    'admin.home.members': 'Membres',
+    'admin.home.members': 'Participants',
     'admin.home.revenue': "Chiffre d'affaires",
-    'admin.home.occupancy': 'Occupation par site',
-    'admin.home.occupancySub': 'Nombre de matchs rattaches a chaque site visible',
+    'admin.home.occupancy': 'Occupation par centre',
+    'admin.home.occupancySub': 'Nombre d’ateliers rattachés à chaque centre visible',
     'admin.home.resources': 'Ressources',
     'admin.home.resourcesSub': "Controle rapide des elements geres par l'administration",
     'admin.home.empty': 'Aucune donnee.',
@@ -501,138 +509,145 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'admin.home.validPayments': 'paiements valides',
     'admin.home.reservationsLoadError': 'Impossible de charger les reservations administrateur.',
     'admin.home.dashboardLoadError': 'Impossible de charger le tableau de bord administrateur.',
-    'admin.matches.title': 'Gestion des matchs',
-    'admin.matches.subtitle': 'Consultation, details et conversion en public',
-    'admin.members.title': 'Gestion des membres',
-    'admin.members.subtitle': 'Creation, modification et suppression des membres du club',
+    'admin.ateliers.title': 'Gestion des ateliers',
+    'admin.ateliers.subtitle': 'Consultation, details et conversion en public',
+    'admin.members.title': 'Gestion des participants',
+    'admin.members.subtitle': 'Création, modification et gestion des participants aux ateliers',
     'admin.members.matricule': 'Matricule',
-    'admin.members.matriculeHint': 'GLOBAL: G+4ch · SITE: S+5ch · LIBRE: L+5ch',
-    'admin.members.type': 'Type de membre',
-    'admin.members.typeGlobal': 'Global - Tous les sites',
-    'admin.members.typeSite': 'Site - Site dédié',
-    'admin.members.typeLibre': 'Libre - Accès libre',
+    'admin.members.matriculeHint': 'PARTENAIRE : G + 4 chiffres · ABONNÉ : S + 5 chiffres · VISITEUR : L + 5 chiffres',
+    'admin.members.type': 'Catégorie de participant',
+    'admin.members.typeGlobal': 'PARTENAIRE — jusqu’à 30 jours',
+    'admin.members.typeCentre': 'ABONNÉ — jusqu’à 15 jours dans son centre',
+    'admin.members.typeLibre': 'VISITEUR — jusqu’à 7 jours',
     'admin.members.nom': 'Nom',
     'admin.members.prenom': 'Prenom',
     'admin.members.email': 'Email',
-    'admin.members.site': 'Site',
-    'admin.members.siteNone': 'Aucun site (GLOBAL / LIBRE)',
+    'admin.members.site': 'Centre',
+    'admin.members.centreNone': 'Aucun centre de rattachement (partenaire / visiteur)',
     'admin.members.searchPlaceholder': 'Rechercher par matricule, nom ou prenom...',
     'admin.members.filterAll': 'Tous',
-    'admin.members.filterGlobal': 'Global',
-    'admin.members.filterSite': 'Site',
-    'admin.members.filterLibre': 'Libre',
-    'admin.members.empty': 'Aucun membre trouve',
-    'admin.members.emptySub': 'Creer votre premier membre avec le formulaire ci-dessus.',
+    'admin.members.filterGlobal': 'Partenaires',
+    'admin.members.filterCentre': 'Abonnés',
+    'admin.members.filterLibre': 'Visiteurs',
+    'admin.members.empty': 'Aucun participant trouve',
+    'admin.members.emptySub': 'Creer votre premier participant avec le formulaire ci-dessus.',
     'admin.members.penalty': 'Pénalité active',
     'admin.members.emailMissing': 'Non renseigne',
-    'admin.members.siteAll': 'Tous les sites',
+    'admin.members.centreAll': 'Tous les centres',
     'admin.members.balance': 'Solde',
     'admin.members.edit': 'Modifier',
     'admin.members.delete': 'Supprimer',
-    'admin.members.count': 'membre(s)',
-    'admin.sites.title': 'Gestion des sites',
-    'admin.sites.subtitle': 'Creation, edition et suppression des sites',
-    'admin.terrains.title': 'Gestion des terrains',
-    'admin.terrains.subtitle': 'Creation et gestion des terrains par site',
+    'admin.members.count': 'participant(s)',
+    'admin.centres.title': 'Gestion des centres',
+    'admin.centres.subtitle': 'Creation, edition et suppression des centres',
+    'admin.salles.title': 'Gestion des salles',
+    'admin.salles.subtitle': 'Creation et gestion des salles par centre',
     'admin.closures.title': 'Jours de fermeture',
-    'admin.closures.subtitle': 'Gestion des fermetures globales et par site',
-    'member.home.title': 'Espace Membre Padel',
-    'member.home.subtitle': 'Entrez votre matricule pour acceder a votre espace de jeu',
+    'admin.closures.subtitle': 'Gestion des fermetures globales et par centre',
+    'member.home.title': 'Espace participant AtelierConnect',
+    'member.home.subtitle': 'Connectez-vous pour consulter et réserver vos ateliers',
     'member.home.identification': 'Identification',
-    'member.home.loginHint': 'Saisissez votre matricule et mot de passe pour rejoindre le court',
+    'member.home.loginHint': 'Saisissez votre matricule et votre mot de passe pour accéder aux ateliers',
     'member.home.password': 'Mot de passe',
     'member.home.cta': 'Acceder a mon espace',
     'member.home.invalid': 'Identifiants invalides. Verifiez le matricule et le mot de passe.',
-    'member.home.global': 'Global',
-    'member.home.site': 'Site dédié',
-    'member.home.livre': 'Libre',
-    'member.home.tousSites': 'Tous les sites',
-    'member.create.title': 'Creer un match',
+    'member.home.global': 'PARTENAIRE',
+    'member.home.site': 'ABONNÉ',
+    'member.home.livre': 'VISITEUR',
+    'member.home.tousCentres': 'Tous les centres',
+    'member.create.title': 'Créer un atelier',
     'member.create.subtitle': 'Public ou prive, selon les regles du backend.',
     'member.create.rappel': 'Rappel',
     'member.create.public': 'PUBLIC',
     'member.create.private': 'PRIVE',
     'member.create.back': 'Retour profil',
-    'member.create.submit': 'Creer le match',
+    'member.create.submit': 'Créer l’atelier',
     'member.create.mode': 'Mode creation',
-    'member.create.site': 'Site',
-    'member.create.terrain': 'Terrain',
+    'member.create.site': 'Centre',
+    'member.create.salle': 'Salle',
     'member.create.date': 'Date',
     'member.create.dateHint': 'Entre',
     'member.create.time': 'Heure debut',
-    'member.create.matchType': 'Type de match',
-    'member.create.privatePlayers': 'Joueurs a inviter maintenant (optionnel)',
-    'member.create.player2': 'Matricule joueur 2',
-    'member.create.player3': 'Matricule joueur 3',
-    'member.create.player4': 'Matricule joueur 4',
-    'member.create.noSite': 'Aucun site disponible pour creer un match.',
-    'member.create.noTerrain': 'Aucun terrain disponible pour le site selectionne.',
-    'member.create.selectedSite': 'Site selectionne',
+    'member.create.atelierType': 'Type d’atelier',
+    'member.create.privatePlayers': 'Participants à inviter (jusqu’à 5, facultatif)',
+    'member.create.player2': 'Matricule participant 2',
+    'member.create.player3': 'Matricule participant 3',
+    'member.create.player4': 'Matricule participant 4',
+    'member.create.player5': 'Matricule participant 5',
+    'member.create.player6': 'Matricule participant 6',
+    'member.create.noCentre': 'Aucun centre disponible pour créer un atelier.',
+    'member.create.noSalle': 'Aucune salle disponible dans le centre sélectionné.',
+    'member.create.selectedCentre': 'Centre selectionne',
     'member.create.bookingLimit': 'Derniere date autorisee selon votre profil :',
-    'member.create.ruleGlobal': 'GLOBAL : jusqu\'a 3 semaines a l\'avance',
-    'member.create.ruleSite': 'SITE : jusqu\'a 2 semaines a l\'avance sur son site',
-    'member.create.ruleLibre': 'LIBRE : jusqu\'a 5 jours a l\'avance',
-    'member.create.noSiteLoaded': 'Aucun site charge.',
-    'member.create.noTerrainLoaded': 'Aucun terrain charge.',
-    'member.create.success': 'Match cree. Votre place sera confirmee apres paiement depuis vos reservations.',
-    'member.create.successPrivate': 'Match privé créé. Les invitations sont en attente de paiement des joueurs.',
-    'member.create.partialSuccess': "Match cree, mais certains joueurs n'ont pas pu etre ajoutes.",
-    'member.public.title': 'Matchs publics',
-    'member.public.subtitle': 'Rejoins un match public disponible. Premier paye = premier servi.',
-    'member.public.filter': 'Filtrer par site',
+    'member.create.ruleGlobal': 'PARTENAIRE : réservation jusqu\'à 30 jours à l\'avance',
+    'member.create.ruleCentre': 'ABONNÉ : réservation jusqu\'à 15 jours dans son centre',
+    'member.create.ruleLibre': 'VISITEUR : réservation jusqu\'à 7 jours dans les centres ouverts aux visiteurs',
+    'member.create.noCentreLoaded': 'Aucun centre charge.',
+    'member.create.noSalleLoaded': 'Aucun salle charge.',
+    'member.create.success': 'Atelier créé. Votre place sera confirmée après paiement depuis vos réservations.',
+    'member.create.successPrivate': 'Atelier privé créé. Les invitations sont en attente de paiement des participants.',
+    'member.create.partialSuccess': "Atelier cree, mais certains participants n'ont pas pu etre ajoutes.",
+    'member.public.title': 'Ateliers ouverts au public',
+    'member.public.subtitle': 'Inscrivez-vous à un atelier disponible. Les places sont attribuées après paiement.',
+    'member.public.filter': 'Filtrer par centre',
     'member.public.search': 'Recherche',
-    'member.public.create': 'Creer un match',
+    'member.public.create': 'Creer un atelier',
     'member.public.join': 'Rejoindre',
     'member.public.modify': 'Modifier',
     'member.public.delete': 'Supprimer',
     'member.public.myProfile': 'Mon profil',
-    'member.public.myMatch': 'Mon match',
+    'member.public.myAtelier': 'Mon atelier',
     'member.public.available': 'Disponible',
     'member.public.completion': 'Complet',
     'member.public.none': 'Non rejoignable',
     'member.public.organizer': 'Organisateur',
     'member.public.status': 'Statut',
     'member.public.type': 'Type',
-    'member.public.players': 'Joueurs',
-    'member.public.price': 'Prix par joueur',
+    'member.public.players': 'Participants',
+    'member.public.price': 'Prix par participant',
     'member.public.registering': 'Reservation...',
-    'member.public.editTitle': 'Modifier le match',
-    'member.public.editHint': 'Modification indisponible : un match ne peut plus etre modifie a moins de 24 h du debut.',
-    'member.public.noMatches': 'Aucun match public ne correspond aux filtres.',
-    'member.public.searchPlaceholder': 'Terrain, site, organisateur',
-    'member.public.noMatchPrompt': 'Tu ne trouves pas de match ?',
-    'member.public.createBody': 'En public ou en prive, avec choix du site et du terrain.',
+    'member.public.editTitle': 'Modifier le atelier',
+    'member.public.editHint': 'Modification indisponible à moins de 24 h avant l’atelier.',
+    'member.public.noAteliers': 'Aucun atelier public ne correspond aux filtres.',
+    'member.public.searchPlaceholder': 'Salle, centre, organisateur',
+    'member.public.noAtelierPrompt': 'Tu ne trouves pas de atelier ?',
+    'member.public.createBody': 'Atelier public ou privé, avec choix du centre et de la salle.',
     'member.public.date': 'Date',
     'member.public.time': 'Heure debut',
     'member.public.typeLabel': 'Type',
     'member.reservations.title': 'Mes reservations',
     'member.reservations.subtitle': 'Paiement et annulation de vos inscriptions.',
-    'member.reservations.createPublic': 'Creer un match PUBLIC',
-    'member.reservations.createPrivate': 'Creer un match PRIVE',
-    'member.reservations.matches': 'Matchs publics',
-    'member.reservations.select': 'Selectionner un match organise',
-    'member.reservations.addPlayer': 'Ajouter joueur',
-    'member.reservations.noOrganized': 'Aucun match organise pour l\'instant. Creez un match PUBLIC ou PRIVE via les boutons ci-dessus.',
-    'member.reservations.edit': 'Modifier le match',
+    'member.reservations.createPublic': 'Créer un atelier PUBLIC',
+    'member.reservations.createPrivate': 'Créer un atelier PRIVÉ',
+    'member.reservations.ateliers': 'Ateliers publics',
+    'member.reservations.select': 'Selectionner un atelier organise',
+    'member.reservations.addPlayer': 'Inviter un participant',
+    'member.reservations.noOrganized': 'Aucun atelier organise pour l\'instant. Creez un atelier PUBLIC ou PRIVE via les boutons ci-dessus.',
+    'member.reservations.edit': 'Modifier le atelier',
     'member.reservations.confirmation': 'Confirmation requise',
-    'member.reservations.players': 'Joueurs inscrits :',
+    'member.reservations.players': 'Participants inscrits :',
     'member.reservations.empty': 'Aucune reservation trouvee.',
-    'member.reservations.player': 'Joueur',
-    'member.reservations.match': 'Match',
+    'member.reservations.player': 'Participant',
+    'member.reservations.atelier': 'Atelier',
     'member.reservations.reservation': 'Reservation',
     'member.reservations.payment': 'Paiement',
     'member.reservations.amount': 'Montant',
     'member.reservations.pay': 'Payer',
     'member.reservations.cancel': 'Annuler',
-    'member.reservations.organizedTitle': 'Mes matchs organises',
-    'member.reservations.organizedSub': 'Modifier, supprimer ou gerer les joueurs de vos matchs.',
-    'member.reservations.chooseMatch': '-- Choisir un match --',
-    'member.reservations.inviteMatricule': 'Matricule joueur a ajouter',
-    'member.reservations.noPlayer': 'Aucun joueur inscrit sur ce match.',
+    'member.reservations.organizedTitle': 'Mes ateliers organises',
+    'member.reservations.organizedSub': 'Modifier, supprimer ou gerer les participants de vos ateliers.',
+    'member.reservations.chooseAtelier': '-- Choisir un atelier --',
+    'member.reservations.inviteMatricule': 'Matricule du participant à inviter',
+    'member.reservations.consentInfo': 'Si cet atelier privé reste incomplet, il ne pourra être ouvert au public à J−2 qu’avec votre accord explicite.',
+    'member.reservations.consentAction': 'J’autorise l’ouverture au public à J−2',
+    'member.reservations.consentConfirm': 'Confirmez-vous votre accord pour ouvrir cet atelier au public à partir de J−2 s’il reste incomplet ? Cette décision sera enregistrée.',
+    'member.reservations.consentSuccess': 'Votre accord pour une éventuelle ouverture au public est enregistré.',
+    'member.reservations.consentError': 'Impossible d’enregistrer votre accord.',
+    'member.reservations.noPlayer': 'Aucun participant inscrit à cet atelier.',
     'member.reservations.reservationLabel': 'Reservation',
     'member.reservations.paymentLabel': 'Paiement',
     'member.reservations.removePlayer': 'Retirer',
-    'member.reservations.emptyBody': 'Creez un match ou rejoignez un match public pour voir vos reservations ici.',
+    'member.reservations.emptyBody': 'Creez un atelier ou rejoignez un atelier public pour voir vos reservations ici.',
     'member.payments.title': 'Mes paiements',
     'member.payments.subtitle': 'Historique des paiements et remboursements',
     'member.payments.reservations': 'Mes reservations',
@@ -646,27 +661,27 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'member.payments.noPayments': 'Aucun paiement trouve',
     'member.payments.loadingState': 'Chargement des paiements...',
     'member.payments.errorState': 'Impossible de charger les paiements.',
-    'member.payments.noMemberState': 'Aucun membre connecte.',
-    'member.profile.title': 'Mon profil membre',
+    'member.payments.noMemberState': 'Aucun participant connecte.',
+    'member.profile.title': 'Mon profil participant',
     'member.profile.subtitle': 'Informations rechargees depuis le backend',
-    'member.profile.createQuick': 'Creer un match rapidement',
-    'member.profile.publicMatch': 'Match ouvert',
-    'member.profile.privateMatch': 'Match sur invitation',
-    'member.profile.quickPublic': 'Creer un match PUBLIC',
-    'member.profile.quickPrivate': 'Creer un match PRIVE',
-    'member.profile.quickPublicBody': "N'importe quel membre peut rejoindre · 15 EUR/joueur · 4 joueurs requis",
-    'member.profile.quickPrivateBody': 'Tu invites 3 joueurs par matricule · Converti en public si incomplet la veille',
+    'member.profile.createQuick': 'Creer un atelier rapidement',
+    'member.profile.publicAtelier': 'Atelier ouvert',
+    'member.profile.privateAtelier': 'Atelier sur invitation',
+    'member.profile.quickPublic': 'Creer un atelier PUBLIC',
+    'member.profile.quickPrivate': 'Creer un atelier PRIVE',
+    'member.profile.quickPublicBody': "N'importe quel participant peut rejoindre · 15 EUR/participant · 6 places maximum",
+    'member.profile.quickPrivateBody': 'Invitez jusqu’à 5 participants · ouverture au public à J-2 avec accord explicite',
     'member.profile.explore': 'Explorer',
     'member.profile.followup': 'Suivi',
     'member.profile.finance': 'Finances',
     'member.profile.refresh': 'Rafraichir',
-    'member.profile.logout': 'Deconnexion membre',
+    'member.profile.logout': 'Deconnexion participant',
     'member.profile.nom': 'Nom',
     'member.profile.prenom': 'Prenom',
     'member.profile.email': 'Email',
     'member.profile.matricule': 'Matricule',
     'member.profile.type': 'Type',
-    'member.profile.site': 'Site',
+    'member.profile.site': 'Centre',
     'member.profile.solde': 'Solde',
     'member.profile.penaltyActive': 'Penalite active',
     'member.profile.balancePending': 'Solde en attente',
@@ -678,79 +693,80 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'member.payments.payment': 'Paiement',
     'member.payments.loading': 'Chargement des paiements...',
     'member.payments.error': 'Impossible de charger les paiements.',
-    'member.payments.noMember': 'Aucun membre connecte.',
-    'admin.matches.organizer': 'Organisateur',
-    'admin.matches.status': 'Statut',
-    'admin.matches.players': 'Joueurs',
-    'admin.matches.reservations': 'Reservations du match',
-    'admin.matches.noReservations': 'Aucune reservation.',
-    'admin.matches.hideDetails': 'Masquer',
-    'admin.matches.showDetails': 'Voir details',
-    'admin.matches.convert': 'Convertir en public',
-    'admin.matches.convertSuccess': 'Match converti en public.',
-    'admin.matches.loadError': 'Impossible de charger les matchs admin.',
-    'admin.matches.reservationsError': 'Impossible de charger les reservations du match.',
-    'admin.matches.convertError': 'Conversion impossible.',
-    'admin.matches.empty': 'Aucun match disponible',
+    'member.payments.noMember': 'Aucun participant connecte.',
+    'admin.ateliers.organizer': 'Organisateur',
+    'admin.ateliers.status': 'Statut',
+    'admin.ateliers.players': 'Participants',
+    'admin.ateliers.reservations': 'Reservations du atelier',
+    'admin.ateliers.noReservations': 'Aucune reservation.',
+    'admin.ateliers.hideDetails': 'Masquer',
+    'admin.ateliers.showDetails': 'Voir details',
+    'admin.ateliers.convert': 'Ouvrir au public (accord requis, J−2)',
+    'admin.ateliers.convertSuccess': 'Atelier converti en public.',
+    'admin.ateliers.loadError': 'Impossible de charger les ateliers admin.',
+    'admin.ateliers.reservationsError': 'Impossible de charger les reservations du atelier.',
+    'admin.ateliers.convertError': 'Conversion impossible.',
+    'admin.ateliers.empty': 'Aucun atelier disponible',
     'admin.closures.date': 'Date',
     'admin.closures.reason': 'Raison (optionnel)',
-    'admin.closures.site': 'Site concerne',
+    'admin.closures.site': 'Centre concerne',
     'admin.closures.noneGlobal': 'Aucun (global)',
-    'admin.closures.global': 'Fermeture globale (tous les sites)',
+    'admin.closures.global': 'Fermeture globale (tous les centres)',
     'admin.closures.add': 'Ajouter la fermeture',
     'admin.closures.reset': 'Reinitialiser',
     'admin.closures.reasonEmpty': 'Raison non precisee',
     'admin.closures.empty': 'Aucun jour de fermeture configure',
     'common.notProvided': 'Non renseigne',
     'admin.home.allStatuses': 'tous statuts',
-    'admin.home.matchCount': 'match(s)',
-    'admin.home.sitesVisible': 'Sites visibles',
-    'admin.home.terrainsVisible': 'Terrains visibles',
-    'admin.home.completeMatches': 'Matchs complets',
+    'admin.home.atelierCount': 'atelier(s)',
+    'admin.home.centresVisible': 'Centres visibles',
+    'admin.home.sallesVisible': 'Salles visibles',
+    'admin.home.completeAteliers': 'Ateliers complets',
     'admin.home.pendingReservations': 'Reservations en attente',
     'admin.login.globalBadge': '🌐 Admin global',
-    'admin.login.siteBadge': '🏟️ Admin site',
+    'admin.login.centreBadge': '🏟️ Admin centre',
     'admin.login.showPassword': 'Afficher le mot de passe admin',
     'admin.login.hidePassword': 'Masquer le mot de passe admin',
     'admin.members.searchNoResult': 'Aucun resultat pour "{query}"',
-    'admin.members.loadError': 'Impossible de charger les membres.',
-    'admin.members.saveError': 'Sauvegarde du membre impossible.',
+    'admin.members.loadError': 'Impossible de charger les participants.',
+    'admin.members.saveError': 'Sauvegarde du participant impossible.',
     'admin.members.deleteError': 'Suppression impossible.',
-    'admin.members.updateSuccess': 'Membre mis à jour.',
-    'admin.members.createSuccess': 'Membre cree avec succes.',
-    'admin.members.deleteSuccess': 'Membre supprimé.',
-    'admin.members.deleteConfirm': 'Confirmer la suppression de ce membre ?',
-    'admin.sites.name': 'Nom',
-    'admin.sites.address': 'Adresse',
-    'admin.sites.opening': 'Ouverture',
-    'admin.sites.closing': 'Fermeture',
-    'admin.sites.matchDuration': 'Duree match (min)',
-    'admin.sites.breakDuration': 'Pause entre matchs (min)',
-    'admin.sites.civilYear': 'Annee civile',
-    'admin.sites.hours': 'Horaires',
-    'admin.sites.duration': 'Duree match',
-    'admin.sites.break': 'Pause',
-    'admin.sites.year': 'Annee',
-    'admin.sites.empty': 'Aucun site configure',
-    'admin.sites.siteAdminEditBlocked': 'Un admin SITE ne peut pas modifier les sites.',
-    'admin.sites.siteAdminDeleteBlocked': 'Un admin SITE ne peut pas supprimer de site.',
-    'admin.sites.loadError': 'Impossible de charger les sites.',
-    'admin.sites.saveError': 'Sauvegarde du site impossible.',
-    'admin.sites.deleteError': 'Suppression du site impossible.',
-    'admin.sites.deleteConfirm': 'Confirmer la suppression de ce site ?',
-    'admin.sites.updateSuccess': 'Site mis a jour.',
-    'admin.sites.createSuccess': 'Site cree.',
-    'admin.sites.deleteSuccess': 'Site supprime.',
-    'admin.terrains.name': 'Nom du terrain',
-    'admin.terrains.site': 'Site',
-    'admin.terrains.empty': 'Aucun terrain configure',
-    'admin.terrains.loadError': 'Impossible de charger les terrains.',
-    'admin.terrains.saveError': 'Sauvegarde du terrain impossible.',
-    'admin.terrains.deleteError': 'Suppression du terrain impossible.',
-    'admin.terrains.deleteConfirm': 'Confirmer la suppression de ce terrain ?',
-    'admin.terrains.updateSuccess': 'Terrain mis a jour.',
-    'admin.terrains.createSuccess': 'Terrain cree.',
-    'admin.terrains.deleteSuccess': 'Terrain supprime.',
+    'admin.members.updateSuccess': 'Participant mis à jour.',
+    'admin.members.createSuccess': 'Participant cree avec succes.',
+    'admin.members.deleteSuccess': 'Participant supprimé.',
+    'admin.members.deleteConfirm': 'Confirmer la suppression de ce participant ?',
+    'admin.centres.name': 'Nom',
+    'admin.centres.address': 'Adresse',
+    'admin.centres.opening': 'Ouverture',
+    'admin.centres.closing': 'Fermeture',
+    'admin.centres.atelierDuration': 'Duree atelier (min)',
+    'admin.centres.breakDuration': 'Pause entre ateliers (min)',
+    'admin.centres.civilYear': 'Année civile',
+    'admin.centres.openVisitors': 'Centre ouvert aux visiteurs (réservation à 7 jours)',
+    'admin.centres.hours': 'Horaires',
+    'admin.centres.duration': 'Duree atelier',
+    'admin.centres.break': 'Pause',
+    'admin.centres.year': 'Annee',
+    'admin.centres.empty': 'Aucun centre configure',
+    'admin.centres.centreAdminEditBlocked': 'Un admin SITE ne peut pas modifier les centres.',
+    'admin.centres.centreAdminDeleteBlocked': 'Un admin SITE ne peut pas supprimer de centre.',
+    'admin.centres.loadError': 'Impossible de charger les centres.',
+    'admin.centres.saveError': 'Sauvegarde du centre impossible.',
+    'admin.centres.deleteError': 'Suppression du centre impossible.',
+    'admin.centres.deleteConfirm': 'Confirmer la suppression de ce centre ?',
+    'admin.centres.updateSuccess': 'Centre mis a jour.',
+    'admin.centres.createSuccess': 'Centre cree.',
+    'admin.centres.deleteSuccess': 'Centre supprime.',
+    'admin.salles.name': 'Nom de la salle',
+    'admin.salles.site': 'Centre',
+    'admin.salles.empty': 'Aucun salle configure',
+    'admin.salles.loadError': 'Impossible de charger les salles.',
+    'admin.salles.saveError': 'Enregistrement de la salle impossible.',
+    'admin.salles.deleteError': 'Suppression de la salle impossible.',
+    'admin.salles.deleteConfirm': 'Confirmer la suppression de cette salle ?',
+    'admin.salles.updateSuccess': 'Salle mis a jour.',
+    'admin.salles.createSuccess': 'Salle cree.',
+    'admin.salles.deleteSuccess': 'Salle supprime.',
     'admin.closures.loadError': 'Impossible de charger les jours de fermeture.',
     'admin.closures.addSuccess': 'Jour de fermeture ajoute.',
     'admin.closures.addError': 'Ajout impossible.',
@@ -758,49 +774,49 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'admin.closures.deleteError': 'Suppression impossible.',
     'member.home.matricule': 'Matricule',
     'member.home.matriculePlaceholder': 'Ex: G1234, S12345, L12345',
-    'member.home.showPassword': 'Afficher le mot de passe membre',
-    'member.home.hidePassword': 'Masquer le mot de passe membre',
-    'member.home.globalHint': 'G + 4 chiffres · Tous les sites',
-    'member.home.siteHint': 'S + 5 chiffres · Site dédié',
-    'member.home.livreHint': 'L + 5 chiffres · Accès libre',
-    'member.home.allSites': 'Tous les sites',
-    'member.profile.loadError': 'Impossible de charger le profil membre.',
+    'member.home.showPassword': 'Afficher le mot de passe participant',
+    'member.home.hidePassword': 'Masquer le mot de passe participant',
+    'member.home.globalHint': 'G + 4 chiffres · réservation à 30 jours',
+    'member.home.centreHint': 'S + 5 chiffres · réservation à 15 jours dans votre centre',
+    'member.home.livreHint': 'L + 5 chiffres · réservation à 7 jours',
+    'member.home.allCentres': 'Tous les centres',
+    'member.profile.loadError': 'Impossible de charger le profil participant.',
     'member.create.bookingLimitError': 'Dernière date autorisée : {date}.',
     'member.create.bookingLimitProfileError': 'Le profil {type} ne peut pas réserver plus de {days} jours à l\'avance. Date limite : {date}.',
-    'member.create.invalidType': 'Type de match invalide.',
-    'member.create.createError': 'Creation du match impossible.',
-    'member.create.outstandingBalance': 'Vous avez un solde impaye. Reglez vos dettes avant de creer un match.',
-    'member.create.activePenalty': 'Vous avez une penalite active. Attendez avant de creer un match.',
+    'member.create.invalidType': 'Type de atelier invalide.',
+    'member.create.createError': 'Creation du atelier impossible.',
+    'member.create.outstandingBalance': 'Vous avez un solde impaye. Reglez vos dettes avant de creer un atelier.',
+    'member.create.activePenalty': 'Vous avez une penalite active. Attendez avant de creer un atelier.',
     'member.create.slotTaken': 'Ce creneau est deja reserve. Choisissez un autre horaire.',
-    'member.create.siteClosed': 'Le site est ferme a cette date.',
+    'member.create.centreClosed': 'Le centre est ferme a cette date.',
     'member.create.outOfHours': "Cet horaire est en dehors des heures d'ouverture du site.",
-    'member.create.siteOnly': 'Un membre SITE ne peut creer un match que sur son propre site.',
-    'member.create.internalError': 'Une erreur interne du serveur est survenue lors de la creation du match.',
-    'member.create.addPlayersError': "Impossible d'ajouter tous les joueurs.",
-    'member.public.loadError': 'Impossible de charger les matchs publics.',
-    'member.public.noMember': 'Aucun membre connecte.',
-    'member.public.joinBlocked': 'Ce match ne peut pas etre rejoint (complet, annule ou non autorise).',
+    'member.create.centreOnly': 'Un abonné ne peut créer un atelier que dans son centre de rattachement.',
+    'member.create.internalError': 'Une erreur interne du serveur est survenue lors de la creation du atelier.',
+    'member.create.addPlayersError': "Impossible d'ajouter tous les participants.",
+    'member.public.loadError': 'Impossible de charger les ateliers publics.',
+    'member.public.noMember': 'Aucun participant connecte.',
+    'member.public.joinBlocked': 'Ce atelier ne peut pas etre rejoint (complet, annule ou non autorise).',
     'member.public.joinSuccess': "Demande créée. Votre place ne sera confirmée qu'après paiement.",
-    'member.public.joinError': 'Impossible de reserver ce match.',
-    'member.public.modifyTooLate': 'Modification impossible a moins de 24 h du debut du match.',
-    'member.public.updateSuccess': 'Match modifie avec succes.',
-    'member.public.updateError': 'Modification du match impossible.',
-    'member.public.deleteConfirm': 'Confirmer la suppression (annulation) du match #{id} ?',
-    'member.public.deleteSuccess': 'Match annule avec succes.',
-    'member.public.deleteError': 'Suppression du match impossible.',
+    'member.public.joinError': 'Impossible de reserver ce atelier.',
+    'member.public.modifyTooLate': 'Modification impossible a moins de 24 h du debut du atelier.',
+    'member.public.updateSuccess': 'Atelier modifie avec succes.',
+    'member.public.updateError': 'Modification du atelier impossible.',
+    'member.public.deleteConfirm': 'Confirmer la suppression (annulation) du atelier #{id} ?',
+    'member.public.deleteSuccess': 'Atelier annule avec succes.',
+    'member.public.deleteError': 'Suppression du atelier impossible.',
     'member.reservations.reservationTitle': 'Reservation',
-    'member.reservations.noMember': 'Aucun membre connecte.',
+    'member.reservations.noMember': 'Aucun participant connecte.',
     'member.reservations.loadError': 'Impossible de charger les reservations.',
-    'member.reservations.privateOnly': 'La gestion des joueurs est réservée aux matchs PRIVÉS.',
-    'member.reservations.playersLoadError': 'Impossible de charger les joueurs du match.',
-    'member.reservations.updateSuccess': 'Match mis à jour avec succès.',
-    'member.reservations.updateError': 'Modification du match impossible.',
-    'member.reservations.deleteSuccess': 'Match annule avec succes.',
-    'member.reservations.deleteError': 'Suppression du match impossible.',
-    'member.reservations.playerAdded': 'Joueur ajoute avec succes.',
-    'member.reservations.playerAddError': "Ajout du joueur impossible.",
-    'member.reservations.playerRemoved': 'Joueur retire du match.',
-    'member.reservations.playerRemoveError': 'Suppression du joueur impossible.',
+    'member.reservations.privateOnly': 'La gestion des participants est réservée aux ateliers PRIVÉS.',
+    'member.reservations.playersLoadError': 'Impossible de charger les participants du atelier.',
+    'member.reservations.updateSuccess': 'Atelier mis à jour avec succès.',
+    'member.reservations.updateError': 'Modification du atelier impossible.',
+    'member.reservations.deleteSuccess': 'Atelier annule avec succes.',
+    'member.reservations.deleteError': 'Suppression du atelier impossible.',
+    'member.reservations.playerAdded': 'Participant ajoute avec succes.',
+    'member.reservations.playerAddError': "Ajout du participant impossible.",
+    'member.reservations.playerRemoved': 'Participant retire du atelier.',
+    'member.reservations.playerRemoveError': 'Suppression du participant impossible.',
     'member.reservations.paymentSuccess': 'Paiement effectue avec succes.',
     'member.reservations.paymentError': 'Paiement impossible.',
     'member.reservations.reservationCanceled': 'Reservation annulee.',
@@ -817,9 +833,9 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'common.confirm': 'Confirm',
     'common.loading': 'Loading...',
     'common.none': 'None',
-    'common.matchPlanned': 'Planned',
-    'common.matchFull': 'Full',
-    'common.matchCanceled': 'Canceled',
+    'common.atelierPlanned': 'Planned',
+    'common.atelierFull': 'Full',
+    'common.atelierCanceled': 'Canceled',
     'common.reservationPending': 'Pending',
     'common.reservationConfirmed': 'Confirmed',
     'common.reservationCanceled': 'Canceled',
@@ -827,57 +843,57 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'common.paymentPaid': 'Paid',
     'common.paymentRefunded': 'Refunded',
     'common.paymentCanceled': 'Canceled',
-    'common.allSites': 'All sites',
+    'common.allCentres': 'All centers',
     'common.profile': 'Profile',
     'common.refresh': 'Refresh',
     'nav.home': 'Home',
     'nav.admin': 'Admin',
-    'nav.member': 'Member area',
+    'nav.member': 'Participant area',
     'nav.profile': 'Profile',
-    'nav.matches': 'Matches',
+    'nav.ateliers': 'Workshops',
     'nav.reservations': 'Reservations',
     'nav.payments': 'Payments',
     'nav.create': 'Create',
     'nav.public': 'Public',
     'nav.private': 'Private',
     'nav.logout': 'Logout',
-    'nav.memberArea': 'Member area',
+    'nav.memberArea': 'Participant area',
     'nav.adminLogin': 'Admin login',
     'nav.dashboard': 'Dashboard',
-    'nav.members': 'Members',
-    'nav.sites': 'Sites',
-    'nav.courts': 'Padel courts',
+    'nav.members': 'Participants',
+    'nav.centres': 'Centers',
+    'nav.courts': 'Workshop rooms',
     'nav.closures': 'Closures',
     'switcher.label': 'Language switch',
     'switcher.fr': 'French',
     'switcher.en': 'English',
-    'landing.eyebrow': 'Padel club management',
-    'landing.title': 'PadelPlay',
+    'landing.eyebrow': 'Collaborative workshop booking across multiple centers',
+    'landing.title': 'AtelierConnect',
     'landing.lead':
-      'A clear interface to book, join a match, track payments, and run the club from an admin dashboard.',
-    'landing.memberCta': 'Enter with a member ID',
+      'A clear interface to book or join a workshop, track payments, and manage collaborative centres from an admin dashboard.',
+    'landing.memberCta': 'Enter with a participant ID',
     'landing.memberCtaConnected': 'Open my area',
     'landing.adminCta': 'Admin login',
     'landing.testApi': 'Test the API',
-    'landing.loadingApi': 'Checking /api/matches/public...',
-    'landing.apiSuccess': 'Proxy OK - {count} public match(es) fetched',
+    'landing.loadingApi': 'Checking /api/workshops/public...',
+    'landing.apiSuccess': 'Proxy OK - {count} public workshop(es) fetched',
     'landing.apiError': 'API call failed. Check that the backend is running on port 8082.',
     'landing.feature1.title': 'Reservations',
-    'landing.feature1.body': 'Padel court selection, availability checks, and status tracking.',
-    'landing.feature2.title': 'Public and private matches',
+    'landing.feature1.body': 'Workshop room selection, availability checks, and status tracking.',
+    'landing.feature2.title': 'Public and private workshops',
     'landing.feature2.body': 'Fast creation with clear rules for participants.',
     'landing.feature3.title': 'Payments',
     'landing.feature3.body': 'Clean view of payments, penalties, and confirmations.',
     'landing.feature4.title': 'Administration',
-    'landing.feature4.body': 'Metrics, members, sites, courts, and closures in one place.',
-    'landing.matchPublic': 'Public match',
-    'landing.matchAvailable': 'match(es) available',
+    'landing.feature4.body': 'Metrics, participants, centers, rooms, and closures in one place.',
+    'landing.atelierPublic': 'Public workshop',
+    'landing.atelierAvailable': 'workshop(es) available',
     'landing.reservation': 'Reservation',
-    'landing.reservationBody': 'member, padel court, payment',
+    'landing.reservationBody': 'participant, workshop room, payment',
     'landing.simpleReservation': 'Simple',
-    'landing.matchPreviewLabel': 'Match preview',
-    'admin.login.heroTitle': 'PadelPlay Admin',
-    'admin.login.heroSubtitle': 'Area reserved for site administrators and global supervisors',
+    'landing.atelierPreviewLabel': 'Workshop preview',
+    'admin.login.heroTitle': 'AtelierConnect Administration',
+    'admin.login.heroSubtitle': 'Area reserved for center administrators and global supervisors',
     'admin.login.formTitle': 'Login',
     'admin.login.formSubtitle': 'Access reserved for administrators',
     'admin.login.email': 'Email',
@@ -886,15 +902,15 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'admin.login.back': 'Back',
     'admin.login.error': 'Login failed. Check the email and password.',
     'admin.home.eyebrow': 'Dashboard',
-    'admin.home.title': 'PadelPlay administration',
-    'admin.home.subtitle': '{scope} view of club matches, reservations, members, and resources.',
+    'admin.home.title': 'AtelierConnect Administration',
+    'admin.home.subtitle': '{scope} view of center workshops, reservations, participants, and resources.',
     'admin.home.loading': 'Loading dashboard...',
-    'admin.home.matches': 'Matches',
+    'admin.home.ateliers': 'Workshops',
     'admin.home.reservations': 'Reservations',
-    'admin.home.members': 'Members',
+    'admin.home.members': 'Participants',
     'admin.home.revenue': 'Revenue',
-    'admin.home.occupancy': 'Occupancy by site',
-    'admin.home.occupancySub': 'Number of matches linked to each visible site',
+    'admin.home.occupancy': 'Occupancy by center',
+    'admin.home.occupancySub': 'Number of workshops linked to each visible center',
     'admin.home.resources': 'Resources',
     'admin.home.resourcesSub': 'Quick control of elements managed by the administration',
     'admin.home.empty': 'No data.',
@@ -903,138 +919,145 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'admin.home.validPayments': 'valid payments',
     'admin.home.reservationsLoadError': 'Unable to load admin reservations.',
     'admin.home.dashboardLoadError': 'Unable to load the admin dashboard.',
-    'admin.matches.title': 'Match management',
-    'admin.matches.subtitle': 'Review, details, and conversion to public',
-    'admin.members.title': 'Member management',
-    'admin.members.subtitle': 'Create, edit, and delete club members',
-    'admin.members.matricule': 'Member ID',
-    'admin.members.matriculeHint': 'GLOBAL: G+4 chars · SITE: S+5 chars · LIBRE: L+5 chars',
-    'admin.members.type': 'Member type',
-    'admin.members.typeGlobal': 'Global - All sites',
-    'admin.members.typeSite': 'Site - Dedicated site',
-    'admin.members.typeLibre': 'Libre - Free access',
+    'admin.ateliers.title': 'Workshop management',
+    'admin.ateliers.subtitle': 'Review, details, and conversion to public',
+    'admin.members.title': 'Participant management',
+    'admin.members.subtitle': 'Create, edit and manage workshop participants',
+    'admin.members.matricule': 'Participant ID',
+    'admin.members.matriculeHint': 'PARTNER: G + 4 digits · SUBSCRIBER: S + 5 digits · VISITOR: L + 5 digits',
+    'admin.members.type': 'Participant category',
+    'admin.members.typeGlobal': 'PARTNER — book up to 30 days ahead',
+    'admin.members.typeCentre': 'SUBSCRIBER — book up to 15 days at your center',
+    'admin.members.typeLibre': 'VISITOR — book up to 7 days ahead',
     'admin.members.nom': 'Last name',
     'admin.members.prenom': 'First name',
     'admin.members.email': 'Email',
-    'admin.members.site': 'Site',
-    'admin.members.siteNone': 'No site (GLOBAL / LIBRE)',
-    'admin.members.searchPlaceholder': 'Search by member ID, last name, or first name...',
+    'admin.members.site': 'Center',
+    'admin.members.centreNone': 'No assigned center (partner / visitor)',
+    'admin.members.searchPlaceholder': 'Search by participant ID, last name, or first name...',
     'admin.members.filterAll': 'All',
-    'admin.members.filterGlobal': 'Global',
-    'admin.members.filterSite': 'Site',
-    'admin.members.filterLibre': 'Free access',
-    'admin.members.empty': 'No member found',
-    'admin.members.emptySub': 'Create your first member with the form above.',
+    'admin.members.filterGlobal': 'Partners',
+    'admin.members.filterCentre': 'Subscribers',
+    'admin.members.filterLibre': 'Visitors',
+    'admin.members.empty': 'No participant found',
+    'admin.members.emptySub': 'Create your first participant with the form above.',
     'admin.members.penalty': 'Active penalty',
     'admin.members.emailMissing': 'Not set',
-    'admin.members.siteAll': 'All sites',
+    'admin.members.centreAll': 'All centers',
     'admin.members.balance': 'Balance',
     'admin.members.edit': 'Edit',
     'admin.members.delete': 'Delete',
-    'admin.members.count': 'member(s)',
-    'admin.sites.title': 'Site management',
-    'admin.sites.subtitle': 'Create, edit, and delete sites',
-    'admin.terrains.title': 'Padel court management',
-    'admin.terrains.subtitle': 'Create and manage courts by site',
+    'admin.members.count': 'participant(s)',
+    'admin.centres.title': 'Center management',
+    'admin.centres.subtitle': 'Create, edit, and delete centers',
+    'admin.salles.title': 'Room management',
+    'admin.salles.subtitle': 'Create and manage rooms by center',
     'admin.closures.title': 'Closure days',
-    'admin.closures.subtitle': 'Global and site-based closure management',
-    'member.home.title': 'Padel member area',
-    'member.home.subtitle': 'Enter your member ID to access your play area',
+    'admin.closures.subtitle': 'Manage global and center-specific closure days',
+    'member.home.title': 'AtelierConnect participant area',
+    'member.home.subtitle': 'Sign in to explore and book workshops',
     'member.home.identification': 'Identification',
-    'member.home.loginHint': 'Enter your member ID and password to access the padel court area',
+    'member.home.loginHint': 'Enter your participant ID and password to access workshops',
     'member.home.password': 'Password',
     'member.home.cta': 'Open my area',
-    'member.home.invalid': 'Invalid credentials. Check the member ID and password.',
-    'member.home.global': 'Global',
-    'member.home.site': 'Dedicated site',
-    'member.home.livre': 'Free access',
-    'member.home.tousSites': 'All sites',
-    'member.create.title': 'Create a match',
+    'member.home.invalid': 'Invalid credentials. Check the participant ID and password.',
+    'member.home.global': 'PARTNER',
+    'member.home.site': 'SUBSCRIBER',
+    'member.home.livre': 'VISITOR',
+    'member.home.tousCentres': 'All centers',
+    'member.create.title': 'Create a workshop',
     'member.create.subtitle': 'Public or private, according to backend rules.',
     'member.create.rappel': 'Reminder',
     'member.create.public': 'PUBLIC',
     'member.create.private': 'PRIVATE',
     'member.create.back': 'Back to profile',
-    'member.create.submit': 'Create match',
+    'member.create.submit': 'Create workshop',
     'member.create.mode': 'Creation mode',
-    'member.create.site': 'Site',
-    'member.create.terrain': 'Padel court',
+    'member.create.site': 'Center',
+    'member.create.salle': 'Workshop room',
     'member.create.date': 'Date',
     'member.create.dateHint': 'Between',
     'member.create.time': 'Start time',
-    'member.create.matchType': 'Match type',
-    'member.create.privatePlayers': 'Players to invite now (optional)',
-    'member.create.player2': 'Player ID 2',
-    'member.create.player3': 'Player ID 3',
-    'member.create.player4': 'Player ID 4',
-    'member.create.noSite': 'No site available to create a match.',
-    'member.create.noTerrain': 'No padel court available for the selected site.',
-    'member.create.selectedSite': 'Selected site',
+    'member.create.atelierType': 'Workshop type',
+    'member.create.privatePlayers': 'Participants to invite (up to 5, optional)',
+    'member.create.player2': 'Participant ID 2',
+    'member.create.player3': 'Participant ID 3',
+    'member.create.player4': 'Participant ID 4',
+    'member.create.player5': 'Participant ID 5',
+    'member.create.player6': 'Participant ID 6',
+    'member.create.noCentre': 'No center available for a new workshop.',
+    'member.create.noSalle': 'No room available at the selected center.',
+    'member.create.selectedCentre': 'Selected center',
     'member.create.bookingLimit': 'Latest allowed date according to your profile:',
-    'member.create.ruleGlobal': 'GLOBAL: up to 3 weeks ahead',
-    'member.create.ruleSite': 'SITE: up to 2 weeks ahead on your site',
-    'member.create.ruleLibre': 'LIBRE: up to 5 days ahead',
-    'member.create.noSiteLoaded': 'No site loaded.',
-    'member.create.noTerrainLoaded': 'No padel court loaded.',
-    'member.create.success': 'Match created. Your place will be confirmed after payment from your reservations.',
-    'member.create.successPrivate': 'Private match created. Invitations are pending player payments.',
-    'member.create.partialSuccess': 'Match created, but some players could not be added.',
-    'member.public.title': 'Public matches',
-    'member.public.subtitle': 'Join an available public match. First paid, first served.',
-    'member.public.filter': 'Filter by site',
+    'member.create.ruleGlobal': 'PARTNER: up to 30 days in advance',
+    'member.create.ruleCentre': 'SUBSCRIBER: up to 15 days at your assigned center',
+    'member.create.ruleLibre': 'VISITOR: up to 7 days at centers open to visitors',
+    'member.create.noCentreLoaded': 'No center loaded.',
+    'member.create.noSalleLoaded': 'No workshop room loaded.',
+    'member.create.success': 'Workshop created. Your place is confirmed after payment.',
+    'member.create.successPrivate': 'Private workshop created. Invitations await participant payments.',
+    'member.create.partialSuccess': 'Workshop created, but some participants could not be added.',
+    'member.public.title': 'Open workshops',
+    'member.public.subtitle': 'Register for an available workshop. Places are confirmed after payment.',
+    'member.public.filter': 'Filter by center',
     'member.public.search': 'Search',
-    'member.public.create': 'Create a match',
+    'member.public.create': 'Create a workshop',
     'member.public.join': 'Join',
     'member.public.modify': 'Edit',
     'member.public.delete': 'Delete',
     'member.public.myProfile': 'My profile',
-    'member.public.myMatch': 'My match',
+    'member.public.myAtelier': 'My workshop',
     'member.public.available': 'Available',
     'member.public.completion': 'Full',
     'member.public.none': 'Not joinable',
     'member.public.organizer': 'Organizer',
     'member.public.status': 'Status',
     'member.public.type': 'Type',
-    'member.public.players': 'Players',
-    'member.public.price': 'Price per player',
+    'member.public.players': 'Participants',
+    'member.public.price': 'Price per participant',
     'member.public.registering': 'Booking...',
-    'member.public.editTitle': 'Edit match',
-    'member.public.editHint': 'Editing unavailable: a match cannot be edited less than 24 hours before start.',
-    'member.public.noMatches': 'No public match matches the filters.',
-    'member.public.searchPlaceholder': 'Padel court, site, organizer',
-    'member.public.noMatchPrompt': 'Can\'t find a match?',
-    'member.public.createBody': 'Public or private, with site and padel court choice.',
+    'member.public.editTitle': 'Edit workshop',
+    'member.public.editHint': 'Editing is unavailable less than 24 hours before the workshop.',
+    'member.public.noAteliers': 'No public workshop workshops the filters.',
+    'member.public.searchPlaceholder': 'Workshop room, center, organizer',
+    'member.public.noAtelierPrompt': 'Can\'t find a workshop?',
+    'member.public.createBody': 'Public or private, with center and workshop room choice.',
     'member.public.date': 'Date',
     'member.public.time': 'Start time',
     'member.public.typeLabel': 'Type',
     'member.reservations.title': 'My reservations',
     'member.reservations.subtitle': 'Payment and cancellation of your registrations.',
-    'member.reservations.createPublic': 'Create PUBLIC match',
-    'member.reservations.createPrivate': 'Create PRIVATE match',
-    'member.reservations.matches': 'Public matches',
-    'member.reservations.select': 'Select an organized match',
-    'member.reservations.addPlayer': 'Add player',
-    'member.reservations.noOrganized': 'No organized match yet. Create a PUBLIC or PRIVATE match using the buttons above.',
-    'member.reservations.edit': 'Edit match',
+    'member.reservations.createPublic': 'Create PUBLIC workshop',
+    'member.reservations.createPrivate': 'Create PRIVATE workshop',
+    'member.reservations.ateliers': 'Public workshops',
+    'member.reservations.select': 'Select an organized workshop',
+    'member.reservations.addPlayer': 'Invite a participant',
+    'member.reservations.noOrganized': 'No organized workshop yet. Create a PUBLIC or PRIVATE workshop using the buttons above.',
+    'member.reservations.edit': 'Edit workshop',
     'member.reservations.confirmation': 'Confirmation required',
-    'member.reservations.players': 'Registered players:',
+    'member.reservations.players': 'Registered participants:',
     'member.reservations.empty': 'No reservation found.',
-    'member.reservations.player': 'Player',
-    'member.reservations.match': 'Match',
+    'member.reservations.player': 'Participant',
+    'member.reservations.atelier': 'Workshop',
     'member.reservations.reservation': 'Reservation',
     'member.reservations.payment': 'Payment',
     'member.reservations.amount': 'Amount',
     'member.reservations.pay': 'Pay',
     'member.reservations.cancel': 'Cancel',
-    'member.reservations.organizedTitle': 'My organized matches',
-    'member.reservations.organizedSub': 'Edit, delete, or manage players for your matches.',
-    'member.reservations.chooseMatch': '-- Choose a match --',
-    'member.reservations.inviteMatricule': 'Player member ID to add',
-    'member.reservations.noPlayer': 'No player registered for this match.',
+    'member.reservations.organizedTitle': 'My organized workshops',
+    'member.reservations.organizedSub': 'Edit, delete, or manage participants for your workshops.',
+    'member.reservations.chooseAtelier': '-- Choose a workshop --',
+    'member.reservations.inviteMatricule': 'Participant ID to invite',
+    'member.reservations.consentInfo': 'If this private workshop is not full, it can open to the public at D−2 only with your explicit consent.',
+    'member.reservations.consentAction': 'I authorize public opening at D−2',
+    'member.reservations.consentConfirm': 'Do you agree to open this workshop to the public from D−2 if it remains incomplete? Your decision will be recorded.',
+    'member.reservations.consentSuccess': 'Your consent to possible public opening has been recorded.',
+    'member.reservations.consentError': 'Unable to record your consent.',
+    'member.reservations.noPlayer': 'No participant registered for this workshop.',
     'member.reservations.reservationLabel': 'Reservation',
     'member.reservations.paymentLabel': 'Payment',
     'member.reservations.removePlayer': 'Remove',
-    'member.reservations.emptyBody': 'Create a match or join a public match to see your reservations here.',
+    'member.reservations.emptyBody': 'Create a workshop or join a public workshop to see your reservations here.',
     'member.payments.title': 'My payments',
     'member.payments.subtitle': 'Payment and refund history',
     'member.payments.reservations': 'My reservations',
@@ -1048,161 +1071,162 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'member.payments.noPayments': 'No payment found',
     'member.payments.loadingState': 'Loading payments...',
     'member.payments.errorState': 'Unable to load payments.',
-    'member.payments.noMemberState': 'No member logged in.',
-    'member.profile.title': 'My member profile',
+    'member.payments.noMemberState': 'No participant logged in.',
+    'member.profile.title': 'My participant profile',
     'member.profile.subtitle': 'Information loaded from the backend',
-    'member.profile.createQuick': 'Create a match quickly',
-    'member.profile.publicMatch': 'Open match',
-    'member.profile.privateMatch': 'Invitation match',
-    'member.profile.quickPublic': 'Create a PUBLIC match',
-    'member.profile.quickPrivate': 'Create a PRIVATE match',
-    'member.profile.quickPublicBody': 'Any member can join · 15 EUR/player · 4 players required',
-    'member.profile.quickPrivateBody': 'Invite 3 players by member ID · Converts to public if incomplete the day before',
+    'member.profile.createQuick': 'Create a workshop quickly',
+    'member.profile.publicAtelier': 'Open workshop',
+    'member.profile.privateAtelier': 'Invitation workshop',
+    'member.profile.quickPublic': 'Create a PUBLIC workshop',
+    'member.profile.quickPrivate': 'Create a PRIVATE workshop',
+    'member.profile.quickPublicBody': 'Individual booking · €15 per participant · maximum 6 places',
+    'member.profile.quickPrivateBody': 'Invite up to 5 participants · public opening at D-2 with explicit consent',
     'member.profile.explore': 'Explore',
     'member.profile.followup': 'Follow-up',
     'member.profile.finance': 'Finance',
     'member.profile.refresh': 'Refresh',
-    'member.profile.logout': 'Logout member',
+    'member.profile.logout': 'Logout participant',
     'member.profile.nom': 'Last name',
     'member.profile.prenom': 'First name',
     'member.profile.email': 'Email',
-    'member.profile.matricule': 'Member ID',
+    'member.profile.matricule': 'Participant ID',
     'member.profile.type': 'Type',
-    'member.profile.site': 'Site',
+    'member.profile.site': 'Center',
     'member.profile.solde': 'Balance',
     'member.profile.penaltyActive': 'Active penalty',
     'member.profile.balancePending': 'Pending balance',
     'member.profile.yes': 'Yes',
     'member.profile.no': 'No',
-    'member.profile.exploreBody': 'Join an available match quickly.',
+    'member.profile.exploreBody': 'Join an available workshop quickly.',
     'member.profile.followupBody': 'Pay, cancel, or track your registrations.',
     'member.profile.financeBody': 'Payment history.',
     'member.payments.payment': 'Payment',
     'member.payments.loading': 'Loading payments...',
     'member.payments.error': 'Unable to load payments.',
-    'member.payments.noMember': 'No member logged in.',
-    'admin.matches.organizer': 'Organizer',
-    'admin.matches.status': 'Status',
-    'admin.matches.players': 'Players',
-    'admin.matches.reservations': 'Match reservations',
-    'admin.matches.noReservations': 'No reservations.',
-    'admin.matches.hideDetails': 'Hide',
-    'admin.matches.showDetails': 'View details',
-    'admin.matches.convert': 'Convert to public',
-    'admin.matches.convertSuccess': 'Match converted to public.',
-    'admin.matches.loadError': 'Unable to load admin matches.',
-    'admin.matches.reservationsError': 'Unable to load match reservations.',
-    'admin.matches.convertError': 'Unable to convert match.',
-    'admin.matches.empty': 'No match available',
+    'member.payments.noMember': 'No participant logged in.',
+    'admin.ateliers.organizer': 'Organizer',
+    'admin.ateliers.status': 'Status',
+    'admin.ateliers.players': 'Participants',
+    'admin.ateliers.reservations': 'Workshop reservations',
+    'admin.ateliers.noReservations': 'No reservations.',
+    'admin.ateliers.hideDetails': 'Hide',
+    'admin.ateliers.showDetails': 'View details',
+    'admin.ateliers.convert': 'Open to public (consent required, D−2)',
+    'admin.ateliers.convertSuccess': 'Workshop converted to public.',
+    'admin.ateliers.loadError': 'Unable to load admin workshops.',
+    'admin.ateliers.reservationsError': 'Unable to load workshop reservations.',
+    'admin.ateliers.convertError': 'Unable to convert workshop.',
+    'admin.ateliers.empty': 'No workshop available',
     'admin.closures.date': 'Date',
     'admin.closures.reason': 'Reason (optional)',
-    'admin.closures.site': 'Site concerned',
+    'admin.closures.site': 'Center concerned',
     'admin.closures.noneGlobal': 'None (global)',
-    'admin.closures.global': 'Global closure (all sites)',
+    'admin.closures.global': 'Global closure (all centers)',
     'admin.closures.add': 'Add closure',
     'admin.closures.reset': 'Reset',
     'admin.closures.reasonEmpty': 'No reason specified',
     'admin.closures.empty': 'No closure day configured',
     'common.notProvided': 'Not provided',
     'admin.home.allStatuses': 'all statuses',
-    'admin.home.matchCount': 'match(es)',
-    'admin.home.sitesVisible': 'Visible sites',
-    'admin.home.terrainsVisible': 'Visible padel courts',
-    'admin.home.completeMatches': 'Complete matches',
+    'admin.home.atelierCount': 'workshop(es)',
+    'admin.home.centresVisible': 'Visible centers',
+    'admin.home.sallesVisible': 'Visible workshop rooms',
+    'admin.home.completeAteliers': 'Complete workshops',
     'admin.home.pendingReservations': 'Pending reservations',
     'admin.login.globalBadge': '🌐 Global admin',
-    'admin.login.siteBadge': '🏟️ Site admin',
+    'admin.login.centreBadge': '🏟️ Center admin',
     'admin.login.showPassword': 'Show admin password',
     'admin.login.hidePassword': 'Hide admin password',
     'admin.members.searchNoResult': 'No result for "{query}"',
-    'admin.members.loadError': 'Unable to load members.',
-    'admin.members.saveError': 'Unable to save member.',
+    'admin.members.loadError': 'Unable to load participants.',
+    'admin.members.saveError': 'Unable to save participant.',
     'admin.members.deleteError': 'Unable to delete.',
-    'admin.members.updateSuccess': 'Member updated.',
-    'admin.members.createSuccess': 'Member created successfully.',
-    'admin.members.deleteSuccess': 'Member deleted.',
-    'admin.members.deleteConfirm': 'Confirm deletion of this member?',
-    'admin.sites.name': 'Name',
-    'admin.sites.address': 'Address',
-    'admin.sites.opening': 'Opening',
-    'admin.sites.closing': 'Closing',
-    'admin.sites.matchDuration': 'Match duration (min)',
-    'admin.sites.breakDuration': 'Break between matches (min)',
-    'admin.sites.civilYear': 'Calendar year',
-    'admin.sites.hours': 'Hours',
-    'admin.sites.duration': 'Match duration',
-    'admin.sites.break': 'Break',
-    'admin.sites.year': 'Year',
-    'admin.sites.empty': 'No site configured',
-    'admin.sites.siteAdminEditBlocked': 'A SITE admin cannot modify sites.',
-    'admin.sites.siteAdminDeleteBlocked': 'A SITE admin cannot delete sites.',
-    'admin.sites.loadError': 'Unable to load sites.',
-    'admin.sites.saveError': 'Unable to save site.',
-    'admin.sites.deleteError': 'Unable to delete site.',
-    'admin.sites.deleteConfirm': 'Confirm deletion of this site?',
-    'admin.sites.updateSuccess': 'Site updated.',
-    'admin.sites.createSuccess': 'Site created.',
-    'admin.sites.deleteSuccess': 'Site deleted.',
-    'admin.terrains.name': 'Padel court name',
-    'admin.terrains.site': 'Site',
-    'admin.terrains.empty': 'No padel court configured',
-    'admin.terrains.loadError': 'Unable to load padel courts.',
-    'admin.terrains.saveError': 'Unable to save padel court.',
-    'admin.terrains.deleteError': 'Unable to delete padel court.',
-    'admin.terrains.deleteConfirm': 'Confirm deletion of this padel court?',
-    'admin.terrains.updateSuccess': 'Padel court updated.',
-    'admin.terrains.createSuccess': 'Padel court created.',
-    'admin.terrains.deleteSuccess': 'Padel court deleted.',
+    'admin.members.updateSuccess': 'Participant updated.',
+    'admin.members.createSuccess': 'Participant created successfully.',
+    'admin.members.deleteSuccess': 'Participant deleted.',
+    'admin.members.deleteConfirm': 'Confirm deletion of this participant?',
+    'admin.centres.name': 'Name',
+    'admin.centres.address': 'Address',
+    'admin.centres.opening': 'Opening',
+    'admin.centres.closing': 'Closing',
+    'admin.centres.atelierDuration': 'Workshop duration (min)',
+    'admin.centres.breakDuration': 'Break between workshops (min)',
+    'admin.centres.civilYear': 'Calendar year',
+    'admin.centres.openVisitors': 'Center open to visitors (booking up to 7 days ahead)',
+    'admin.centres.hours': 'Hours',
+    'admin.centres.duration': 'Workshop duration',
+    'admin.centres.break': 'Break',
+    'admin.centres.year': 'Year',
+    'admin.centres.empty': 'No center configured',
+    'admin.centres.centreAdminEditBlocked': 'A SITE admin cannot modify centers.',
+    'admin.centres.centreAdminDeleteBlocked': 'A SITE admin cannot delete centers.',
+    'admin.centres.loadError': 'Unable to load centers.',
+    'admin.centres.saveError': 'Unable to save center.',
+    'admin.centres.deleteError': 'Unable to delete center.',
+    'admin.centres.deleteConfirm': 'Confirm deletion of this center?',
+    'admin.centres.updateSuccess': 'Center updated.',
+    'admin.centres.createSuccess': 'Center created.',
+    'admin.centres.deleteSuccess': 'Center deleted.',
+    'admin.salles.name': 'Workshop room name',
+    'admin.salles.site': 'Center',
+    'admin.salles.empty': 'No workshop room configured',
+    'admin.salles.loadError': 'Unable to load workshop rooms.',
+    'admin.salles.saveError': 'Unable to save workshop room.',
+    'admin.salles.deleteError': 'Unable to delete workshop room.',
+    'admin.salles.deleteConfirm': 'Confirm deletion of this workshop room?',
+    'admin.salles.updateSuccess': 'Workshop room updated.',
+    'admin.salles.createSuccess': 'Workshop room created.',
+    'admin.salles.deleteSuccess': 'Workshop room deleted.',
     'admin.closures.loadError': 'Unable to load closure days.',
     'admin.closures.addSuccess': 'Closure day added.',
     'admin.closures.addError': 'Unable to add closure day.',
     'admin.closures.deleteSuccess': 'Closure day deleted.',
     'admin.closures.deleteError': 'Unable to delete closure day.',
-    'member.home.matricule': 'Member ID',
+    'member.home.matricule': 'Participant ID',
     'member.home.matriculePlaceholder': 'Ex: G1234, S12345, L12345',
-    'member.home.showPassword': 'Show member password',
-    'member.home.hidePassword': 'Hide member password',
-    'member.home.globalHint': 'G + 4 digits · All sites',
-    'member.home.siteHint': 'S + 5 digits · Dedicated site',
-    'member.home.livreHint': 'L + 5 digits · Open access',
-    'member.home.allSites': 'All sites',
-    'member.profile.loadError': 'Unable to load member profile.',
+    'member.home.showPassword': 'Show participant password',
+    'member.home.hidePassword': 'Hide participant password',
+    'member.home.globalHint': 'G + 4 digits · book up to 30 days ahead',
+    'member.home.centreHint': 'S + 5 digits · book up to 15 days ahead at your center',
+    'member.home.livreHint': 'L + 5 digits · book up to 7 days ahead',
+    'member.home.allCentres': 'All centers',
+    'member.profile.loadError': 'Unable to load participant profile.',
     'member.create.bookingLimitError': 'Latest allowed date: {date}.',
     'member.create.bookingLimitProfileError': 'The {type} profile cannot book more than {days} days ahead. Deadline: {date}.',
-    'member.create.invalidType': 'Invalid match type.',
-    'member.create.createError': 'Unable to create match.',
-    'member.create.outstandingBalance': 'You have an outstanding balance. Settle your debts before creating a match.',
-    'member.create.activePenalty': 'You have an active penalty. Wait before creating a match.',
+    'member.create.invalidType': 'Invalid workshop type.',
+    'member.create.createError': 'Unable to create workshop.',
+    'member.create.outstandingBalance': 'You have an outstanding balance. Settle your debts before creating a workshop.',
+    'member.create.activePenalty': 'You have an active penalty. Wait before creating a workshop.',
     'member.create.slotTaken': 'This slot is already booked. Pick another time.',
-    'member.create.siteClosed': 'The site is closed on this date.',
+    'member.create.centreClosed': 'The center is closed on this date.',
     'member.create.outOfHours': "This time is outside the site's opening hours.",
-    'member.create.siteOnly': 'A SITE member can only create a match on their own site.',
-    'member.create.internalError': 'An internal server error occurred while creating the match.',
-    'member.create.addPlayersError': 'Unable to add all players.',
-    'member.public.loadError': 'Unable to load public matches.',
-    'member.public.noMember': 'No member logged in.',
-    'member.public.joinBlocked': 'This match cannot be joined (full, canceled, or not allowed).',
+    'member.create.centreOnly': 'Subscribers may create workshops only at their assigned center.',
+    'member.create.internalError': 'An internal server error occurred while creating the workshop.',
+    'member.create.addPlayersError': 'Unable to add all participants.',
+    'member.public.loadError': 'Unable to load public workshops.',
+    'member.public.noMember': 'No participant logged in.',
+    'member.public.joinBlocked': 'This workshop cannot be joined (full, canceled, or not allowed).',
     'member.public.joinSuccess': 'Request created. Your spot will be confirmed after payment.',
-    'member.public.joinError': 'Unable to reserve this match.',
-    'member.public.modifyTooLate': 'Modification unavailable less than 24 hours before match start.',
-    'member.public.updateSuccess': 'Match updated successfully.',
-    'member.public.updateError': 'Unable to update match.',
-    'member.public.deleteConfirm': 'Confirm deletion (cancellation) of match #{id}?',
-    'member.public.deleteSuccess': 'Match canceled successfully.',
-    'member.public.deleteError': 'Unable to delete match.',
+    'member.public.joinError': 'Unable to reserve this workshop.',
+    'member.public.modifyTooLate': 'Modification unavailable less than 24 hours before workshop start.',
+    'member.public.updateSuccess': 'Workshop updated successfully.',
+    'member.public.updateError': 'Unable to update workshop.',
+    'member.public.deleteConfirm': 'Confirm deletion (cancellation) of workshop #{id}?',
+    'member.public.deleteSuccess': 'Workshop canceled successfully.',
+    'member.public.deleteError': 'Unable to delete workshop.',
     'member.reservations.reservationTitle': 'Reservation',
-    'member.reservations.noMember': 'No member logged in.',
+    'member.reservations.noMember': 'No participant logged in.',
     'member.reservations.loadError': 'Unable to load reservations.',
-    'member.reservations.privateOnly': 'Player management is reserved for PRIVATE matches.',
-    'member.reservations.playersLoadError': 'Unable to load match players.',
-    'member.reservations.updateSuccess': 'Match updated successfully.',
-    'member.reservations.updateError': 'Unable to update match.',
-    'member.reservations.deleteSuccess': 'Match canceled successfully.',
-    'member.reservations.deleteError': 'Unable to delete match.',
-    'member.reservations.playerAdded': 'Player added successfully.',
-    'member.reservations.playerAddError': 'Unable to add player.',
-    'member.reservations.playerRemoved': 'Player removed from match.',
-    'member.reservations.playerRemoveError': 'Unable to remove player.',
+    'member.reservations.privateOnly': 'Participant management is reserved for PRIVATE workshops.',
+    'member.reservations.playersLoadError': 'Unable to load workshop participants.',
+    'member.reservations.updateSuccess': 'Workshop updated successfully.',
+    'member.reservations.updateError': 'Unable to update workshop.',
+    'member.reservations.deleteSuccess': 'Workshop canceled successfully.',
+    'member.reservations.deleteError': 'Unable to delete workshop.',
+    'member.reservations.playerAdded': 'Participant added successfully.',
+    'member.reservations.playerAddError': 'Unable to add participant.',
+    'member.reservations.playerRemoved': 'Participant removed from workshop.',
+    'member.reservations.playerRemoveError': 'Unable to remove participant.',
     'member.reservations.paymentSuccess': 'Payment completed successfully.',
     'member.reservations.paymentError': 'Unable to process payment.',
     'member.reservations.reservationCanceled': 'Reservation canceled.',

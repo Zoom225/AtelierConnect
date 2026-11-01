@@ -17,7 +17,7 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Padel Backend API")
-                        .description("API REST pour la gestion des terrains de padel")
+                        .description("API REST pour la gestion des salles collaboratif")
                         .version("1.0.0")
                         .contact(new Contact()
                                 .name("Padel Backend")

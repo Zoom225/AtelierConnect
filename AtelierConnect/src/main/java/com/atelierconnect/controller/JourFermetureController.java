@@ -27,17 +27,17 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/jours-fermeture")
 @RequiredArgsConstructor
-@Tag(name = "Jours de fermeture", description = "Endpoints de gestion des fermetures globales ou propres à un site.")
+@Tag(name = "Jours de fermeture", description = "Endpoints de gestion des fermetures globales ou propres à un centre.")
 public class JourFermetureController {
 
     private final JourFermetureRepository jourFermetureRepository;
-    private final CentreService siteService;
+    private final CentreService centreService;
     private final AdministrateurRepository administrateurRepository;
 
     @Operation(
             summary = "Lister les jours de fermeture visibles",
             description = "Retourne les fermetures visibles pour l'administrateur connecté. " +
-                    "Un admin GLOBAL voit tout ; un admin SITE voit les fermetures globales et celles de son site.",
+                    "Un admin GLOBAL voit tout ; un admin SITE voit les fermetures globales et celles de son centre.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @GetMapping
@@ -53,7 +53,7 @@ public class JourFermetureController {
 
     @Operation(
             summary = "Lister les fermetures globales",
-            description = "Retourne les fermetures qui bloquent tous les sites. Accessible uniquement aux administrateurs.",
+            description = "Retourne les fermetures qui bloquent tous les centres. Accessible uniquement aux administrateurs.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @GetMapping("/global")
@@ -66,19 +66,19 @@ public class JourFermetureController {
     }
 
     @Operation(
-            summary = "Lister les fermetures d'un site",
-            description = "Retourne les fermetures propres à un site. " +
+            summary = "Lister les fermetures d'un centre",
+            description = "Retourne les fermetures propres à un centre. " +
                     "Accessible à un admin GLOBAL ou à un admin SITE dans son périmètre.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
-    @GetMapping("/site/{siteId}")
-    public ResponseEntity<List<JourFermetureResponse>> getBySite(
-            @Parameter(description = "ID du site", required = true)
-            @PathVariable Long siteId) {
+    @GetMapping({"/centre/{siteId}", "/site/{siteId}"})
+    public ResponseEntity<List<JourFermetureResponse>> getByCentre(
+            @Parameter(description = "ID du centre", required = true)
+            @PathVariable("siteId") Long centreId) {
         Administrateur admin = getAuthenticatedAdmin();
-        validateSiteAccess(admin, siteId);
+        validateCentreAccess(admin, centreId);
         return ResponseEntity.ok(
-                jourFermetureRepository.findBySiteId(siteId).stream()
+                jourFermetureRepository.findByCentreId(centreId).stream()
                         .map(this::toResponse)
                         .toList()
         );
@@ -86,9 +86,9 @@ public class JourFermetureController {
 
     @Operation(
             summary = "Créer un jour de fermeture",
-            description = "Crée une fermeture globale ou une fermeture propre à un site. " +
+            description = "Crée une fermeture globale ou une fermeture propre à un centre. " +
                     "Seul un admin GLOBAL peut créer une fermeture globale. " +
-                    "Un admin SITE ne peut créer une fermeture que sur son propre site.",
+                    "Un admin SITE ne peut créer une fermeture que sur son propre centre.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @PostMapping
@@ -99,18 +99,18 @@ public class JourFermetureController {
             if (admin.getTypeAdministrateur() != TypeAdministrateur.GLOBAL) {
                 throw new BusinessException("Seul un admin GLOBAL peut créer une fermeture globale.");
             }
-        } else if (request.getSiteId() == null) {
-            throw new BusinessException("Un site est obligatoire pour une fermeture non globale.");
+        } else if (request.getCentreId() == null) {
+            throw new BusinessException("Un centre est obligatoire pour une fermeture non globale.");
         } else {
-            validateSiteAccess(admin, request.getSiteId());
+            validateCentreAccess(admin, request.getCentreId());
         }
 
-        Centre site = Boolean.TRUE.equals(request.getGlobal()) ? null : siteService.getById(request.getSiteId());
+        Centre centre = Boolean.TRUE.equals(request.getGlobal()) ? null : centreService.getById(request.getCentreId());
         JourFermeture jour = JourFermeture.builder()
                 .date(request.getDate())
                 .raison(request.getRaison())
                 .global(Boolean.TRUE.equals(request.getGlobal()))
-                .site(site)
+                .centre(centre)
                 .build();
 
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(jourFermetureRepository.save(jour)));
@@ -120,13 +120,13 @@ public class JourFermetureController {
             summary = "Supprimer un jour de fermeture",
             description = "Supprime une fermeture. " +
                     "Seul un admin GLOBAL peut supprimer une fermeture globale. " +
-                    "Un admin SITE ne peut supprimer que les fermetures de son site.",
+                    "Un admin SITE ne peut supprimer que les fermetures de son centre.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @Parameter(description = "ID du jour de fermeture", required = true)
-            @PathVariable Long id) {
+            @PathVariable("id") Long id) {
         Administrateur admin = getAuthenticatedAdmin();
         JourFermeture jour = jourFermetureRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("Jour de fermeture introuvable."));
@@ -134,8 +134,8 @@ public class JourFermetureController {
         if (Boolean.TRUE.equals(jour.getGlobal()) && admin.getTypeAdministrateur() != TypeAdministrateur.GLOBAL) {
             throw new BusinessException("Seul un admin GLOBAL peut supprimer une fermeture globale.");
         }
-        if (jour.getSite() != null) {
-            validateSiteAccess(admin, jour.getSite().getId());
+        if (jour.getCentre() != null) {
+            validateCentreAccess(admin, jour.getCentre().getId());
         }
 
         jourFermetureRepository.delete(jour);
@@ -155,15 +155,15 @@ public class JourFermetureController {
     private boolean canAccessJour(Administrateur admin, JourFermeture jour) {
         return admin.getTypeAdministrateur() == TypeAdministrateur.GLOBAL
                 || Boolean.TRUE.equals(jour.getGlobal())
-                || (jour.getSite() != null && admin.getSite() != null && jour.getSite().getId().equals(admin.getSite().getId()));
+                || (jour.getCentre() != null && admin.getCentre() != null && jour.getCentre().getId().equals(admin.getCentre().getId()));
     }
 
-    private void validateSiteAccess(Administrateur admin, Long siteId) {
+    private void validateCentreAccess(Administrateur admin, Long centreId) {
         if (admin.getTypeAdministrateur() == TypeAdministrateur.GLOBAL) {
             return;
         }
-        if (admin.getSite() == null || !admin.getSite().getId().equals(siteId)) {
-            throw new BusinessException("Un admin SITE ne peut agir que sur son propre site.");
+        if (admin.getCentre() == null || !admin.getCentre().getId().equals(centreId)) {
+            throw new BusinessException("Un admin SITE ne peut agir que sur son propre centre.");
         }
     }
 
@@ -173,8 +173,8 @@ public class JourFermetureController {
                 jour.getDate(),
                 jour.getRaison(),
                 jour.getGlobal(),
-                jour.getSite() != null ? jour.getSite().getId() : null,
-                jour.getSite() != null ? jour.getSite().getNom() : null
+                jour.getCentre() != null ? jour.getCentre().getId() : null,
+                jour.getCentre() != null ? jour.getCentre().getNom() : null
         );
     }
 }

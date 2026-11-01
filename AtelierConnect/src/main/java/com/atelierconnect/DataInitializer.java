@@ -45,15 +45,15 @@ import java.util.List;
 public class DataInitializer implements CommandLineRunner {
 
     @Value("${APP_DEMO_MEMBER_PASSWORD}")
-    private String demoMemberPassword;
+    private String demoParticipantPassword;
     @Value("${APP_DEMO_ADMIN_PASSWORD}")
     private String demoAdminPassword;
-    private final CentreRepository siteRepository;
-    private final SalleRepository terrainRepository;
-    private final ParticipantRepository membreRepository;
+    private final CentreRepository centreRepository;
+    private final SalleRepository salleRepository;
+    private final ParticipantRepository participantRepository;
     private final AdministrateurRepository administrateurRepository;
     private final JourFermetureRepository jourFermetureRepository;
-    private final AtelierRepository matchRepository;
+    private final AtelierRepository atelierRepository;
     private final ReservationRepository reservationRepository;
     private final PaiementRepository paiementRepository;
     private final PenaliteRepository penaliteRepository;
@@ -62,15 +62,15 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        migrateLegacyMemberCredentials();
+        migrateLegacyParticipantCredentials();
 
-        if (siteRepository.count() > 0) {
-            if (matchRepository.count() == 0) {
-                log.info("DataInitializer : base de donnees deja initialisee, ajout des matchs d'exemple...");
+        if (centreRepository.count() > 0) {
+            if (atelierRepository.count() == 0) {
+                log.info("DataInitializer : base de donnees deja initialisee, ajout des atelier d'exemple...");
                 seedAteliersFromExistingData();
             }
-            ensurePenalizedDemoMember();
-            ensureDemoMembersCredentials();
+            ensurePenalizedDemoParticipant();
+            ensureDemoParticipantsCredentials();
             ensureDemoAdminCredentials();
             log.info("DataInitializer : base de donnees deja initialisee, initialisation ignoree...");
             return;
@@ -78,130 +78,130 @@ public class DataInitializer implements CommandLineRunner {
 
         log.info("DataInitializer : initialisation de la base de donnees...");
 
-        Centre siteLyon = siteRepository.save(Centre.builder()
+        Centre centreLyon = centreRepository.save(Centre.builder()
                 .nom("Centre Créatif Bruxelles")
                 .adresse("Rue des Ateliers 12, 1000 Bruxelles")
                 .heureOuverture(LocalTime.of(8, 0))
                 .heureFermeture(LocalTime.of(22, 0))
-                .dureeMatchMinutes(AtelierRules.DUREE_MINUTES)
-                .dureeEntreMatchMinutes(AtelierRules.PAUSE_MINUTES)
+                .dureeAtelierMinutes(AtelierRules.DUREE_MINUTES)
+                .dureeEntreAtelierMinutes(AtelierRules.PAUSE_MINUTES)
                 .anneeCivile(LocalDate.now().getYear())
                 .ouvertVisiteurs(true)
                 .build());
 
-        Centre siteParis = siteRepository.save(Centre.builder()
+        Centre centreParis = centreRepository.save(Centre.builder()
                 .nom("Centre Collaboratif Namur")
                 .adresse("Rue de la Créativité 45, 5000 Namur")
                 .heureOuverture(LocalTime.of(7, 0))
                 .heureFermeture(LocalTime.of(23, 0))
-                .dureeMatchMinutes(AtelierRules.DUREE_MINUTES)
-                .dureeEntreMatchMinutes(AtelierRules.PAUSE_MINUTES)
+                .dureeAtelierMinutes(AtelierRules.DUREE_MINUTES)
+                .dureeEntreAtelierMinutes(AtelierRules.PAUSE_MINUTES)
                 .anneeCivile(LocalDate.now().getYear())
                 .ouvertVisiteurs(true)
                 .build());
 
-        log.info("DataInitializer : {} centres créés", siteRepository.count());
+        log.info("DataInitializer : {} centres créés", centreRepository.count());
 ////-------------------Terrains--------------------//
-        Salle courtA = terrainRepository.save(Salle.builder().nom("Salle Création A").site(siteLyon).prix(AtelierRules.PRIX_TOTAL).build());
-        Salle courtB = terrainRepository.save(Salle.builder().nom("Salle Formation B").site(siteLyon).prix(AtelierRules.PRIX_TOTAL).build());
-        Salle courtC = terrainRepository.save(Salle.builder().nom("Salle Collaborative C").site(siteLyon).prix(AtelierRules.PRIX_TOTAL).build());
-        Salle court1 = terrainRepository.save(Salle.builder().nom("Salle Numérique 1").site(siteParis).prix(AtelierRules.PRIX_TOTAL).build());
-        terrainRepository.save(Salle.builder().nom("Salle Numérique 2").site(siteParis).prix(AtelierRules.PRIX_TOTAL).build());
+        Salle courtA = salleRepository.save(Salle.builder().nom("Salle Création A").centre(centreLyon).prix(AtelierRules.PRIX_TOTAL).build());
+        Salle courtB = salleRepository.save(Salle.builder().nom("Salle Formation B").centre(centreLyon).prix(AtelierRules.PRIX_TOTAL).build());
+        Salle courtC = salleRepository.save(Salle.builder().nom("Salle Collaborative C").centre(centreLyon).prix(AtelierRules.PRIX_TOTAL).build());
+        Salle court1 = salleRepository.save(Salle.builder().nom("Salle Numérique 1").centre(centreParis).prix(AtelierRules.PRIX_TOTAL).build());
+        salleRepository.save(Salle.builder().nom("Salle Numérique 2").centre(centreParis).prix(AtelierRules.PRIX_TOTAL).build());
 
-        log.info("DataInitializer : {} salles créées", terrainRepository.count());
+        log.info("DataInitializer : {} salles créées", salleRepository.count());
 //-----------------------Jours de fermeture--------------------//
         jourFermetureRepository.save(JourFermeture.builder()
                 .date(LocalDate.of(LocalDate.now().getYear(), 12, 25))
                 .raison("Jour de Noel")
                 .global(true)
-                .site(null)
+                .centre(null)
                 .build());
 
         jourFermetureRepository.save(JourFermeture.builder()
                 .date(LocalDate.of(LocalDate.now().getYear() + 1, 1, 1))
                 .raison("Jour de l'An")
                 .global(true)
-                .site(null)
+                .centre(null)
                 .build());
 
         jourFermetureRepository.save(JourFermeture.builder()
                 .date(LocalDate.now().plusDays(45))
                 .raison("Maintenance planifiée du centre de Bruxelles")
                 .global(false)
-                .site(siteLyon)
+                .centre(centreLyon)
                 .build());
 
         log.info("DataInitializer : jours de fermeture crees");
-//-----------------------Membres--------------------//
-        String defaultMemberPasswordHash = passwordEncoder.encode(demoMemberPassword);
+//-----------------------Participants--------------------//
+        String defaultParticipantPasswordHash = passwordEncoder.encode(demoParticipantPassword);
 
-        Participant lucas = membreRepository.save(Participant.builder()
+        Participant lucas = participantRepository.save(Participant.builder()
                 .matricule("G1001")
                 .nom("Martin")
                 .prenom("Lucas")
                 .email("lucas.martin@gmail.com")
-                .typeMembre(TypeParticipant.GLOBAL)
+                .typeParticipant(TypeParticipant.PARTENAIRE)
                 .solde(0.0)
-                .site(null)
-                .passwordHash(defaultMemberPasswordHash)
+                .centre(null)
+                .passwordHash(defaultParticipantPasswordHash)
                 .build());
 
-        Participant emma = membreRepository.save(Participant.builder()
+        Participant emma = participantRepository.save(Participant.builder()
                 .matricule("G1002")
                 .nom("Dubois")
                 .prenom("Emma")
                 .email("emma.dubois@gmail.com")
-                .typeMembre(TypeParticipant.GLOBAL)
+                .typeParticipant(TypeParticipant.PARTENAIRE)
                 .solde(0.0)
-                .site(null)
-                .passwordHash(defaultMemberPasswordHash)
+                .centre(null)
+                .passwordHash(defaultParticipantPasswordHash)
                 .build());
 
-        Participant tom = membreRepository.save(Participant.builder()
+        Participant tom = participantRepository.save(Participant.builder()
                 .matricule("S10001")
                 .nom("Bernard")
                 .prenom("Tom")
                 .email("tom.bernard@gmail.com")
-                .typeMembre(TypeParticipant.SITE)
+                .typeParticipant(TypeParticipant.ABONNE)
                 .solde(0.0)
-                .site(siteLyon)
-                .passwordHash(defaultMemberPasswordHash)
+                .centre(centreLyon)
+                .passwordHash(defaultParticipantPasswordHash)
                 .build());
 
-        Participant sarah = membreRepository.save(Participant.builder()
+        Participant sarah = participantRepository.save(Participant.builder()
                 .matricule("S10002")
                 .nom("Leroy")
                 .prenom("Sarah")
                 .email("sarah.leroy@gmail.com")
-                .typeMembre(TypeParticipant.SITE)
+                .typeParticipant(TypeParticipant.ABONNE)
                 .solde(0.0)
-                .site(siteParis)
-                .passwordHash(defaultMemberPasswordHash)
+                .centre(centreParis)
+                .passwordHash(defaultParticipantPasswordHash)
                 .build());
 
-        Participant alex = membreRepository.save(Participant.builder()
+        Participant alex = participantRepository.save(Participant.builder()
                 .matricule("L10001")
                 .nom("Petit")
                 .prenom("Alex")
                 .email("alex.petit@gmail.com")
-                .typeMembre(TypeParticipant.LIBRE)
+                .typeParticipant(TypeParticipant.VISITEUR)
                 .solde(0.0)
-                .site(null)
-                .passwordHash(defaultMemberPasswordHash)
+                .centre(null)
+                .passwordHash(defaultParticipantPasswordHash)
                 .build());
 
-        Participant penalise = membreRepository.save(Participant.builder()
+        Participant penalise = participantRepository.save(Participant.builder()
                 .matricule("L10002")
                 .nom("Penalise")
                 .prenom("Demo")
                 .email("demo.penalise@gmail.com")
-                .typeMembre(TypeParticipant.LIBRE)
+                .typeParticipant(TypeParticipant.VISITEUR)
                 .solde(0.0)
-                .site(null)
-                .passwordHash(defaultMemberPasswordHash)
+                .centre(null)
+                .passwordHash(defaultParticipantPasswordHash)
                 .build());
 
-        log.info("DataInitializer : {} participants créés", membreRepository.count());
+        log.info("DataInitializer : {} participants créés", participantRepository.count());
 
         seedActivePenalty(penalise);
         seedAteliers(courtA, courtB, courtC, court1, lucas, emma, tom, sarah, alex);
@@ -213,7 +213,7 @@ public class DataInitializer implements CommandLineRunner {
                 .email("admin@atelierconnect.example")
                 .passwordHash(passwordEncoder.encode(demoAdminPassword))
                 .typeAdministrateur(TypeAdministrateur.GLOBAL)
-                .site(null)
+                .centre(null)
                 .build());
 
         administrateurRepository.save(Administrateur.builder()
@@ -223,7 +223,7 @@ public class DataInitializer implements CommandLineRunner {
                 .email("admin.bruxelles@atelierconnect.example")
                 .passwordHash(passwordEncoder.encode(demoAdminPassword))
                 .typeAdministrateur(TypeAdministrateur.SITE)
-                .site(siteLyon)
+                .centre(centreLyon)
                 .build());
 
         administrateurRepository.save(Administrateur.builder()
@@ -233,26 +233,26 @@ public class DataInitializer implements CommandLineRunner {
                 .email("admin.namur@atelierconnect.example")
                 .passwordHash(passwordEncoder.encode(demoAdminPassword))
                 .typeAdministrateur(TypeAdministrateur.SITE)
-                .site(siteParis)
+                .centre(centreParis)
                 .build());
 
         log.info("DataInitializer : {} administrateurs crees", administrateurRepository.count());
         log.info("DataInitializer : initialisation terminee avec succes !");
     }
 
-    private void migrateLegacyMemberCredentials() {
-        List<Participant> legacyMembers = membreRepository.findAll().stream()
+    private void migrateLegacyParticipantCredentials() {
+        List<Participant> legacyParticipants = participantRepository.findAll().stream()
                 .filter(member -> !StringUtils.hasText(member.getPasswordHash()))
                 .toList();
 
-        if (legacyMembers.isEmpty()) {
+        if (legacyParticipants.isEmpty()) {
             return;
         }
 
-        legacyMembers.forEach(member -> member.setPasswordHash(passwordEncoder.encode(demoMemberPassword)));
-        membreRepository.saveAll(legacyMembers);
+        legacyParticipants.forEach(member -> member.setPasswordHash(passwordEncoder.encode(demoParticipantPassword)));
+        participantRepository.saveAll(legacyParticipants);
 
-        log.warn("DataInitializer : {} compte(s) membre legacy ont recu le mot de passe par defaut", legacyMembers.size());
+        log.warn("DataInitializer : {} compte(s) participant legacy ont recu le mot de passe par defaut", legacyParticipants.size());
     }
 
     private void seedAteliersFromExistingData() {
@@ -261,68 +261,68 @@ public class DataInitializer implements CommandLineRunner {
         Salle courtC = requireSeedSalle("Court C", "Salle Collaborative C");
         Salle court1 = requireSeedSalle("Court 1", "Salle Numérique 1");
 
-        Participant lucas = requireSeedMember("G1001");
-        Participant emma = requireSeedMember("G1002");
-        Participant tom = requireSeedMember("S10001");
-        Participant sarah = requireSeedMember("S10002");
-        Participant alex = requireSeedMember("L10001");
+        Participant lucas = requireSeedParticipant("G1001");
+        Participant emma = requireSeedParticipant("G1002");
+        Participant tom = requireSeedParticipant("S10001");
+        Participant sarah = requireSeedParticipant("S10002");
+        Participant alex = requireSeedParticipant("L10001");
 
         seedAteliers(courtA, courtB, courtC, court1, lucas, emma, tom, sarah, alex);
     }
 
     private Salle requireSeedSalle(String ancienNom, String nouveauNom) {
-        return terrainRepository.findAll().stream()
+        return salleRepository.findAll().stream()
                 .filter(salle -> ancienNom.equals(salle.getNom()) || nouveauNom.equals(salle.getNom()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(
                         "Salle de démonstration introuvable : " + ancienNom + " / " + nouveauNom));
     }
 
-    private Participant requireSeedMember(String matricule) {
-        return membreRepository.findByMatriculeIgnoreCase(matricule)
-                .orElseThrow(() -> new IllegalStateException("Membre seed introuvable : " + matricule));
+    private Participant requireSeedParticipant(String matricule) {
+        return participantRepository.findByMatriculeIgnoreCase(matricule)
+                .orElseThrow(() -> new IllegalStateException("Participant seed introuvable : " + matricule));
     }
 
-    private void ensurePenalizedDemoMember() {
-        Participant membre = membreRepository.findByMatriculeIgnoreCase("L10002")
-                .orElseGet(() -> membreRepository.save(Participant.builder()
+    private void ensurePenalizedDemoParticipant() {
+        Participant participant = participantRepository.findByMatriculeIgnoreCase("L10002")
+                .orElseGet(() -> participantRepository.save(Participant.builder()
                         .matricule("L10002")
                         .nom("Penalise")
                         .prenom("Demo")
                         .email("demo.penalise@gmail.com")
-                        .typeMembre(TypeParticipant.LIBRE)
+                        .typeParticipant(TypeParticipant.VISITEUR)
                         .solde(0.0)
-                        .site(null)
-                        .passwordHash(passwordEncoder.encode(demoMemberPassword))
+                        .centre(null)
+                        .passwordHash(passwordEncoder.encode(demoParticipantPassword))
                         .build()));
 
-        seedActivePenalty(membre);
+        seedActivePenalty(participant);
     }
 
-    private void ensureDemoMembersCredentials() {
-        updateDemoMemberCredentials("G1001", "lucas.martin@gmail.com");
-        updateDemoMemberCredentials("G1002", "emma.dubois@gmail.com");
-        updateDemoMemberCredentials("S10001", "tom.bernard@gmail.com");
-        updateDemoMemberCredentials("S10002", "sarah.leroy@gmail.com");
-        updateDemoMemberCredentials("L10001", "alex.petit@gmail.com");
-        updateDemoMemberCredentials("L10002", "demo.penalise@gmail.com");
+    private void ensureDemoParticipantsCredentials() {
+        updateDemoParticipantCredentials("G1001", "lucas.martin@gmail.com");
+        updateDemoParticipantCredentials("G1002", "emma.dubois@gmail.com");
+        updateDemoParticipantCredentials("S10001", "tom.bernard@gmail.com");
+        updateDemoParticipantCredentials("S10002", "sarah.leroy@gmail.com");
+        updateDemoParticipantCredentials("L10001", "alex.petit@gmail.com");
+        updateDemoParticipantCredentials("L10002", "demo.penalise@gmail.com");
     }
 
-    private void updateDemoMemberCredentials(String matricule, String email) {
-        membreRepository.findByMatriculeIgnoreCase(matricule).ifPresent(membre -> {
+    private void updateDemoParticipantCredentials(String matricule, String email) {
+        participantRepository.findByMatriculeIgnoreCase(matricule).ifPresent(participant -> {
             // Une initialisation ne doit jamais réinitialiser le mot de passe
             // d'un compte existant à chaque redémarrage.
             boolean modifie = false;
-            if (!StringUtils.hasText(membre.getEmail())) {
-                membre.setEmail(email);
+            if (!StringUtils.hasText(participant.getEmail())) {
+                participant.setEmail(email);
                 modifie = true;
             }
-            if (!StringUtils.hasText(membre.getPasswordHash())) {
-                membre.setPasswordHash(passwordEncoder.encode(demoMemberPassword));
+            if (!StringUtils.hasText(participant.getPasswordHash())) {
+                participant.setPasswordHash(passwordEncoder.encode(demoParticipantPassword));
                 modifie = true;
             }
             if (modifie) {
-                membreRepository.save(membre);
+                participantRepository.save(participant);
             }
         });
     }
@@ -347,13 +347,13 @@ public class DataInitializer implements CommandLineRunner {
         });
     }
 
-    private void seedActivePenalty(Participant membre) {
-        if (penaliteRepository.existsByMembreIdAndDateFinAfter(membre.getId(), LocalDate.now())) {
+    private void seedActivePenalty(Participant participant) {
+        if (penaliteRepository.existsByParticipantIdAndDateFinAfter(participant.getId(), LocalDate.now())) {
             return;
         }
 
         penaliteRepository.save(Penalite.builder()
-                .membre(membre)
+                .participant(participant)
                 .dateFin(LocalDate.now().plusWeeks(1))
                 .motif("Participant de démonstration suspendu")
                 .build());
@@ -390,45 +390,45 @@ public class DataInitializer implements CommandLineRunner {
         createSeedReservation(completeLyon, tom, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
         createSeedReservation(completeLyon, alex, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
 
-        log.info("DataInitializer : {} ateliers créés", matchRepository.count());
+        log.info("DataInitializer : {} ateliers créés", atelierRepository.count());
     }
 
     private Atelier createSeedAtelier(
-            Salle terrain,
+            Salle salle,
             Participant organisateur,
             LocalDateTime dateDebut,
-            TypeAtelier typeMatch,
+            TypeAtelier typeAtelier,
             StatutAtelier statut,
-            int nbJoueursActuels
+            int nbParticipantsActuels
     ) {
-        return matchRepository.save(Atelier.builder()
-                .terrain(terrain)
+        return atelierRepository.save(Atelier.builder()
+                .salle(salle)
                 .organisateur(organisateur)
                 .dateDebut(dateDebut)
                 .dateFin(dateDebut.plusMinutes(AtelierRules.DUREE_MINUTES))
-                .typeMatch(typeMatch)
+                .typeAtelier(typeAtelier)
                 .statut(statut)
-                .nbJoueursActuels(nbJoueursActuels)
+                .nbParticipantsActuels(nbParticipantsActuels)
                 .prixTotal(AtelierRules.PRIX_TOTAL)
-                .prixParJoueur(AtelierRules.PRIX_PARTICIPANT)
+                .prixParParticipant(AtelierRules.PRIX_PARTICIPANT)
                 .build());
     }
 
     private void createSeedReservation(
-            Atelier match,
-            Participant membre,
+            Atelier atelier,
+            Participant participant,
             StatutReservation statutReservation,
             StatutPaiement statutPaiement
     ) {
         Reservation reservation = reservationRepository.save(Reservation.builder()
-                .match(match)
-                .membre(membre)
+                .atelier(atelier)
+                .participant(participant)
                 .statut(statutReservation)
                 .build());
 
         Paiement paiement = paiementRepository.save(Paiement.builder()
                 .reservation(reservation)
-                .montant(match.getPrixParJoueur())
+                .montant(atelier.getPrixParParticipant())
                 .statut(statutPaiement)
                 .datePaiement(statutPaiement == StatutPaiement.PAYE ? LocalDateTime.now() : null)
                 .build());

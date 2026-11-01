@@ -3,13 +3,27 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MEMBER_SESSION_KEY, MemberSessionService } from './member-session.service';
 
 describe('MemberSessionService', () => {
+  it('restaure les anciens noms JSON de session sans perdre le centre ni la catégorie', () => {
+    localStorage.clear();
+    localStorage.setItem(MEMBER_SESSION_KEY, JSON.stringify({
+      member: { id: 9, matricule: 'S12345', typeMembre: 'SITE', siteId: 5, siteNom: 'Centre Bruxelles' },
+      token: 'legacy-token'
+    }));
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({});
+    const service = TestBed.inject(MemberSessionService);
+    expect(service.member()?.categorie).toBe('ABONNE');
+    expect(service.member()?.centreId).toBe(5);
+    expect(service.member()?.centreNom).toBe('Centre Bruxelles');
+    expect(service.token()).toBe('legacy-token');
+  });
   beforeEach(() => {
     localStorage.clear();
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({});
   });
 
-  it('devrait persister et restaurer une session membre', () => {
+  it('devrait persister et restaurer une session participant', () => {
     TestBed.configureTestingModule({});
     const service = TestBed.inject(MemberSessionService);
 
@@ -19,9 +33,9 @@ describe('MemberSessionService', () => {
       nom: 'Doe',
       prenom: 'John',
       email: 'john@example.com',
-      typeMembre: 'GLOBAL',
-      siteId: null,
-      siteNom: null,
+      categorie: 'PARTENAIRE',
+      centreId: null,
+      centreNom: null,
       solde: 0
     });
 
@@ -30,7 +44,7 @@ describe('MemberSessionService', () => {
     expect(service.matricule()).toBe('G1234');
   });
 
-  it('devrait restaurer une session membre depuis localStorage', () => {
+  it('devrait restaurer une session participant depuis localStorage', () => {
     localStorage.setItem(
       MEMBER_SESSION_KEY,
       JSON.stringify({
@@ -40,9 +54,9 @@ describe('MemberSessionService', () => {
           nom: 'Smith',
           prenom: 'Anna',
           email: 'anna@example.com',
-          typeMembre: 'SITE',
-          siteId: 5,
-          siteNom: 'Padel Bruxelles',
+          categorie: 'ABONNE',
+          centreId: 5,
+          centreNom: 'Centre Bruxelles',
           solde: 12,
         },
         token: null,
@@ -57,7 +71,7 @@ describe('MemberSessionService', () => {
     expect(service.matricule()).toBe('S12345');
   });
 
-  it('devrait nettoyer un contenu localStorage membre invalide', () => {
+  it('devrait nettoyer un contenu localStorage participant invalide', () => {
     localStorage.setItem(MEMBER_SESSION_KEY, '{broken');
 
     TestBed.configureTestingModule({});
@@ -67,7 +81,7 @@ describe('MemberSessionService', () => {
     expect(localStorage.getItem(MEMBER_SESSION_KEY)).toBeNull();
   });
 
-  it('devrait effacer la session membre', () => {
+  it('devrait effacer la session participant', () => {
     TestBed.configureTestingModule({});
     const service = TestBed.inject(MemberSessionService);
 
@@ -77,9 +91,9 @@ describe('MemberSessionService', () => {
       nom: 'Smith',
       prenom: 'Anna',
       email: 'anna@example.com',
-      typeMembre: 'SITE',
-      siteId: 1,
-      siteNom: 'Site A',
+      categorie: 'ABONNE',
+      centreId: 1,
+      centreNom: 'Centre A',
       solde: 10
     });
 

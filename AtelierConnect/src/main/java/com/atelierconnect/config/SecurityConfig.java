@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -34,6 +35,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -49,7 +51,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/matches", "/api/ateliers").hasRole("MEMBER")
                         .requestMatchers(HttpMethod.GET, "/api/matches/organisateur/**", "/api/ateliers/organisateur/**").hasRole("MEMBER")
                         .requestMatchers(HttpMethod.GET, "/api/matches", "/api/ateliers").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/matches/site/**", "/api/ateliers/site/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/matches/site/**", "/api/ateliers/site/**", "/api/matches/centre/**", "/api/ateliers/centre/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/matches/*", "/api/ateliers/*").hasAnyRole("MEMBER", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/matches/*", "/api/ateliers/*").hasRole("MEMBER")
                         .requestMatchers(HttpMethod.PATCH, "/api/matches/*/cancel", "/api/ateliers/*/cancel").hasRole("MEMBER")

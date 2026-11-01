@@ -18,7 +18,7 @@ describe('AdminSessionService', () => {
       nom: 'Admin',
       prenom: 'Global',
       role: 'GLOBAL',
-      siteId: null
+      centreId: null
     });
 
     expect(service.isAuthenticated()).toBe(true);
@@ -33,9 +33,9 @@ describe('AdminSessionService', () => {
         token: 'restored-token',
         email: 'site@example.com',
         nom: 'Admin',
-        prenom: 'Site',
+        prenom: 'Centre',
         role: 'SITE',
-        siteId: 2
+        centreId: 2
       })
     );
 
@@ -44,8 +44,8 @@ describe('AdminSessionService', () => {
 
     expect(service.isAuthenticated()).toBe(true);
     expect(service.token()).toBe('restored-token');
-    expect(service.isSiteAdmin()).toBe(true);
-    expect(service.siteId()).toBe(2);
+    expect(service.isCentreAdmin()).toBe(true);
+    expect(service.centreId()).toBe(2);
   });
 
   it('devrait effacer le contenu invalide de localStorage', () => {
@@ -66,9 +66,9 @@ describe('AdminSessionService', () => {
       token: 'jwt-token',
       email: 'site@example.com',
       nom: 'Admin',
-      prenom: 'Site',
+      prenom: 'Centre',
       role: 'SITE',
-      siteId: 2
+      centreId: 2
     });
 
     service.clearSession();

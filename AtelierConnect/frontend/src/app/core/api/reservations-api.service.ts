@@ -24,12 +24,12 @@ export class ReservationsApiService {
     return this.http.get<ReservationResponse>(apiUrl(`/reservations/${id}`));
   }
 
-  getByMatch(matchId: number): Observable<ReservationResponse[]> {
-    return this.http.get<ReservationResponse[]>(apiUrl(`/reservations/match/${matchId}`));
+  getByAtelier(atelierId: number): Observable<ReservationResponse[]> {
+    return this.http.get<ReservationResponse[]>(apiUrl(`/reservations/atelier/${atelierId}`));
   }
 
-  getByMembre(membreId: number): Observable<ReservationResponse[]> {
-    return this.http.get<ReservationResponse[]>(apiUrl(`/reservations/membre/${membreId}`));
+  getByParticipant(participantId: number): Observable<ReservationResponse[]> {
+    return this.http.get<ReservationResponse[]>(apiUrl(`/reservations/participant/${participantId}`));
   }
 
   cancel(id: number): Observable<void> {

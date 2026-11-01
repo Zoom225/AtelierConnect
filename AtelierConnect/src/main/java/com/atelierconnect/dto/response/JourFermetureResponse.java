@@ -7,7 +7,10 @@ public record JourFermetureResponse(
         LocalDate date,
         String raison,
         Boolean global,
-        Long siteId,
-        String siteNom
+        Long centreId,
+        String centreNom
 ) {
+
+    // Wire compatibility for existing clients; business code uses canonical properties.
+    @com.fasterxml.jackson.annotation.JsonProperty("siteId") public Long legacySiteId() { return centreId; }
 }

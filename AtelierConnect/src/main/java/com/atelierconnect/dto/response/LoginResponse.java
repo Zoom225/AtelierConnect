@@ -14,5 +14,8 @@ public class LoginResponse {
     private String nom;
     private String prenom;
     private TypeAdministrateur role;
-    private Long siteId;
+    private Long centreId;
+
+    // Wire compatibility for existing clients; business code uses canonical properties.
+    @com.fasterxml.jackson.annotation.JsonProperty("siteId") public Long legacySiteId() { return centreId; }
 }
