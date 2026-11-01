@@ -3,12 +3,12 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { SitesApiService } from '../../../core/api/sites-api.service';
+import { CentresApiService } from '../../../core/api/centres-api.service';
 import { AdminSessionService } from '../../../core/auth/admin-session.service';
-import { AdminSitesPage } from './admin-sites.page';
+import { AdminCentresPage } from './admin-centres.page';
 
-describe('AdminSitesPage — centres AtelierConnect', () => {
-  let sitesApiMock: {
+describe('AdminCentresPage — centres AtelierConnect', () => {
+  let centresApiMock: {
     getAll: ReturnType<typeof vi.fn>;
     create: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
@@ -16,12 +16,12 @@ describe('AdminSitesPage — centres AtelierConnect', () => {
   };
   let adminSessionMock: {
     isGlobalAdmin: ReturnType<typeof vi.fn>;
-    isSiteAdmin: ReturnType<typeof vi.fn>;
-    siteId: ReturnType<typeof vi.fn>;
+    isCentreAdmin: ReturnType<typeof vi.fn>;
+    centreId: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(async () => {
-    sitesApiMock = {
+    centresApiMock = {
       getAll: vi.fn().mockReturnValue(of([])),
       create: vi.fn().mockReturnValue(of({ id: 1 })),
       update: vi.fn().mockReturnValue(of({ id: 1 })),
@@ -29,15 +29,15 @@ describe('AdminSitesPage — centres AtelierConnect', () => {
     };
     adminSessionMock = {
       isGlobalAdmin: vi.fn().mockReturnValue(true),
-      isSiteAdmin: vi.fn().mockReturnValue(false),
-      siteId: vi.fn().mockReturnValue(null)
+      isCentreAdmin: vi.fn().mockReturnValue(false),
+      centreId: vi.fn().mockReturnValue(null)
     };
     await TestBed.configureTestingModule({
-      imports: [AdminSitesPage],
+      imports: [AdminCentresPage],
       providers: [
         provideRouter([]),
         provideNoopAnimations(),
-        { provide: SitesApiService, useValue: sitesApiMock },
+        { provide: CentresApiService, useValue: centresApiMock },
         { provide: AdminSessionService, useValue: adminSessionMock }
       ]
     }).compileComponents();
@@ -49,14 +49,14 @@ describe('AdminSitesPage — centres AtelierConnect', () => {
   });
 
   it('propose 120 minutes et 20 minutes de pause pour un nouveau centre', () => {
-    const component = TestBed.createComponent(AdminSitesPage).componentInstance;
-    expect(component.form.controls.dureeMatchMinutes.value).toBe(120);
-    expect(component.form.controls.dureeEntreMatchMinutes.value).toBe(20);
+    const component = TestBed.createComponent(AdminCentresPage).componentInstance;
+    expect(component.form.controls.dureeAtelierMinutes.value).toBe(120);
+    expect(component.form.controls.dureeEntreAtelierMinutes.value).toBe(20);
     expect(component.form.controls.ouvertVisiteurs.value).toBe(false);
   });
 
   it('transmet le choix explicite d’ouverture aux visiteurs au backend', () => {
-    const component = TestBed.createComponent(AdminSitesPage).componentInstance;
+    const component = TestBed.createComponent(AdminCentresPage).componentInstance;
     component.form.patchValue({
       nom: 'Centre AtelierConnect Bruxelles',
       adresse: 'Bruxelles',
@@ -65,10 +65,10 @@ describe('AdminSitesPage — centres AtelierConnect', () => {
 
     component.save();
 
-    expect(sitesApiMock.create).toHaveBeenCalledWith(expect.objectContaining({
+    expect(centresApiMock.create).toHaveBeenCalledWith(expect.objectContaining({
       nom: 'Centre AtelierConnect Bruxelles',
-      dureeMatchMinutes: 120,
-      dureeEntreMatchMinutes: 20,
+      dureeAtelierMinutes: 120,
+      dureeEntreAtelierMinutes: 20,
       ouvertVisiteurs: true
     }));
   });

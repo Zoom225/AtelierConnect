@@ -9,15 +9,15 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { SitesApiService } from '../../../core/api/sites-api.service';
-import { TerrainsApiService } from '../../../core/api/terrains-api.service';
+import { CentresApiService } from '../../../core/api/centres-api.service';
+import { SallesApiService } from '../../../core/api/salles-api.service';
 import { AdminSessionService } from '../../../core/auth/admin-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
-import { SiteResponse, TerrainRequest, TerrainResponse } from '../../../shared/models/site-terrain.model';
+import { CentreResponse, SalleRequest, SalleResponse } from '../../../shared/models/centre-salle.model';
 import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
 
 @Component({
-  selector: 'app-admin-terrains-page',
+  selector: 'app-admin-salles-page',
   standalone: true,
   imports: [
     CommonModule,
@@ -31,14 +31,14 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
     MatProgressSpinnerModule
   ],
   template: `
-    <!-- En-tête terrains -->
+    <!-- En-tête salles -->
     <div class="adm-ter-header">
       <div class="adm-ter-header-inner">
         <div class="adm-ter-title-block">
           <span class="adm-ter-icon">📍</span>
           <div>
-            <h1 class="adm-ter-title">{{ language.t('admin.terrains.title') }}</h1>
-            <p class="adm-ter-sub">{{ language.t('admin.terrains.subtitle') }}</p>
+            <h1 class="adm-ter-title">{{ language.t('admin.salles.title') }}</h1>
+            <p class="adm-ter-sub">{{ language.t('admin.salles.subtitle') }}</p>
           </div>
         </div>
         <a routerLink="/admin" class="adm-ter-back-btn">{{ language.t('common.back') }}</a>
@@ -54,14 +54,14 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
         </div>
         <form [formGroup]="form" class="grid gap-4 pt-4 md:grid-cols-2" (ngSubmit)="save()">
           <mat-form-field appearance="outline">
-            <mat-label>{{ language.t('admin.terrains.name') }}</mat-label>
+            <mat-label>{{ language.t('admin.salles.name') }}</mat-label>
             <input matInput formControlName="nom" />
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-            <mat-label>{{ language.t('admin.terrains.site') }}</mat-label>
-            <mat-select formControlName="siteId" [disabled]="adminSession.isSiteAdmin()">
-              @for (site of sites(); track site.id) {
+            <mat-label>{{ language.t('admin.salles.site') }}</mat-label>
+            <mat-select formControlName="centreId" [disabled]="adminSession.isCentreAdmin()">
+              @for (site of centres(); track site.id) {
                 <mat-option [value]="site.id">🏟️ {{ site.nom }}</mat-option>
               }
             </mat-select>
@@ -84,24 +84,24 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
         </form>
       </div>
 
-      <!-- Liste des terrains -->
+      <!-- Liste des salles -->
       <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-        @for (terrain of filteredTerrains(); track terrain.id) {
+        @for (salle of filteredSalles(); track salle.id) {
           <div class="adm-ter-card">
             <div class="adm-ter-card-header">
-              <span class="adm-ter-card-num">#{{ terrain.id }}</span>
-              <div class="adm-ter-card-name">📍 {{ terrain.nom }}</div>
-              <div class="adm-ter-card-site">🏟️ {{ terrain.siteNom }}</div>
+              <span class="adm-ter-card-num">#{{ salle.id }}</span>
+              <div class="adm-ter-card-name">📍 {{ salle.nom }}</div>
+              <div class="adm-ter-card-site">🏟️ {{ salle.centreNom }}</div>
             </div>
             <div class="adm-ter-card-actions">
-              <button class="adm-ter-action-edit" type="button" (click)="edit(terrain)">✏️ {{ language.t('common.edit') }}</button>
-              <button class="adm-ter-action-delete" type="button" (click)="remove(terrain.id)">🗑️ {{ language.t('common.delete') }}</button>
+              <button class="adm-ter-action-edit" type="button" (click)="edit(salle)">✏️ {{ language.t('common.edit') }}</button>
+              <button class="adm-ter-action-delete" type="button" (click)="remove(salle.id)">🗑️ {{ language.t('common.delete') }}</button>
             </div>
           </div>
         } @empty {
           <div class="adm-ter-empty md:col-span-2 lg:col-span-3">
             <span>📍</span>
-            <p>{{ language.t('admin.terrains.empty') }}</p>
+            <p>{{ language.t('admin.salles.empty') }}</p>
           </div>
         }
       </div>
@@ -193,9 +193,9 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
     </style>
   `
 })
-export class AdminTerrainsPage {
-  private readonly terrainsApi = inject(TerrainsApiService);
-  private readonly sitesApi = inject(SitesApiService);
+export class AdminSallesPage {
+  private readonly sallesApi = inject(SallesApiService);
+  private readonly centresApi = inject(CentresApiService);
   readonly adminSession = inject(AdminSessionService);
   readonly language = inject(LanguageService);
   private static readonly HIDDEN_GENERIC_ERROR = 'Une erreur inattendue est survenue';
@@ -204,23 +204,23 @@ export class AdminTerrainsPage {
   readonly message = signal('');
   readonly errorMessage = signal('');
   readonly editingId = signal<number | null>(null);
-  readonly terrains = signal<TerrainResponse[]>([]);
-  readonly sites = signal<SiteResponse[]>([]);
+  readonly salles = signal<SalleResponse[]>([]);
+  readonly centres = signal<CentreResponse[]>([]);
   readonly visibleErrorMessage = computed(() => {
     const message = this.errorMessage().trim();
-    return message === AdminTerrainsPage.HIDDEN_GENERIC_ERROR ? '' : message;
+    return message === AdminSallesPage.HIDDEN_GENERIC_ERROR ? '' : message;
   });
 
-  readonly filteredTerrains = computed(() => {
+  readonly filteredSalles = computed(() => {
     if (this.adminSession.isGlobalAdmin()) {
-      return this.terrains();
+      return this.salles();
     }
-    return this.terrains().filter((terrain) => terrain.siteId === this.adminSession.siteId());
+    return this.salles().filter((salle) => salle.centreId === this.adminSession.centreId());
   });
 
   readonly form = new FormGroup({
     nom: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    siteId: new FormControl<number | null>(null, { validators: [Validators.required] })
+    centreId: new FormControl<number | null>(null, { validators: [Validators.required] })
   });
 
   constructor() {
@@ -229,56 +229,56 @@ export class AdminTerrainsPage {
 
   private setPageError(message: string): void {
     this.errorMessage.set(
-      message.trim() === AdminTerrainsPage.HIDDEN_GENERIC_ERROR ? '' : message
+      message.trim() === AdminSallesPage.HIDDEN_GENERIC_ERROR ? '' : message
     );
   }
 
   loadData(): void {
     this.loading.set(true);
     this.errorMessage.set('');
-    const siteId = this.adminSession.siteId();
-    const terrainsRequest$ =
-      this.adminSession.isSiteAdmin() && siteId
-        ? this.terrainsApi.getBySite(siteId)
-        : this.terrainsApi.getAll();
-    const sitesRequest$ =
-      this.adminSession.isSiteAdmin() && siteId
-        ? this.sitesApi.getById(siteId)
-        : this.sitesApi.getAll();
+    const centreId = this.adminSession.centreId();
+    const sallesRequest$ =
+      this.adminSession.isCentreAdmin() && centreId
+        ? this.sallesApi.getByCentre(centreId)
+        : this.sallesApi.getAll();
+    const centresRequest$ =
+      this.adminSession.isCentreAdmin() && centreId
+        ? this.centresApi.getById(centreId)
+        : this.centresApi.getAll();
 
     forkJoin({
-      terrains: terrainsRequest$,
-      sites: sitesRequest$
+      salles: sallesRequest$,
+      centres: centresRequest$
     }).subscribe({
-      next: ({ terrains, sites }) => {
-        this.terrains.set(terrains);
-        const availableSites = Array.isArray(sites) ? sites : [sites];
-        const filteredSites = this.adminSession.isGlobalAdmin()
-          ? availableSites
-          : availableSites.filter((site) => site.id === siteId);
-        this.sites.set(filteredSites);
-        if (this.adminSession.isSiteAdmin() && siteId) {
-          this.form.controls.siteId.setValue(siteId);
+      next: ({ salles, centres }) => {
+        this.salles.set(salles);
+        const availableCentres = Array.isArray(centres) ? centres : [centres];
+        const filteredCentres = this.adminSession.isGlobalAdmin()
+          ? availableCentres
+          : availableCentres.filter((site) => site.id === centreId);
+        this.centres.set(filteredCentres);
+        if (this.adminSession.isCentreAdmin() && centreId) {
+          this.form.controls.centreId.setValue(centreId);
         }
         this.loading.set(false);
       },
       error: (error) => {
         this.loading.set(false);
-        this.setPageError(extractApiErrorMessage(error, this.language.t('admin.terrains.loadError')));
+        this.setPageError(extractApiErrorMessage(error, this.language.t('admin.salles.loadError')));
       }
     });
   }
 
-  edit(terrain: TerrainResponse): void {
-    this.editingId.set(terrain.id);
-    this.form.patchValue({ nom: terrain.nom, siteId: terrain.siteId });
+  edit(salle: SalleResponse): void {
+    this.editingId.set(salle.id);
+    this.form.patchValue({ nom: salle.nom, centreId: salle.centreId });
   }
 
   resetForm(): void {
     this.editingId.set(null);
     this.message.set('');
     this.errorMessage.set('');
-    this.form.reset({ nom: '', siteId: this.adminSession.isSiteAdmin() ? this.adminSession.siteId() : null });
+    this.form.reset({ nom: '', centreId: this.adminSession.isCentreAdmin() ? this.adminSession.centreId() : null });
   }
 
   save(): void {
@@ -289,23 +289,23 @@ export class AdminTerrainsPage {
     this.loading.set(true);
     this.message.set('');
     this.errorMessage.set('');
-    const payload = this.form.getRawValue() as TerrainRequest;
-    if (this.adminSession.isSiteAdmin()) {
-      payload.siteId = this.adminSession.siteId()!;
+    const payload = this.form.getRawValue() as SalleRequest;
+    if (this.adminSession.isCentreAdmin()) {
+      payload.centreId = this.adminSession.centreId()!;
     }
 
-    const request$ = this.editingId() ? this.terrainsApi.update(this.editingId()!, payload) : this.terrainsApi.create(payload);
+    const request$ = this.editingId() ? this.sallesApi.update(this.editingId()!, payload) : this.sallesApi.create(payload);
     request$.subscribe({
       next: () => {
         const wasEditing = this.editingId() !== null;
         this.loading.set(false);
         this.resetForm();
-        this.message.set(wasEditing ? this.language.t('admin.terrains.updateSuccess') : this.language.t('admin.terrains.createSuccess'));
+        this.message.set(wasEditing ? this.language.t('admin.salles.updateSuccess') : this.language.t('admin.salles.createSuccess'));
         this.loadData();
       },
       error: (error) => {
         this.loading.set(false);
-        this.setPageError(extractApiErrorMessage(error, this.language.t('admin.terrains.saveError')));
+        this.setPageError(extractApiErrorMessage(error, this.language.t('admin.salles.saveError')));
       }
     });
   }
@@ -314,17 +314,17 @@ export class AdminTerrainsPage {
     this.message.set('');
     this.errorMessage.set('');
 
-    if (!confirm(this.language.t('admin.terrains.deleteConfirm'))) {
+    if (!confirm(this.language.t('admin.salles.deleteConfirm'))) {
       return;
     }
 
-    this.terrainsApi.delete(id).subscribe({
+    this.sallesApi.delete(id).subscribe({
       next: () => {
-        this.message.set(this.language.t('admin.terrains.deleteSuccess'));
+        this.message.set(this.language.t('admin.salles.deleteSuccess'));
         this.loadData();
       },
       error: (error) => {
-        this.setPageError(extractApiErrorMessage(error, this.language.t('admin.terrains.deleteError')));
+        this.setPageError(extractApiErrorMessage(error, this.language.t('admin.salles.deleteError')));
       }
     });
   }

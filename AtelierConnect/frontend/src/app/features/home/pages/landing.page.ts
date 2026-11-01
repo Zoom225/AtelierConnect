@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatchesApiService } from '../../../core/api/matches-api.service';
+import { AteliersApiService } from '../../../core/api/ateliers-api.service';
 import { MemberSessionService } from '../../../core/auth/member-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 
@@ -37,15 +37,15 @@ import { LanguageService } from '../../../core/i18n/language.service';
           </div>
         </div>
 
-        <div class="workshop-panel" [attr.aria-label]="copy().matchPreviewLabel">
+        <div class="workshop-panel" [attr.aria-label]="copy().atelierPreviewLabel">
           <div class="workshop-layout">
             <span></span>
             <span></span>
           </div>
           <div class="workshop-card live">
-            <p>{{ copy().matchPublic }}</p>
+            <p>{{ copy().atelierPublic }}</p>
             <strong>{{ count() ?? '--' }}</strong>
-            <span>{{ copy().matchAvailable }}</span>
+            <span>{{ copy().atelierAvailable }}</span>
           </div>
           <div class="workshop-card">
             <p>{{ copy().reservation }}</p>
@@ -324,7 +324,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
   `]
 })
 export class LandingPage {
-  private readonly matchesApi = inject(MatchesApiService);
+  private readonly ateliersApi = inject(AteliersApiService);
   readonly memberSession = inject(MemberSessionService);
   private readonly language = inject(LanguageService);
 
@@ -354,9 +354,9 @@ export class LandingPage {
     adminCta: this.language.t('landing.adminCta'),
     testApi: this.language.t('landing.testApi'),
     loadingApi: this.language.t('landing.loadingApi'),
-    matchPreviewLabel: this.language.t('landing.matchPreviewLabel'),
-    matchPublic: this.language.t('landing.matchPublic'),
-    matchAvailable: this.language.t('landing.matchAvailable'),
+    atelierPreviewLabel: this.language.t('landing.atelierPreviewLabel'),
+    atelierPublic: this.language.t('landing.atelierPublic'),
+    atelierAvailable: this.language.t('landing.atelierAvailable'),
     reservation: this.language.t('landing.reservation'),
     reservationBody: this.language.t('landing.reservationBody'),
     simpleReservation: this.language.t('landing.simpleReservation'),
@@ -374,9 +374,9 @@ export class LandingPage {
     this.loading.set(true);
     this.errorCode.set('');
 
-    this.matchesApi.getPublic().subscribe({
-      next: (matches) => {
-        this.count.set(matches.length);
+    this.ateliersApi.getPublic().subscribe({
+      next: (ateliers) => {
+        this.count.set(ateliers.length);
         this.loading.set(false);
       },
       error: () => {

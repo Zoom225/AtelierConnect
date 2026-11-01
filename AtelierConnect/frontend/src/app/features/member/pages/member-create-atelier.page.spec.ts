@@ -4,15 +4,15 @@ import { ActivatedRoute } from '@angular/router';
 import { provideRouter, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MatchesApiService } from '../../../core/api/matches-api.service';
+import { AteliersApiService } from '../../../core/api/ateliers-api.service';
 import { ReservationsApiService } from '../../../core/api/reservations-api.service';
-import { SitesApiService } from '../../../core/api/sites-api.service';
-import { TerrainsApiService } from '../../../core/api/terrains-api.service';
+import { CentresApiService } from '../../../core/api/centres-api.service';
+import { SallesApiService } from '../../../core/api/salles-api.service';
 import { MemberSessionService } from '../../../core/auth/member-session.service';
-import { MatchResponse } from '../../../shared/models/match.model';
-import { MembreResponse } from '../../../shared/models/membre.model';
-import { SiteResponse, TerrainResponse } from '../../../shared/models/site-terrain.model';
-import { MemberCreateMatchPage } from './member-create-match.page';
+import { AtelierResponse } from '../../../shared/models/atelier.model';
+import { ParticipantResponse } from '../../../shared/models/participant.model';
+import { CentreResponse, SalleResponse } from '../../../shared/models/centre-salle.model';
+import { MemberCreateAtelierPage } from './member-create-atelier.page';
 
 const formatDate = (date: Date): string => {
   const year = date.getFullYear();
@@ -21,56 +21,56 @@ const formatDate = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
-describe('MemberCreateMatchPage', () => {
-  const member: MembreResponse = {
+describe('MemberCreateAtelierPage', () => {
+  const member: ParticipantResponse = {
     id: 1,
     matricule: 'S10001',
     nom: 'Bernard',
     prenom: 'Tom',
     email: 'tom.bernard@email.com',
-    typeMembre: 'SITE',
-    siteId: 1,
-    siteNom: 'Padel Club Lyon',
+    categorie: 'ABONNE',
+    centreId: 1,
+    centreNom: 'Centre collaboratif Lyon',
     solde: 0
   };
 
-  const sites: SiteResponse[] = [
+  const centres: CentreResponse[] = [
     {
       id: 1,
-      nom: 'Padel Club Lyon',
+      nom: 'Centre collaboratif Lyon',
       adresse: 'Lyon',
       heureOuverture: '08:00',
       heureFermeture: '22:00',
-      dureeMatchMinutes: 90,
-      dureeEntreMatchMinutes: 15,
+      dureeAtelierMinutes: 120,
+      dureeEntreAtelierMinutes: 20,
       anneeCivile: 2026
     }
   ];
 
-  const terrains: TerrainResponse[] = [
-    { id: 10, nom: 'Court A', siteId: 1, siteNom: 'Padel Club Lyon' }
+  const salles: SalleResponse[] = [
+    { id: 10, nom: 'Salle A', centreId: 1, centreNom: 'Centre collaboratif Lyon' }
   ];
 
-  const createdMatch: MatchResponse = {
+  const createdAtelier: AtelierResponse = {
     id: 99,
-    terrainId: 10,
-    terrainNom: 'Court A',
-    siteNom: 'Padel Club Lyon',
+    salleId: 10,
+    salleNom: 'Salle A',
+    centreNom: 'Centre collaboratif Lyon',
     organisateurId: 1,
     organisateurNom: 'Tom Bernard',
     date: '2026-05-10',
     heureDebut: '09:00',
     heureFin: '10:30',
-    typeMatch: 'PRIVE',
+    typeAtelier: 'PRIVE',
     statut: 'PLANIFIE',
-    nbJoueursActuels: 1,
-    prixParJoueur: 15,
+    nbParticipantsActuels: 1,
+    prixParParticipant: 15,
     dateConversionPublic: null
   };
 
-  let sitesApiMock: { getAll: ReturnType<typeof vi.fn> };
-  let terrainsApiMock: { getBySite: ReturnType<typeof vi.fn> };
-  let matchesApiMock: { create: ReturnType<typeof vi.fn> };
+  let centresApiMock: { getAll: ReturnType<typeof vi.fn> };
+  let sallesApiMock: { getByCentre: ReturnType<typeof vi.fn> };
+  let ateliersApiMock: { create: ReturnType<typeof vi.fn> };
   let reservationsApiMock: { createPrivateInvites: ReturnType<typeof vi.fn> };
   let memberSessionMock: {
     isAuthenticated: ReturnType<typeof vi.fn>;
@@ -79,14 +79,14 @@ describe('MemberCreateMatchPage', () => {
   let activatedRouteMock: { snapshot: { queryParamMap: { get: ReturnType<typeof vi.fn> } } };
 
   beforeEach(async () => {
-    sitesApiMock = {
-      getAll: vi.fn().mockReturnValue(of(sites))
+    centresApiMock = {
+      getAll: vi.fn().mockReturnValue(of(centres))
     };
-    terrainsApiMock = {
-      getBySite: vi.fn().mockReturnValue(of(terrains))
+    sallesApiMock = {
+      getByCentre: vi.fn().mockReturnValue(of(salles))
     };
-    matchesApiMock = {
-      create: vi.fn().mockReturnValue(of(createdMatch))
+    ateliersApiMock = {
+      create: vi.fn().mockReturnValue(of(createdAtelier))
     };
     reservationsApiMock = {
       createPrivateInvites: vi.fn().mockReturnValue(of([]))
@@ -104,13 +104,13 @@ describe('MemberCreateMatchPage', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [MemberCreateMatchPage],
+      imports: [MemberCreateAtelierPage],
       providers: [
         provideRouter([]),
         provideNoopAnimations(),
-        { provide: SitesApiService, useValue: sitesApiMock },
-        { provide: TerrainsApiService, useValue: terrainsApiMock },
-        { provide: MatchesApiService, useValue: matchesApiMock },
+        { provide: CentresApiService, useValue: centresApiMock },
+        { provide: SallesApiService, useValue: sallesApiMock },
+        { provide: AteliersApiService, useValue: ateliersApiMock },
         { provide: ReservationsApiService, useValue: reservationsApiMock },
         { provide: MemberSessionService, useValue: memberSessionMock },
         { provide: ActivatedRoute, useValue: activatedRouteMock }
@@ -123,27 +123,27 @@ describe('MemberCreateMatchPage', () => {
     TestBed.resetTestingModule();
   });
 
-  it('initialise le site, le terrain et la date minimale pour un membre SITE', () => {
-    const fixture = TestBed.createComponent(MemberCreateMatchPage);
+  it('initialise le site, le salle et la date minimale pour un participant SITE', () => {
+    const fixture = TestBed.createComponent(MemberCreateAtelierPage);
     const component = fixture.componentInstance;
 
-    expect(component.isSiteMember()).toBe(true);
-    expect(component.form.controls.siteId.value).toBe(1);
-    expect(component.form.controls.terrainId.value).toBe(10);
+    expect(component.isCentreMember()).toBe(true);
+    expect(component.form.controls.centreId.value).toBe(1);
+    expect(component.form.controls.salleId.value).toBe(10);
     expect(component.form.controls.date.value).toBe(component.todayDate());
-    expect(terrainsApiMock.getBySite).toHaveBeenCalledWith(1);
+    expect(sallesApiMock.getByCentre).toHaveBeenCalledWith(1);
   });
 
   it('préselectionne le type PRIVE si le query param type=PRIVE est fourni', () => {
     activatedRouteMock.snapshot.queryParamMap.get.mockReturnValue('PRIVE');
-    const fixture = TestBed.createComponent(MemberCreateMatchPage);
+    const fixture = TestBed.createComponent(MemberCreateAtelierPage);
     const component = fixture.componentInstance;
 
-    expect(component.form.controls.typeMatch.value).toBe('PRIVE');
+    expect(component.form.controls.typeAtelier.value).toBe('PRIVE');
   });
 
   it('bloque la soumission si la date est au delà de la dernière date autorisée', () => {
-    const fixture = TestBed.createComponent(MemberCreateMatchPage);
+    const fixture = TestBed.createComponent(MemberCreateAtelierPage);
     const component = fixture.componentInstance;
     const tooLateDate = new Date(component.maxBookingDate());
     tooLateDate.setDate(tooLateDate.getDate() + 1);
@@ -151,28 +151,28 @@ describe('MemberCreateMatchPage', () => {
     component.form.patchValue({
       date: formatDate(tooLateDate),
       heureDebut: '09:00',
-      typeMatch: 'PUBLIC'
+      typeAtelier: 'PUBLIC'
     });
 
     component.submit();
 
     expect(component.form.controls.date.hasError('maxBookingDate')).toBe(true);
-    expect(matchesApiMock.create).not.toHaveBeenCalled();
+    expect(ateliersApiMock.create).not.toHaveBeenCalled();
     expect(component.errorMessage()).toContain('Dernière date autorisée');
     expect(component.errorMessage()).toContain(component.maxBookingDate());
   });
 
-  it('crée un match privé et ajoute les joueurs invités', () => {
+  it('crée un atelier privé et ajoute les participants invités', () => {
     const router = TestBed.inject(Router);
     const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
     vi.useFakeTimers();
-    const fixture = TestBed.createComponent(MemberCreateMatchPage);
+    const fixture = TestBed.createComponent(MemberCreateAtelierPage);
     const component = fixture.componentInstance;
 
     component.form.patchValue({
       date: component.todayDate(),
       heureDebut: '09:00',
-      typeMatch: 'PRIVE',
+      typeAtelier: 'PRIVE',
       player1: 'g1002',
       player2: 'l10001',
       player3: 'g1003',
@@ -182,13 +182,13 @@ describe('MemberCreateMatchPage', () => {
 
     component.submit();
 
-    expect(matchesApiMock.create).toHaveBeenCalledWith({
-      terrainId: 10,
-      matchDate: `${component.todayDate()}T09:00:00`,
-      matchType: 'PRIVE',
+    expect(ateliersApiMock.create).toHaveBeenCalledWith({
+      salleId: 10,
+      atelierDate: `${component.todayDate()}T09:00:00`,
+      atelierType: 'PRIVE',
     });
     expect(reservationsApiMock.createPrivateInvites).toHaveBeenCalledWith({
-      matchId: 99,
+      atelierId: 99,
       inviteeMatricules: ['G1002', 'L10001', 'G1003', 'S10001', 'G1004']
     });
     expect(component.message()).toContain('Les invitations sont en attente de paiement');
@@ -197,7 +197,7 @@ describe('MemberCreateMatchPage', () => {
       ['/member/reservations'],
       expect.objectContaining({
         state: expect.objectContaining({
-          createdMatchId: 99
+          createdAtelierId: 99
         })
       })
     );
@@ -205,16 +205,16 @@ describe('MemberCreateMatchPage', () => {
   });
 
   it('traduit le message backend de délai en message frontend compréhensible', () => {
-    matchesApiMock.create.mockReturnValue(
+    ateliersApiMock.create.mockReturnValue(
       throwError(() => ({ error: { message: 'Le participant ABONNE ne peut pas réserver plus de 15 jours à l\'avance.' } }))
     );
-    const fixture = TestBed.createComponent(MemberCreateMatchPage);
+    const fixture = TestBed.createComponent(MemberCreateAtelierPage);
     const component = fixture.componentInstance;
 
     component.form.patchValue({
       date: component.todayDate(),
       heureDebut: '09:00',
-      typeMatch: 'PUBLIC'
+      typeAtelier: 'PUBLIC'
     });
 
     component.submit();
@@ -224,22 +224,22 @@ describe('MemberCreateMatchPage', () => {
     expect(component.errorMessage()).toContain(component.maxBookingDate());
   });
   it('affiche une erreur métier sans code HTTP technique', () => {
-    matchesApiMock.create.mockReturnValue(
+    ateliersApiMock.create.mockReturnValue(
       throwError(() => ({
         status: 400,
         error: {
           status: 400,
-          message: 'Vous avez une pénalité active et ne pouvez pas créer de match.'
+          message: 'Vous avez une pénalité active et ne pouvez pas créer de atelier.'
         }
       }))
     );
-    const fixture = TestBed.createComponent(MemberCreateMatchPage);
+    const fixture = TestBed.createComponent(MemberCreateAtelierPage);
     const component = fixture.componentInstance;
 
     component.form.patchValue({
       date: component.todayDate(),
       heureDebut: '09:00',
-      typeMatch: 'PUBLIC'
+      typeAtelier: 'PUBLIC'
     });
 
     component.submit();

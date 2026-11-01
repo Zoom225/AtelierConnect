@@ -8,16 +8,16 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MatchesApiService } from '../../../core/api/matches-api.service';
+import { AteliersApiService } from '../../../core/api/ateliers-api.service';
 import { ReservationsApiService } from '../../../core/api/reservations-api.service';
-import { SitesApiService } from '../../../core/api/sites-api.service';
-import { TerrainsApiService } from '../../../core/api/terrains-api.service';
+import { CentresApiService } from '../../../core/api/centres-api.service';
+import { SallesApiService } from '../../../core/api/salles-api.service';
 import { MemberSessionService } from '../../../core/auth/member-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
-import { TypeMembre, toParticipantCategory } from '../../../shared/models/enums.model';
+import { TypeParticipant, toParticipantCategory } from '../../../shared/models/enums.model';
 import { BOOKING_MAX_DAYS } from '../../../shared/models/atelier-rules';
-import { MatchResponse } from '../../../shared/models/match.model';
-import { SiteResponse, TerrainResponse } from '../../../shared/models/site-terrain.model';
+import { AtelierResponse } from '../../../shared/models/atelier.model';
+import { CentreResponse, SalleResponse } from '../../../shared/models/centre-salle.model';
 import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
 
 const formatDateForInput = (date: Date): string => {
@@ -27,7 +27,7 @@ const formatDateForInput = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
-const getMaxBookingDays = (memberType?: TypeMembre | null): number => BOOKING_MAX_DAYS[memberType ?? 'LIBRE'];
+const getMaxBookingDays = (memberType?: TypeParticipant | null): number => BOOKING_MAX_DAYS[memberType ?? 'VISITEUR'];
 
 const createMaxBookingDateValidator = (getMaxDate: () => string): ValidatorFn => {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -42,7 +42,7 @@ const createMaxBookingDateValidator = (getMaxDate: () => string): ValidatorFn =>
 };
 
 @Component({
-  selector: 'app-member-create-match-page',
+  selector: 'app-member-create-atelier-page',
   standalone: true,
   imports: [
     CommonModule,
@@ -62,8 +62,8 @@ const createMaxBookingDateValidator = (getMaxDate: () => string): ValidatorFn =>
           <h1 class="title-gradient ds-section-title">{{ language.t('member.create.title') }}</h1>
           <p class="ds-subtitle">{{ language.t('member.create.subtitle') }}</p>
           <span class="ds-badge"
-                [class]="form.controls.typeMatch.value === 'PRIVE' ? 'ds-badge-info' : 'ds-badge-success'">
-            {{ language.t('member.create.mode') }} : {{ form.controls.typeMatch.value }}
+                [class]="form.controls.typeAtelier.value === 'PRIVE' ? 'ds-badge-info' : 'ds-badge-success'">
+            {{ language.t('member.create.mode') }} : {{ form.controls.typeAtelier.value }}
           </span>
         </div>
         <div class="toolbar-actions">
@@ -76,18 +76,18 @@ const createMaxBookingDateValidator = (getMaxDate: () => string): ValidatorFn =>
           <form [formGroup]="form" class="grid gap-4 pt-4 md:grid-cols-2" (ngSubmit)="submit()">
             <mat-form-field appearance="outline">
               <mat-label>{{ language.t('member.create.site') }}</mat-label>
-              <mat-select formControlName="siteId" (valueChange)="onSiteChange($event)" [disabled]="isSiteMember()">
-                @for (site of sites(); track site.id) {
+              <mat-select formControlName="centreId" (valueChange)="onCentreChange($event)" [disabled]="isCentreMember()">
+                @for (site of centres(); track site.id) {
                   <mat-option [value]="site.id">{{ site.nom }}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>{{ language.t('member.create.terrain') }}</mat-label>
-              <mat-select formControlName="terrainId" [disabled]="!terrains().length">
-                @for (terrain of terrains(); track terrain.id) {
-                  <mat-option [value]="terrain.id">{{ terrain.nom }}{{ terrain.prix != null ? ' - ' + terrain.prix + ' EUR' : '' }}</mat-option>
+              <mat-label>{{ language.t('member.create.salle') }}</mat-label>
+              <mat-select formControlName="salleId" [disabled]="!salles().length">
+                @for (salle of salles(); track salle.id) {
+                  <mat-option [value]="salle.id">{{ salle.nom }}{{ salle.prix != null ? ' - ' + salle.prix + ' EUR' : '' }}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
@@ -107,8 +107,8 @@ const createMaxBookingDateValidator = (getMaxDate: () => string): ValidatorFn =>
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>{{ language.t('member.create.matchType') }}</mat-label>
-              <mat-select formControlName="typeMatch">
+              <mat-label>{{ language.t('member.create.atelierType') }}</mat-label>
+              <mat-select formControlName="typeAtelier">
                 <mat-option value="PUBLIC">{{ language.t('member.create.public') }}</mat-option>
                 <mat-option value="PRIVE">{{ language.t('member.create.private') }}</mat-option>
               </mat-select>
@@ -118,7 +118,7 @@ const createMaxBookingDateValidator = (getMaxDate: () => string): ValidatorFn =>
               <p class="font-semibold text-slate-800">{{ language.t('member.create.rappel') }}</p>
               <ul class="ml-4 list-disc space-y-1">
                 <li>{{ language.t('member.create.ruleGlobal') }}</li>
-                <li>{{ language.t('member.create.ruleSite') }}</li>
+                <li>{{ language.t('member.create.ruleCentre') }}</li>
                 <li>{{ language.t('member.create.ruleLibre') }}</li>
               </ul>
               <p class="mt-2 text-slate-500">{{ language.t('member.create.bookingLimit') }} {{ maxBookingDate() }}</p>
@@ -126,15 +126,15 @@ const createMaxBookingDateValidator = (getMaxDate: () => string): ValidatorFn =>
 
             @if (errorMessage()) {
               <p class="status-error md:col-span-2">{{ errorMessage() }}</p>
-            } @else if (!sites().length && !loading()) {
-              <p class="status-info md:col-span-2">{{ language.t('member.create.noSite') }}</p>
+            } @else if (!centres().length && !loading()) {
+              <p class="status-info md:col-span-2">{{ language.t('member.create.noCentre') }}</p>
             }
 
-            @if (form.controls.siteId.value && !terrains().length && !loading()) {
-              <p class="status-info md:col-span-2">{{ language.t('member.create.noTerrain') }}</p>
+            @if (form.controls.centreId.value && !salles().length && !loading()) {
+              <p class="status-info md:col-span-2">{{ language.t('member.create.noSalle') }}</p>
             }
 
-            @if (form.controls.typeMatch.value === 'PRIVE') {
+            @if (form.controls.typeAtelier.value === 'PRIVE') {
               <div class="md:col-span-2">
                 <p class="mb-2 text-sm font-medium text-slate-800">{{ language.t('member.create.privatePlayers') }}</p>
                 <div class="grid gap-3 md:grid-cols-3">
@@ -167,7 +167,7 @@ const createMaxBookingDateValidator = (getMaxDate: () => string): ValidatorFn =>
             }
 
             <div class="toolbar-actions justify-start md:col-span-2">
-              <button mat-flat-button color="primary" type="submit" [disabled]="loading() || form.invalid || !terrains().length">
+              <button mat-flat-button color="primary" type="submit" [disabled]="loading() || form.invalid || !salles().length">
                 {{ language.t('member.create.submit') }}
               </button>
               <a mat-stroked-button routerLink="/member/profile">{{ language.t('member.create.back') }}</a>
@@ -181,10 +181,10 @@ const createMaxBookingDateValidator = (getMaxDate: () => string): ValidatorFn =>
     </section>
   `
 })
-export class MemberCreateMatchPage {
-  private readonly sitesApi = inject(SitesApiService);
-  private readonly terrainsApi = inject(TerrainsApiService);
-  private readonly matchesApi = inject(MatchesApiService);
+export class MemberCreateAtelierPage {
+  private readonly centresApi = inject(CentresApiService);
+  private readonly sallesApi = inject(SallesApiService);
+  private readonly ateliersApi = inject(AteliersApiService);
   private readonly reservationsApi = inject(ReservationsApiService);
   private readonly memberSession = inject(MemberSessionService);
   private readonly route = inject(ActivatedRoute);
@@ -195,10 +195,10 @@ export class MemberCreateMatchPage {
   readonly loading = signal(false);
   readonly message = signal('');
   readonly errorMessage = signal('');
-  readonly sites = signal<SiteResponse[]>([]);
-  readonly terrains = signal<TerrainResponse[]>([]);
+  readonly centres = signal<CentreResponse[]>([]);
+  readonly salles = signal<SalleResponse[]>([]);
   readonly member = computed(() => this.memberSession.member());
-  readonly isSiteMember = computed(() => this.member()?.typeMembre === 'SITE');
+  readonly isCentreMember = computed(() => this.member()?.categorie === 'ABONNE');
   readonly todayDate = computed(() => {
     const today = new Date();
     today.setHours(12, 0, 0, 0);
@@ -207,7 +207,7 @@ export class MemberCreateMatchPage {
   readonly maxBookingDate = computed(() => {
     const today = new Date();
     today.setHours(12, 0, 0, 0);
-    today.setDate(today.getDate() + getMaxBookingDays(this.member()?.typeMembre));
+    today.setDate(today.getDate() + getMaxBookingDays(this.member()?.categorie));
     return formatDateForInput(today);
   });
   readonly bookingDelayErrorMessage = computed(() => {
@@ -217,7 +217,7 @@ export class MemberCreateMatchPage {
   });
 
   readonly bookingDelayProfileErrorMessage = computed(() => {
-    const memberType = this.member()?.typeMembre ?? 'LIBRE';
+    const memberType = this.member()?.categorie ?? 'VISITEUR';
     return this.language.t('member.create.bookingLimitProfileError', {
       type: this.member()?.categorie ?? toParticipantCategory(memberType),
       days: getMaxBookingDays(memberType),
@@ -226,14 +226,14 @@ export class MemberCreateMatchPage {
   });
 
   readonly form = new FormGroup({
-    siteId: new FormControl<number | null>(null, { validators: [Validators.required] }),
-    terrainId: new FormControl<number | null>(null, { validators: [Validators.required] }),
+    centreId: new FormControl<number | null>(null, { validators: [Validators.required] }),
+    salleId: new FormControl<number | null>(null, { validators: [Validators.required] }),
     date: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, createMaxBookingDateValidator(() => this.maxBookingDate())]
     }),
     heureDebut: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    typeMatch: new FormControl<'PUBLIC' | 'PRIVE'>('PUBLIC', {
+    typeAtelier: new FormControl<'PUBLIC' | 'PRIVE'>('PUBLIC', {
       nonNullable: true,
       validators: [Validators.required]
     }),
@@ -253,12 +253,12 @@ export class MemberCreateMatchPage {
     this.applyPreferredTypeFromQuery();
     this.applyDefaultStartTime();
     this.applyDateBounds();
-    this.loadSites();
+    this.loadCentres();
   }
 
   private setPageError(message: string): void {
     this.errorMessage.set(
-      message.trim() === MemberCreateMatchPage.HIDDEN_GENERIC_ERROR ? '' : message
+      message.trim() === MemberCreateAtelierPage.HIDDEN_GENERIC_ERROR ? '' : message
     );
   }
 
@@ -271,64 +271,64 @@ export class MemberCreateMatchPage {
   private applyPreferredTypeFromQuery(): void {
     const preferredType = this.route.snapshot.queryParamMap.get('type')?.toUpperCase();
     if (preferredType === 'PUBLIC' || preferredType === 'PRIVE') {
-      this.form.controls.typeMatch.setValue(preferredType);
+      this.form.controls.typeAtelier.setValue(preferredType);
     }
   }
 
-  loadSites(): void {
+  loadCentres(): void {
     this.loading.set(true);
     this.errorMessage.set('');
-    this.sitesApi.getAll().subscribe({
-      next: (sites) => {
-        this.sites.set(sites);
+    this.centresApi.getAll().subscribe({
+      next: (centres) => {
+        this.centres.set(centres);
         const member = this.member();
-        if (member?.typeMembre === 'SITE' && member.siteId) {
-          this.form.controls.siteId.setValue(member.siteId);
-          this.onSiteChange(member.siteId);
+        if (member?.categorie === 'ABONNE' && member.centreId) {
+          this.form.controls.centreId.setValue(member.centreId);
+          this.onCentreChange(member.centreId);
           return;
         }
 
-        if (sites.length) {
-          const defaultSiteId = sites[0].id;
-          this.form.controls.siteId.setValue(defaultSiteId);
-          this.onSiteChange(defaultSiteId);
+        if (centres.length) {
+          const defaultCentreId = centres[0].id;
+          this.form.controls.centreId.setValue(defaultCentreId);
+          this.onCentreChange(defaultCentreId);
         }
         this.loading.set(false);
       },
       error: (error) => {
-        this.setPageError(extractApiErrorMessage(error, this.language.t('member.create.noSiteLoaded')));
+        this.setPageError(extractApiErrorMessage(error, this.language.t('member.create.noCentreLoaded')));
         this.loading.set(false);
       }
     });
   }
 
-  onSiteChange(siteId: number | null): void {
-    this.form.controls.terrainId.setValue(null);
-    this.terrains.set([]);
+  onCentreChange(centreId: number | null): void {
+    this.form.controls.salleId.setValue(null);
+    this.salles.set([]);
 
-    if (!siteId) {
+    if (!centreId) {
       return;
     }
 
     this.loading.set(true);
-    this.terrainsApi.getBySite(siteId).subscribe({
-      next: (terrains) => {
-        this.terrains.set(terrains);
-        if (terrains.length) {
-          this.form.controls.terrainId.setValue(terrains[0].id);
+    this.sallesApi.getByCentre(centreId).subscribe({
+      next: (salles) => {
+        this.salles.set(salles);
+        if (salles.length) {
+          this.form.controls.salleId.setValue(salles[0].id);
         }
         this.loading.set(false);
       },
       error: (error) => {
         const status = error?.status;
         if (status === 404) {
-          this.setPageError(this.language.t('member.create.noSiteLoaded'));
+          this.setPageError(this.language.t('member.create.noCentreLoaded'));
         } else if (status === 500) {
-          this.setPageError(this.language.t('member.create.noTerrainLoaded'));
+          this.setPageError(this.language.t('member.create.noSalleLoaded'));
         } else {
-          this.setPageError(extractApiErrorMessage(error, this.language.t('member.create.noTerrainLoaded')));
+          this.setPageError(extractApiErrorMessage(error, this.language.t('member.create.noSalleLoaded')));
         }
-        this.terrains.set([]);
+        this.salles.set([]);
         this.loading.set(false);
       }
     });
@@ -344,14 +344,14 @@ export class MemberCreateMatchPage {
       return;
     }
 
-    const { terrainId, date, heureDebut, typeMatch } = this.form.getRawValue();
+    const { salleId, date, heureDebut, typeAtelier } = this.form.getRawValue();
 
-    if (!terrainId) {
-      this.setPageError(this.language.t('member.create.noTerrain'));
+    if (!salleId) {
+      this.setPageError(this.language.t('member.create.noSalle'));
       return;
     }
 
-    if (typeMatch !== 'PUBLIC' && typeMatch !== 'PRIVE') {
+    if (typeAtelier !== 'PUBLIC' && typeAtelier !== 'PRIVE') {
       this.setPageError(this.language.t('member.create.invalidType'));
       return;
     }
@@ -360,17 +360,17 @@ export class MemberCreateMatchPage {
     this.message.set('');
     this.errorMessage.set('');
 
-    const matchDate = `${date}T${heureDebut}:00`;
+    const atelierDate = `${date}T${heureDebut}:00`;
 
-    const payload: import('../../../shared/models/match.model').CreateMatchRequest = {
-      terrainId,
-      matchDate,
-      matchType: typeMatch
+    const payload: import('../../../shared/models/atelier.model').CreateAtelierRequest = {
+      salleId,
+      atelierDate,
+      atelierType: typeAtelier
     };
 
-    this.matchesApi.create(payload).subscribe({
-      next: (createdMatch) => {
-        this.handleInvites(createdMatch);
+    this.ateliersApi.create(payload).subscribe({
+      next: (createdAtelier) => {
+        this.handleInvites(createdAtelier);
       },
       error: (error) => {
         this.loading.set(false);
@@ -403,9 +403,9 @@ export class MemberCreateMatchPage {
       'active penalty': this.language.t('member.create.activePenalty'),
       'ne peut pas reserver plus de': this.bookingDelayProfileErrorMessage(),
       'ce créneau est déjà réservé': this.language.t('member.create.slotTaken'),
-      'site est fermé': this.language.t('member.create.siteClosed'),
+      'site est fermé': this.language.t('member.create.centreClosed'),
       'en dehors des heures d\'ouverture': this.language.t('member.create.outOfHours'),
-      'ne peut créer un match que sur son propre site': this.language.t('member.create.siteOnly')
+      'ne peut créer un atelier que sur son propre site': this.language.t('member.create.centreOnly')
     };
 
     const normalizedMessage = apiMessage
@@ -433,7 +433,7 @@ export class MemberCreateMatchPage {
     return apiMessage;
   }
 
-  private handleInvites(createdMatch: MatchResponse): void {
+  private handleInvites(createdAtelier: AtelierResponse): void {
     const invitees = [
       this.form.controls.player1.getRawValue(),
       this.form.controls.player2.getRawValue(),
@@ -444,35 +444,35 @@ export class MemberCreateMatchPage {
       .map((value) => value.trim().toUpperCase())
       .filter(Boolean);
 
-    if (this.form.controls.typeMatch.getRawValue() !== 'PRIVE' || !invitees.length) {
+    if (this.form.controls.typeAtelier.getRawValue() !== 'PRIVE' || !invitees.length) {
       this.loading.set(false);
-      this.navigateToReservations(createdMatch.id, this.language.t('member.create.success'));
+      this.navigateToReservations(createdAtelier.id, this.language.t('member.create.success'));
       return;
     }
 
     this.reservationsApi.createPrivateInvites({
-      matchId: createdMatch.id,
+      atelierId: createdAtelier.id,
       inviteeMatricules: invitees
     }).subscribe({
       next: () => {
         this.loading.set(false);
-        this.navigateToReservations(createdMatch.id, this.language.t('member.create.successPrivate'));
+        this.navigateToReservations(createdAtelier.id, this.language.t('member.create.successPrivate'));
       },
       error: (error) => {
         this.loading.set(false);
         this.setPageError(extractApiErrorMessage(error, this.language.t('member.create.addPlayersError')));
-        this.navigateToReservations(createdMatch.id, this.language.t('member.create.partialSuccess'));
+        this.navigateToReservations(createdAtelier.id, this.language.t('member.create.partialSuccess'));
       }
     });
   }
 
-  private navigateToReservations(createdMatchId: number, successMessage: string): void {
+  private navigateToReservations(createdAtelierId: number, successMessage: string): void {
     this.message.set(successMessage);
     setTimeout(
       () =>
         this.router.navigate(['/member/reservations'], {
           state: {
-            createdMatchId,
+            createdAtelierId,
             successMessage
           }
         }),

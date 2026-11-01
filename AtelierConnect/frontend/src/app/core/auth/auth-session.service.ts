@@ -1,6 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { LoginResponse as AdminLoginResponse } from '../../shared/models/auth.model';
-import { MembreResponse } from '../../shared/models/membre.model';
+import { ParticipantResponse, categorieParticipant } from '../../shared/models/participant.model';
+import { LegacyParticipantCategory } from '../../shared/models/enums.model';
 import { clearStoredValue, readStoredValue, writeStoredValue } from './session-storage.util';
 
 const AUTH_SESSION_KEY = 'padel_auth_session';
@@ -8,7 +9,7 @@ const LEGACY_ADMIN_SESSION_KEY = 'padel_admin_session';
 const LEGACY_MEMBER_SESSION_KEY = 'padel_member_session';
 
 interface MemberSessionState {
-  member: MembreResponse;
+  member: ParticipantResponse;
   token: string | null;
 }
 
@@ -24,7 +25,7 @@ export class AuthSessionService {
   readonly adminSession = computed(() => this.sessionState()?.admin ?? null);
   readonly adminToken = computed(() => this.sessionState()?.admin?.token ?? null);
   readonly adminRole = computed(() => this.sessionState()?.admin?.role ?? null);
-  readonly adminSiteId = computed(() => this.sessionState()?.admin?.siteId ?? null);
+  readonly adminCentreId = computed(() => this.sessionState()?.admin?.centreId ?? null);
   readonly memberSession = computed(() => this.sessionState()?.member?.member ?? null);
   readonly memberToken = computed(() => this.sessionState()?.member?.token ?? null);
   readonly memberId = computed(() => this.sessionState()?.member?.member.id ?? null);
@@ -40,7 +41,7 @@ export class AuthSessionService {
     this.persist({ ...this.currentState(), admin: null });
   }
 
-  setMemberSession(member: MembreResponse, token?: string): void {
+  setMemberSession(member: ParticipantResponse, token?: string): void {
     this.persist({
       ...this.currentState(),
       member: { member, token: token ?? member.token ?? null }
@@ -93,7 +94,7 @@ export class AuthSessionService {
     const combined = readStoredValue<AuthSessionState>(AUTH_SESSION_KEY);
     if (combined && (combined.admin || combined.member)) {
       return {
-        admin: combined.admin ?? null,
+        admin: combined.admin ? this.normalizeAdmin(combined.admin) : null,
         member: this.normalizeMemberSession(combined.member)
       };
     }
@@ -106,31 +107,51 @@ export class AuthSessionService {
     }
 
     return {
-      admin,
+      admin: admin ? this.normalizeAdmin(admin) : null,
       member
     };
   }
 
   private readLegacyMemberSession(): MemberSessionState | null {
-    const parsed = readStoredValue<MemberSessionState | MembreResponse>(LEGACY_MEMBER_SESSION_KEY);
+    const parsed = readStoredValue<MemberSessionState | ParticipantResponse>(LEGACY_MEMBER_SESSION_KEY);
     return this.normalizeMemberSession(parsed);
   }
 
-  private normalizeMemberSession(value: MemberSessionState | MembreResponse | null): MemberSessionState | null {
+  private normalizeMemberSession(value: MemberSessionState | ParticipantResponse | null): MemberSessionState | null {
     if (!value) {
       return null;
     }
 
     if ('member' in value) {
       return {
-        member: value.member,
+        member: this.normalizeParticipant(value.member),
         token: value.token ?? value.member.token ?? null
       };
     }
 
     return {
-      member: value,
+      member: this.normalizeParticipant(value),
       token: value.token ?? null
+    };
+  }
+
+  private normalizeAdmin(value: AdminLoginResponse): AdminLoginResponse {
+    const legacy = value as AdminLoginResponse & { siteId?: number | null };
+    return { ...value, centreId: value.centreId ?? legacy.siteId ?? null };
+  }
+
+  private normalizeParticipant(value: ParticipantResponse): ParticipantResponse {
+    const legacy = value as ParticipantResponse & {
+      siteId?: number | null;
+      siteNom?: string | null;
+      typeMembre?: LegacyParticipantCategory;
+      typeParticipant?: LegacyParticipantCategory;
+    };
+    return {
+      ...value,
+      centreId: value.centreId ?? legacy.siteId ?? null,
+      centreNom: value.centreNom ?? legacy.siteNom ?? null,
+      categorie: categorieParticipant(legacy)
     };
   }
 }

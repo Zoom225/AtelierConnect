@@ -9,18 +9,18 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { MatchesApiService } from '../../../core/api/matches-api.service';
+import { AteliersApiService } from '../../../core/api/ateliers-api.service';
 import { ReservationsApiService } from '../../../core/api/reservations-api.service';
-import { SitesApiService } from '../../../core/api/sites-api.service';
+import { CentresApiService } from '../../../core/api/centres-api.service';
 import { MemberSessionService } from '../../../core/auth/member-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
-import { MatchResponse } from '../../../shared/models/match.model';
+import { AtelierResponse } from '../../../shared/models/atelier.model';
 import { ATELIER_CAPACITY } from '../../../shared/models/atelier-rules';
-import { SiteResponse } from '../../../shared/models/site-terrain.model';
+import { CentreResponse } from '../../../shared/models/centre-salle.model';
 import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
 
 @Component({
-  selector: 'app-member-public-matches-page',
+  selector: 'app-member-public-ateliers-page',
   standalone: true,
   imports: [
     CommonModule,
@@ -42,7 +42,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
         </div>
         <div class="toolbar-actions">
           <a mat-stroked-button routerLink="/member/profile">{{ language.t('member.public.myProfile') }}</a>
-          <a mat-flat-button color="primary" routerLink="/member/matches/new">{{ language.t('member.public.create') }}</a>
+          <a mat-flat-button color="primary" routerLink="/member/ateliers/new">{{ language.t('member.public.create') }}</a>
         </div>
       </div>
 
@@ -50,9 +50,9 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
         <mat-card-content class="grid gap-4 pt-4 md:grid-cols-3">
           <mat-form-field appearance="outline">
             <mat-label>{{ language.t('member.public.filter') }}</mat-label>
-            <mat-select [value]="selectedSiteId()" (valueChange)="selectedSiteId.set($event)">
-              <mat-option [value]="0">{{ language.t('common.allSites') }}</mat-option>
-              @for (site of sites(); track site.id) {
+            <mat-select [value]="selectedCentreId()" (valueChange)="selectedCentreId.set($event)">
+              <mat-option [value]="0">{{ language.t('common.allCentres') }}</mat-option>
+              @for (site of centres(); track site.id) {
                 <mat-option [value]="site.id">{{ site.nom }}</mat-option>
               }
             </mat-select>
@@ -84,8 +84,8 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
         <p class="status-error">{{ errorMessage() }}</p>
       }
 
-      <a routerLink="/member/matches/new" class="card-soft block rounded-2xl border border-sky-200 bg-gradient-to-r from-sky-50 to-indigo-50 p-5 no-underline transition hover:-translate-y-0.5 hover:shadow-md">
-        <p class="text-sm font-medium uppercase tracking-wide text-sky-700">{{ language.t('member.public.noMatchPrompt') }}</p>
+      <a routerLink="/member/ateliers/new" class="card-soft block rounded-2xl border border-sky-200 bg-gradient-to-r from-sky-50 to-indigo-50 p-5 no-underline transition hover:-translate-y-0.5 hover:shadow-md">
+        <p class="text-sm font-medium uppercase tracking-wide text-sky-700">{{ language.t('member.public.noAtelierPrompt') }}</p>
         <div class="mt-2 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p class="text-xl font-semibold text-slate-900">{{ language.t('member.public.create') }}</p>
@@ -96,59 +96,59 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
       </a>
 
       <div class="grid gap-4 lg:grid-cols-2">
-        @for (match of filteredMatches(); track match.id) {
+        @for (atelier of filteredAteliers(); track atelier.id) {
           <mat-card class="card-soft">
             <mat-card-header>
               <mat-card-title>
-                {{ match.terrainNom }} - {{ match.siteNom }}
-                @if (isOrganizer(match)) {
-                  <span class="ml-2 ds-badge ds-badge-info">{{ language.t('member.public.myMatch') }}</span>
+                {{ atelier.salleNom }} - {{ atelier.centreNom }}
+                @if (isOrganizer(atelier)) {
+                  <span class="ml-2 ds-badge ds-badge-info">{{ language.t('member.public.myAtelier') }}</span>
                 }
-                @if (!isOrganizer(match) && match.nbJoueursActuels >= ATELIER_CAPACITY) {
+                @if (!isOrganizer(atelier) && atelier.nbParticipantsActuels >= ATELIER_CAPACITY) {
                   <span class="ml-2 ds-badge ds-badge-danger">{{ language.t('member.public.completion') }}</span>
-                } @else if (!isOrganizer(match) && !canJoin(match)) {
+                } @else if (!isOrganizer(atelier) && !canJoin(atelier)) {
                   <span class="ml-2 ds-badge ds-badge-warning">{{ language.t('member.public.none') }}</span>
-                } @else if (!isOrganizer(match)) {
+                } @else if (!isOrganizer(atelier)) {
                   <span class="ml-2 ds-badge ds-badge-success">{{ language.t('member.public.available') }}</span>
                 }
               </mat-card-title>
               <mat-card-subtitle>
-                {{ match.date }} · {{ match.heureDebut }} - {{ match.heureFin }}
+                {{ atelier.date }} · {{ atelier.heureDebut }} - {{ atelier.heureFin }}
               </mat-card-subtitle>
             </mat-card-header>
             <mat-card-content class="ds-data-list">
-              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.organizer') }}</span><span class="ds-data-value">{{ match.organisateurNom }}</span></div>
-              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.status') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="statusBadgeClass(match.statut)">{{ matchStatusLabel(match.statut) }}</span></span></div>
-              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.type') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="typeBadgeClass(match.typeMatch)">{{ typeLabel(match.typeMatch) }}</span></span></div>
-              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.players') }}</span><span class="ds-data-value">{{ match.nbJoueursActuels }}/{{ ATELIER_CAPACITY }}</span></div>
-              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.price') }}</span><span class="ds-data-value">{{ match.prixParJoueur }} EUR</span></div>
+              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.organizer') }}</span><span class="ds-data-value">{{ atelier.organisateurNom }}</span></div>
+              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.status') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="statusBadgeClass(atelier.statut)">{{ atelierStatusLabel(atelier.statut) }}</span></span></div>
+              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.type') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="typeBadgeClass(atelier.typeAtelier)">{{ typeLabel(atelier.typeAtelier) }}</span></span></div>
+              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.players') }}</span><span class="ds-data-value">{{ atelier.nbParticipantsActuels }}/{{ ATELIER_CAPACITY }}</span></div>
+              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.price') }}</span><span class="ds-data-value">{{ atelier.prixParParticipant }} EUR</span></div>
             </mat-card-content>
             <mat-card-actions>
               <button
                 mat-flat-button
                 color="primary"
                 type="button"
-                (click)="joinMatch(match)"
-                [disabled]="joiningMatchId() === match.id || !canJoin(match)"
+                (click)="joinAtelier(atelier)"
+                [disabled]="joiningAtelierId() === atelier.id || !canJoin(atelier)"
               >
-                {{ joiningMatchId() === match.id ? language.t('member.public.registering') : language.t('member.public.join') }}
+                {{ joiningAtelierId() === atelier.id ? language.t('member.public.registering') : language.t('member.public.join') }}
               </button>
 
-              @if (isOrganizer(match)) {
-                <button mat-stroked-button type="button" (click)="startEdit(match)" [disabled]="!canModify(match) || actionMatchId() === match.id">
+              @if (isOrganizer(atelier)) {
+                <button mat-stroked-button type="button" (click)="startEdit(atelier)" [disabled]="!canModify(atelier) || actionAtelierId() === atelier.id">
                   {{ language.t('member.public.modify') }}
                 </button>
-                <button mat-stroked-button color="warn" type="button" (click)="cancelOwnMatch(match)" [disabled]="actionMatchId() === match.id">
+                <button mat-stroked-button color="warn" type="button" (click)="cancelOwnAtelier(atelier)" [disabled]="actionAtelierId() === atelier.id">
                   {{ language.t('member.public.delete') }}
                 </button>
               }
             </mat-card-actions>
 
-            @if (isOrganizer(match) && !canModify(match)) {
+            @if (isOrganizer(atelier) && !canModify(atelier)) {
               <p class="px-4 pb-3 text-xs text-amber-700">{{ language.t('member.public.editHint') }}</p>
             }
 
-            @if (editingMatchId() === match.id) {
+            @if (editingAtelierId() === atelier.id) {
               <mat-card-content class="grid gap-3 border-t border-slate-100 pt-3 md:grid-cols-4">
                 <mat-form-field appearance="outline">
                   <mat-label>{{ language.t('member.public.date') }}</mat-label>
@@ -162,17 +162,17 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
 
                 <mat-form-field appearance="outline">
                   <mat-label>{{ language.t('member.public.typeLabel') }}</mat-label>
-                  <mat-select [formControl]="editForm.controls.typeMatch">
+                  <mat-select [formControl]="editForm.controls.typeAtelier">
                     <mat-option value="PUBLIC">{{ language.t('member.create.public') }}</mat-option>
                     <mat-option value="PRIVE">{{ language.t('member.create.private') }}</mat-option>
                   </mat-select>
                 </mat-form-field>
 
                 <div class="flex items-end gap-2">
-                  <button mat-flat-button color="primary" type="button" (click)="saveEdit(match)" [disabled]="editForm.invalid || actionMatchId() === match.id">
+                  <button mat-flat-button color="primary" type="button" (click)="saveEdit(atelier)" [disabled]="editForm.invalid || actionAtelierId() === atelier.id">
                     {{ language.t('common.save') }}
                   </button>
-                  <button mat-stroked-button type="button" (click)="cancelEdit()" [disabled]="actionMatchId() === match.id">
+                  <button mat-stroked-button type="button" (click)="cancelEdit()" [disabled]="actionAtelierId() === atelier.id">
                     {{ language.t('common.back') }}
                   </button>
                 </div>
@@ -183,7 +183,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
           @if (!loading()) {
             <mat-card>
               <mat-card-content class="py-6 text-slate-600">
-                {{ language.t('member.public.noMatches') }}
+                {{ language.t('member.public.noAteliers') }}
               </mat-card-content>
             </mat-card>
           }
@@ -192,40 +192,40 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
     </section>
   `
 })
-export class MemberPublicMatchesPage {
+export class MemberPublicAteliersPage {
   readonly ATELIER_CAPACITY = ATELIER_CAPACITY;
-  private readonly matchesApi = inject(MatchesApiService);
-  private readonly sitesApi = inject(SitesApiService);
+  private readonly ateliersApi = inject(AteliersApiService);
+  private readonly centresApi = inject(CentresApiService);
   private readonly reservationsApi = inject(ReservationsApiService);
   private readonly memberSession = inject(MemberSessionService);
   readonly language = inject(LanguageService);
 
   readonly loading = signal(false);
-  readonly joiningMatchId = signal<number | null>(null);
-  readonly actionMatchId = signal<number | null>(null);
-  readonly editingMatchId = signal<number | null>(null);
+  readonly joiningAtelierId = signal<number | null>(null);
+  readonly actionAtelierId = signal<number | null>(null);
+  readonly editingAtelierId = signal<number | null>(null);
   readonly message = signal('');
   readonly errorMessage = signal('');
-  readonly matches = signal<MatchResponse[]>([]);
-  readonly sites = signal<SiteResponse[]>([]);
-  readonly selectedSiteId = signal<number>(0);
+  readonly ateliers = signal<AtelierResponse[]>([]);
+  readonly centres = signal<CentreResponse[]>([]);
+  readonly selectedCentreId = signal<number>(0);
   readonly search = signal('');
   readonly editForm = new FormGroup({
     date: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     heureDebut: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    typeMatch: new FormControl<'PUBLIC' | 'PRIVE'>('PUBLIC', { nonNullable: true, validators: [Validators.required] })
+    typeAtelier: new FormControl<'PUBLIC' | 'PRIVE'>('PUBLIC', { nonNullable: true, validators: [Validators.required] })
   });
 
-  readonly filteredMatches = computed(() => {
-    const siteId = this.selectedSiteId();
+  readonly filteredAteliers = computed(() => {
+    const centreId = this.selectedCentreId();
     const search = this.search().trim().toLowerCase();
 
-    return this.matches()
-      .filter((match) => {
-        const matchesSite = !siteId || this.sites().find((site) => site.id === siteId)?.nom === match.siteNom;
-        const haystack = `${match.terrainNom} ${match.siteNom} ${match.organisateurNom}`.toLowerCase();
-        const matchesSearch = !search || haystack.includes(search);
-        return matchesSite && matchesSearch;
+    return this.ateliers()
+      .filter((atelier) => {
+        const ateliersCentre = !centreId || this.centres().find((site) => site.id === centreId)?.nom === atelier.centreNom;
+        const haystack = `${atelier.salleNom} ${atelier.centreNom} ${atelier.organisateurNom}`.toLowerCase();
+        const ateliersSearch = !search || haystack.includes(search);
+        return ateliersCentre && ateliersSearch;
       })
       .sort((a, b) => {
         const scoreA = this.isOrganizer(a) ? 0 : 1;
@@ -244,12 +244,12 @@ export class MemberPublicMatchesPage {
     this.errorMessage.set('');
 
     forkJoin({
-      matches: this.matchesApi.getPublic(),
-      sites: this.sitesApi.getAll()
+      ateliers: this.ateliersApi.getPublic(),
+      centres: this.centresApi.getAll()
     }).subscribe({
-      next: ({ matches, sites }) => {
-        this.matches.set(matches);
-        this.sites.set(sites);
+      next: ({ ateliers, centres }) => {
+        this.ateliers.set(ateliers);
+        this.centres.set(centres);
         this.loading.set(false);
       },
       error: (error) => {
@@ -259,57 +259,57 @@ export class MemberPublicMatchesPage {
     });
   }
 
-  joinMatch(match: MatchResponse): void {
+  joinAtelier(atelier: AtelierResponse): void {
     const memberId = this.memberSession.memberId();
     if (!memberId) {
       this.errorMessage.set(this.language.t('member.public.noMember'));
       return;
     }
 
-    if (!this.canJoin(match)) {
+    if (!this.canJoin(atelier)) {
       this.errorMessage.set(this.language.t('member.public.joinBlocked'));
       return;
     }
 
-    this.joiningMatchId.set(match.id);
+    this.joiningAtelierId.set(atelier.id);
     this.message.set('');
     this.errorMessage.set('');
 
     this.reservationsApi
       .create({
-        matchId: match.id,
-        membreId: memberId,
+        atelierId: atelier.id,
+        participantId: memberId,
         requesterId: memberId
       })
       .subscribe({
         next: () => {
-          this.joiningMatchId.set(null);
+          this.joiningAtelierId.set(null);
           this.message.set(this.language.t('member.public.joinSuccess'));
         },
         error: (error) => {
-          this.joiningMatchId.set(null);
+          this.joiningAtelierId.set(null);
           this.errorMessage.set(extractApiErrorMessage(error, this.language.t('member.public.joinError')));
         }
       });
   }
 
-  isOrganizer(match: MatchResponse): boolean {
-    return match.organisateurId === this.memberSession.memberId();
+  isOrganizer(atelier: AtelierResponse): boolean {
+    return atelier.organisateurId === this.memberSession.memberId();
   }
 
-  canJoin(match: MatchResponse): boolean {
-    if (this.isOrganizer(match)) {
+  canJoin(atelier: AtelierResponse): boolean {
+    if (this.isOrganizer(atelier)) {
       return false;
     }
 
-    return match.statut === 'PLANIFIE' && match.nbJoueursActuels < ATELIER_CAPACITY;
+    return atelier.statut === 'PLANIFIE' && atelier.nbParticipantsActuels < ATELIER_CAPACITY;
   }
 
-  canModify(match: MatchResponse): boolean {
-    return this.isOrganizer(match) && this.startsInMoreThan24Hours(match);
+  canModify(atelier: AtelierResponse): boolean {
+    return this.isOrganizer(atelier) && this.startsInMoreThan24Hours(atelier);
   }
 
-  statusBadgeClass(statut: MatchResponse['statut']): string {
+  statusBadgeClass(statut: AtelierResponse['statut']): string {
     if (statut === 'PLANIFIE') {
       return 'ds-badge-success';
     }
@@ -319,104 +319,104 @@ export class MemberPublicMatchesPage {
     return 'ds-badge-danger';
   }
 
-  typeBadgeClass(type: MatchResponse['typeMatch']): string {
+  typeBadgeClass(type: AtelierResponse['typeAtelier']): string {
     return type === 'PRIVE' ? 'ds-badge-info' : 'ds-badge-neutral';
   }
 
-  typeLabel(type: MatchResponse['typeMatch']): string {
+  typeLabel(type: AtelierResponse['typeAtelier']): string {
     return type === 'PRIVE' ? this.language.t('member.create.private') : this.language.t('member.create.public');
   }
 
-  matchStatusLabel(statut: MatchResponse['statut']): string {
+  atelierStatusLabel(statut: AtelierResponse['statut']): string {
     if (statut === 'PLANIFIE') {
-      return this.language.t('common.matchPlanned');
+      return this.language.t('common.atelierPlanned');
     }
     if (statut === 'COMPLET') {
-      return this.language.t('common.matchFull');
+      return this.language.t('common.atelierFull');
     }
-    return this.language.t('common.matchCanceled');
+    return this.language.t('common.atelierCanceled');
   }
 
-  startEdit(match: MatchResponse): void {
-    if (!this.canModify(match)) {
+  startEdit(atelier: AtelierResponse): void {
+    if (!this.canModify(atelier)) {
       this.errorMessage.set(this.language.t('member.public.modifyTooLate'));
       return;
     }
 
-    this.editingMatchId.set(match.id);
+    this.editingAtelierId.set(atelier.id);
     this.editForm.patchValue({
-      date: match.date,
-      heureDebut: match.heureDebut.slice(0, 5),
-      typeMatch: match.typeMatch
+      date: atelier.date,
+      heureDebut: atelier.heureDebut.slice(0, 5),
+      typeAtelier: atelier.typeAtelier
     });
   }
 
   cancelEdit(): void {
-    this.editingMatchId.set(null);
+    this.editingAtelierId.set(null);
   }
 
-  saveEdit(match: MatchResponse): void {
+  saveEdit(atelier: AtelierResponse): void {
     const memberId = this.memberSession.memberId();
     if (!memberId || this.editForm.invalid) {
       return;
     }
 
-    this.actionMatchId.set(match.id);
+    this.actionAtelierId.set(atelier.id);
     this.message.set('');
     this.errorMessage.set('');
 
-    this.matchesApi
-      .update(match.id, {
-        terrainId: match.terrainId,
+    this.ateliersApi
+      .update(atelier.id, {
+        salleId: atelier.salleId,
         organisateurId: memberId,
         date: this.editForm.controls.date.getRawValue(),
         heureDebut: this.editForm.controls.heureDebut.getRawValue(),
-        typeMatch: this.editForm.controls.typeMatch.getRawValue()
+        typeAtelier: this.editForm.controls.typeAtelier.getRawValue()
       })
       .subscribe({
         next: () => {
-          this.actionMatchId.set(null);
-          this.editingMatchId.set(null);
+          this.actionAtelierId.set(null);
+          this.editingAtelierId.set(null);
           this.message.set(this.language.t('member.public.updateSuccess'));
           this.loadData();
         },
         error: (error) => {
-          this.actionMatchId.set(null);
+          this.actionAtelierId.set(null);
           this.errorMessage.set(extractApiErrorMessage(error, this.language.t('member.public.updateError')));
         }
       });
   }
 
-  cancelOwnMatch(match: MatchResponse): void {
+  cancelOwnAtelier(atelier: AtelierResponse): void {
     const memberId = this.memberSession.memberId();
     if (!memberId) {
       return;
     }
 
-    if (!confirm(this.language.t('member.public.deleteConfirm', { id: match.id }))) {
+    if (!confirm(this.language.t('member.public.deleteConfirm', { id: atelier.id }))) {
       return;
     }
 
-    this.actionMatchId.set(match.id);
+    this.actionAtelierId.set(atelier.id);
     this.message.set('');
     this.errorMessage.set('');
 
-    this.matchesApi.cancel(match.id, memberId).subscribe({
+    this.ateliersApi.cancel(atelier.id, memberId).subscribe({
       next: () => {
-        this.actionMatchId.set(null);
-        this.editingMatchId.set(null);
+        this.actionAtelierId.set(null);
+        this.editingAtelierId.set(null);
         this.message.set(this.language.t('member.public.deleteSuccess'));
         this.loadData();
       },
       error: (error) => {
-        this.actionMatchId.set(null);
+        this.actionAtelierId.set(null);
         this.errorMessage.set(extractApiErrorMessage(error, this.language.t('member.public.deleteError')));
       }
     });
   }
 
-  private startsInMoreThan24Hours(match: MatchResponse): boolean {
-    const startDateTime = new Date(`${match.date}T${match.heureDebut}`);
+  private startsInMoreThan24Hours(atelier: AtelierResponse): boolean {
+    const startDateTime = new Date(`${atelier.date}T${atelier.heureDebut}`);
     return startDateTime.getTime() - Date.now() >= 24 * 60 * 60 * 1000;
   }
 }

@@ -1,13 +1,13 @@
 import { StatutPaiement, StatutReservation } from './enums.model';
 
 export interface ReservationRequest {
-  matchId: number;
-  membreId: number;
+  atelierId: number;
+  participantId: number;
   requesterId: number;
 }
 
 export interface ReservationInviteRequest {
-  matchId: number;
+  atelierId: number;
   inviteeMatricules: string[];
 }
 
@@ -21,10 +21,10 @@ export interface PaiementResponse {
 
 export interface ReservationResponse {
   id: number;
-  matchId: number;
-  matchDateTime: string;
-  membreId: number;
-  membreNom: string;
+  atelierId: number;
+  atelierDateTime: string;
+  participantId: number;
+  participantNom: string;
   statut: StatutReservation;
   paiement: PaiementResponse | null;
 }

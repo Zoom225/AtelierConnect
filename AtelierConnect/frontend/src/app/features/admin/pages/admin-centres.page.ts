@@ -7,15 +7,15 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterLink } from '@angular/router';
-import { SitesApiService } from '../../../core/api/sites-api.service';
+import { CentresApiService } from '../../../core/api/centres-api.service';
 import { AdminSessionService } from '../../../core/auth/admin-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
-import { SiteRequest, SiteResponse } from '../../../shared/models/site-terrain.model';
+import { CentreRequest, CentreResponse } from '../../../shared/models/centre-salle.model';
 import { ATELIER_DURATION_MINUTES, ATELIER_BREAK_MINUTES } from '../../../shared/models/atelier-rules';
 import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
 
 @Component({
-  selector: 'app-admin-sites-page',
+  selector: 'app-admin-centres-page',
   standalone: true,
   imports: [
     CommonModule,
@@ -28,14 +28,14 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
     MatProgressSpinnerModule
   ],
   template: `
-    <!-- En-tête sites -->
+    <!-- En-tête centres -->
     <div class="adm-site-header">
       <div class="adm-site-header-inner">
         <div class="adm-site-title-block">
           <span class="adm-site-icon">🏟️</span>
           <div>
-            <h1 class="adm-site-title">{{ language.t('admin.sites.title') }}</h1>
-            <p class="adm-site-sub">{{ language.t('admin.sites.subtitle') }}</p>
+            <h1 class="adm-site-title">{{ language.t('admin.centres.title') }}</h1>
+            <p class="adm-site-sub">{{ language.t('admin.centres.subtitle') }}</p>
           </div>
         </div>
         <a routerLink="/admin" class="adm-site-back-btn">{{ language.t('common.back') }}</a>
@@ -50,16 +50,16 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
           <h2 class="adm-site-form-title">{{ editingId() ? language.t('common.edit') : language.t('common.create') }}</h2>
         </div>
         <form [formGroup]="form" class="grid gap-4 pt-4 md:grid-cols-2" (ngSubmit)="save()">
-          <mat-form-field appearance="outline"><mat-label>{{ language.t('admin.sites.name') }}</mat-label><input matInput formControlName="nom" /></mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>{{ language.t('admin.sites.address') }}</mat-label><input matInput formControlName="adresse" /></mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>{{ language.t('admin.sites.opening') }}</mat-label><input matInput type="time" formControlName="heureOuverture" /></mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>{{ language.t('admin.sites.closing') }}</mat-label><input matInput type="time" formControlName="heureFermeture" /></mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>{{ language.t('admin.sites.matchDuration') }}</mat-label><input matInput type="number" formControlName="dureeMatchMinutes" /></mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>{{ language.t('admin.sites.breakDuration') }}</mat-label><input matInput type="number" formControlName="dureeEntreMatchMinutes" /></mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>{{ language.t('admin.sites.civilYear') }}</mat-label><input matInput type="number" formControlName="anneeCivile" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>{{ language.t('admin.centres.name') }}</mat-label><input matInput formControlName="nom" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>{{ language.t('admin.centres.address') }}</mat-label><input matInput formControlName="adresse" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>{{ language.t('admin.centres.opening') }}</mat-label><input matInput type="time" formControlName="heureOuverture" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>{{ language.t('admin.centres.closing') }}</mat-label><input matInput type="time" formControlName="heureFermeture" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>{{ language.t('admin.centres.atelierDuration') }}</mat-label><input matInput type="number" formControlName="dureeAtelierMinutes" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>{{ language.t('admin.centres.breakDuration') }}</mat-label><input matInput type="number" formControlName="dureeEntreAtelierMinutes" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>{{ language.t('admin.centres.civilYear') }}</mat-label><input matInput type="number" formControlName="anneeCivile" /></mat-form-field>
           <label class="flex items-center gap-3 text-sm font-medium text-slate-700 md:col-span-2">
             <input type="checkbox" formControlName="ouvertVisiteurs" class="h-4 w-4 accent-teal-700" />
-            {{ language.t('admin.sites.openVisitors') }}
+            {{ language.t('admin.centres.openVisitors') }}
           </label>
 
           @if (message()) {
@@ -79,9 +79,9 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
         </form>
       </div>
 
-      <!-- Liste des sites -->
+      <!-- Liste des centres -->
       <div class="grid gap-5 md:grid-cols-2">
-        @for (site of sites(); track site.id) {
+        @for (site of centres(); track site.id) {
           <div class="adm-site-card">
             <div class="adm-site-card-header">
               <div>
@@ -91,19 +91,19 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
             </div>
             <div class="adm-site-info-grid">
               <div class="adm-site-info-item adm-site-info-teal">
-                <span class="adm-site-info-label">{{ language.t('admin.sites.hours') }}</span>
+                <span class="adm-site-info-label">{{ language.t('admin.centres.hours') }}</span>
                 <span class="adm-site-info-val">{{ site.heureOuverture }} – {{ site.heureFermeture }}</span>
               </div>
               <div class="adm-site-info-item adm-site-info-violet">
-                <span class="adm-site-info-label">{{ language.t('admin.sites.duration') }}</span>
-                <span class="adm-site-info-val">{{ site.dureeMatchMinutes }} min</span>
+                <span class="adm-site-info-label">{{ language.t('admin.centres.duration') }}</span>
+                <span class="adm-site-info-val">{{ site.dureeAtelierMinutes }} min</span>
               </div>
               <div class="adm-site-info-item adm-site-info-amber">
-                <span class="adm-site-info-label">{{ language.t('admin.sites.break') }}</span>
-                <span class="adm-site-info-val">{{ site.dureeEntreMatchMinutes }} min</span>
+                <span class="adm-site-info-label">{{ language.t('admin.centres.break') }}</span>
+                <span class="adm-site-info-val">{{ site.dureeEntreAtelierMinutes }} min</span>
               </div>
               <div class="adm-site-info-item adm-site-info-blue">
-                <span class="adm-site-info-label">{{ language.t('admin.sites.year') }}</span>
+                <span class="adm-site-info-label">{{ language.t('admin.centres.year') }}</span>
                 <span class="adm-site-info-val">{{ site.anneeCivile }}</span>
               </div>
             </div>
@@ -115,7 +115,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
         } @empty {
           <div class="adm-site-empty md:col-span-2">
             <span>🏟️</span>
-            <p>{{ language.t('admin.sites.empty') }}</p>
+            <p>{{ language.t('admin.centres.empty') }}</p>
           </div>
         }
       </div>
@@ -212,8 +212,8 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
     </style>
   `
 })
-export class AdminSitesPage {
-  private readonly sitesApi = inject(SitesApiService);
+export class AdminCentresPage {
+  private readonly centresApi = inject(CentresApiService);
   private readonly adminSession = inject(AdminSessionService);
   readonly language = inject(LanguageService);
 
@@ -221,35 +221,35 @@ export class AdminSitesPage {
   readonly message = signal('');
   readonly errorMessage = signal('');
   readonly editingId = signal<number | null>(null);
-  readonly sites = signal<SiteResponse[]>([]);
+  readonly centres = signal<CentreResponse[]>([]);
 
   readonly form = new FormGroup({
     nom: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     adresse: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     heureOuverture: new FormControl('08:00', { nonNullable: true, validators: [Validators.required] }),
     heureFermeture: new FormControl('22:00', { nonNullable: true, validators: [Validators.required] }),
-    dureeMatchMinutes: new FormControl(ATELIER_DURATION_MINUTES, { nonNullable: true, validators: [Validators.required] }),
-    dureeEntreMatchMinutes: new FormControl(ATELIER_BREAK_MINUTES, { nonNullable: true, validators: [Validators.required] }),
+    dureeAtelierMinutes: new FormControl(ATELIER_DURATION_MINUTES, { nonNullable: true, validators: [Validators.required] }),
+    dureeEntreAtelierMinutes: new FormControl(ATELIER_BREAK_MINUTES, { nonNullable: true, validators: [Validators.required] }),
     anneeCivile: new FormControl(new Date().getFullYear(), { nonNullable: true, validators: [Validators.required] }),
     ouvertVisiteurs: new FormControl(false, { nonNullable: true })
   });
 
   constructor() {
-    this.loadSites();
+    this.loadCentres();
   }
 
-  loadSites(): void {
-    this.sitesApi.getAll().subscribe({
-      next: (sites) => {
-        this.sites.set(this.adminSession.isGlobalAdmin() ? sites : sites.filter((site) => site.id === this.adminSession.siteId()));
+  loadCentres(): void {
+    this.centresApi.getAll().subscribe({
+      next: (centres) => {
+        this.centres.set(this.adminSession.isGlobalAdmin() ? centres : centres.filter((site) => site.id === this.adminSession.centreId()));
       },
       error: (error) => {
-        this.errorMessage.set(extractApiErrorMessage(error, this.language.t('admin.sites.loadError')));
+        this.errorMessage.set(extractApiErrorMessage(error, this.language.t('admin.centres.loadError')));
       }
     });
   }
 
-  edit(site: SiteResponse): void {
+  edit(site: CentreResponse): void {
     this.editingId.set(site.id);
     this.form.patchValue({ ...site, ouvertVisiteurs: site.ouvertVisiteurs ?? false });
   }
@@ -261,56 +261,56 @@ export class AdminSitesPage {
       adresse: '',
       heureOuverture: '08:00',
       heureFermeture: '22:00',
-      dureeMatchMinutes: ATELIER_DURATION_MINUTES,
-      dureeEntreMatchMinutes: ATELIER_BREAK_MINUTES,
+      dureeAtelierMinutes: ATELIER_DURATION_MINUTES,
+      dureeEntreAtelierMinutes: ATELIER_BREAK_MINUTES,
       anneeCivile: new Date().getFullYear(),
       ouvertVisiteurs: false
     });
   }
 
   save(): void {
-    if (this.form.invalid || this.loading() || this.adminSession.isSiteAdmin()) {
-      if (this.adminSession.isSiteAdmin()) {
-        this.errorMessage.set(this.language.t('admin.sites.siteAdminEditBlocked'));
+    if (this.form.invalid || this.loading() || this.adminSession.isCentreAdmin()) {
+      if (this.adminSession.isCentreAdmin()) {
+        this.errorMessage.set(this.language.t('admin.centres.centreAdminEditBlocked'));
       }
       return;
     }
 
     this.loading.set(true);
-    const payload = this.form.getRawValue() as SiteRequest;
-    const request$ = this.editingId() ? this.sitesApi.update(this.editingId()!, payload) : this.sitesApi.create(payload);
+    const payload = this.form.getRawValue() as CentreRequest;
+    const request$ = this.editingId() ? this.centresApi.update(this.editingId()!, payload) : this.centresApi.create(payload);
     request$.subscribe({
       next: () => {
         const wasEditing = this.editingId() !== null;
         this.loading.set(false);
         this.resetForm();
-        this.message.set(wasEditing ? this.language.t('admin.sites.updateSuccess') : this.language.t('admin.sites.createSuccess'));
-        this.loadSites();
+        this.message.set(wasEditing ? this.language.t('admin.centres.updateSuccess') : this.language.t('admin.centres.createSuccess'));
+        this.loadCentres();
       },
       error: (error) => {
         this.loading.set(false);
-        this.errorMessage.set(extractApiErrorMessage(error, this.language.t('admin.sites.saveError')));
+        this.errorMessage.set(extractApiErrorMessage(error, this.language.t('admin.centres.saveError')));
       }
     });
   }
 
   remove(id: number): void {
-    if (this.adminSession.isSiteAdmin()) {
-      this.errorMessage.set(this.language.t('admin.sites.siteAdminDeleteBlocked'));
+    if (this.adminSession.isCentreAdmin()) {
+      this.errorMessage.set(this.language.t('admin.centres.centreAdminDeleteBlocked'));
       return;
     }
 
-    if (!confirm(this.language.t('admin.sites.deleteConfirm'))) {
+    if (!confirm(this.language.t('admin.centres.deleteConfirm'))) {
       return;
     }
 
-    this.sitesApi.delete(id).subscribe({
+    this.centresApi.delete(id).subscribe({
       next: () => {
-        this.message.set(this.language.t('admin.sites.deleteSuccess'));
-        this.loadSites();
+        this.message.set(this.language.t('admin.centres.deleteSuccess'));
+        this.loadCentres();
       },
       error: (error) => {
-        this.errorMessage.set(extractApiErrorMessage(error, this.language.t('admin.sites.deleteError')));
+        this.errorMessage.set(extractApiErrorMessage(error, this.language.t('admin.centres.deleteError')));
       }
     });
   }

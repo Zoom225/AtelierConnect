@@ -1,27 +1,27 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { MembreRequest, MembreResponse } from '../../shared/models/membre.model';
+import { ParticipantRequest, ParticipantResponse } from '../../shared/models/participant.model';
 import { apiUrl } from './api-url';
 
 @Injectable({ providedIn: 'root' })
 export class ParticipantsApiService {
   constructor(private readonly http: HttpClient) {}
 
-  getAll(): Observable<MembreResponse[]> {
-    return this.http.get<MembreResponse[]>(apiUrl('/participants'));
+  getAll(): Observable<ParticipantResponse[]> {
+    return this.http.get<ParticipantResponse[]>(apiUrl('/participants'));
   }
 
-  getById(id: number): Observable<MembreResponse> {
-    return this.http.get<MembreResponse>(apiUrl(`/participants/${id}`));
+  getById(id: number): Observable<ParticipantResponse> {
+    return this.http.get<ParticipantResponse>(apiUrl(`/participants/${id}`));
   }
 
-  getCurrent(): Observable<MembreResponse> {
-    return this.http.get<MembreResponse>(apiUrl('/participants/me'));
+  getCurrent(): Observable<ParticipantResponse> {
+    return this.http.get<ParticipantResponse>(apiUrl('/participants/me'));
   }
 
-  getByMatricule(matricule: string): Observable<MembreResponse> {
-    return this.http.get<MembreResponse>(apiUrl(`/participants/matricule/${matricule}`));
+  getByMatricule(matricule: string): Observable<ParticipantResponse> {
+    return this.http.get<ParticipantResponse>(apiUrl(`/participants/matricule/${matricule}`));
   }
 
   hasPenalty(id: number): Observable<boolean> {
@@ -32,12 +32,12 @@ export class ParticipantsApiService {
     return this.http.get<boolean>(apiUrl(`/participants/${id}/balance`));
   }
 
-  create(payload: MembreRequest): Observable<MembreResponse> {
-    return this.http.post<MembreResponse>(apiUrl('/participants'), payload);
+  create(payload: ParticipantRequest): Observable<ParticipantResponse> {
+    return this.http.post<ParticipantResponse>(apiUrl('/participants'), payload);
   }
 
-  update(id: number, payload: MembreRequest): Observable<MembreResponse> {
-    return this.http.put<MembreResponse>(apiUrl(`/participants/${id}`), payload);
+  update(id: number, payload: ParticipantRequest): Observable<ParticipantResponse> {
+    return this.http.put<ParticipantResponse>(apiUrl(`/participants/${id}`), payload);
   }
 
   delete(id: number): Observable<void> {

@@ -1,36 +1,36 @@
-export interface SiteRequest {
+export interface CentreRequest {
   nom: string;
   adresse: string;
   heureOuverture: string;
   heureFermeture: string;
-  dureeMatchMinutes: number;
-  dureeEntreMatchMinutes: number;
+  dureeAtelierMinutes: number;
+  dureeEntreAtelierMinutes: number;
   anneeCivile: number;
   ouvertVisiteurs?: boolean | null;
 }
 
-export interface SiteResponse {
+export interface CentreResponse {
   id: number;
   nom: string;
   adresse: string;
   heureOuverture: string;
   heureFermeture: string;
-  dureeMatchMinutes: number;
-  dureeEntreMatchMinutes: number;
+  dureeAtelierMinutes: number;
+  dureeEntreAtelierMinutes: number;
   anneeCivile: number;
   ouvertVisiteurs?: boolean | null;
 }
 
-export interface TerrainRequest {
+export interface SalleRequest {
   nom: string;
-  siteId: number;
+  centreId: number;
 }
 
-export interface TerrainResponse {
+export interface SalleResponse {
   id: number;
   nom: string;
-  siteId: number;
-  siteNom: string;
+  centreId: number;
+  centreNom: string;
   prix: number | null;
 }
 
@@ -38,7 +38,7 @@ export interface JourFermetureRequest {
   date: string;
   raison: string;
   global: boolean;
-  siteId: number | null;
+  centreId: number | null;
 }
 
 export interface JourFermetureResponse {
@@ -46,6 +46,6 @@ export interface JourFermetureResponse {
   date: string;
   raison: string | null;
   global: boolean;
-  siteId: number | null;
-  siteNom: string | null;
+  centreId: number | null;
+  centreNom: string | null;
 }

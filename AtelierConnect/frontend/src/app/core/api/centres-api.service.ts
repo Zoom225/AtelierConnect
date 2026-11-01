@@ -1,27 +1,27 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { SiteRequest, SiteResponse } from '../../shared/models/site-terrain.model';
+import { CentreRequest, CentreResponse } from '../../shared/models/centre-salle.model';
 import { apiUrl } from './api-url';
 
 @Injectable({ providedIn: 'root' })
 export class CentresApiService {
   constructor(private readonly http: HttpClient) {}
 
-  getAll(): Observable<SiteResponse[]> {
-    return this.http.get<SiteResponse[]>(apiUrl('/centres'));
+  getAll(): Observable<CentreResponse[]> {
+    return this.http.get<CentreResponse[]>(apiUrl('/centres'));
   }
 
-  getById(id: number): Observable<SiteResponse> {
-    return this.http.get<SiteResponse>(apiUrl(`/centres/${id}`));
+  getById(id: number): Observable<CentreResponse> {
+    return this.http.get<CentreResponse>(apiUrl(`/centres/${id}`));
   }
 
-  create(payload: SiteRequest): Observable<SiteResponse> {
-    return this.http.post<SiteResponse>(apiUrl('/centres'), payload);
+  create(payload: CentreRequest): Observable<CentreResponse> {
+    return this.http.post<CentreResponse>(apiUrl('/centres'), payload);
   }
 
-  update(id: number, payload: SiteRequest): Observable<SiteResponse> {
-    return this.http.put<SiteResponse>(apiUrl(`/centres/${id}`), payload);
+  update(id: number, payload: CentreRequest): Observable<CentreResponse> {
+    return this.http.put<CentreResponse>(apiUrl(`/centres/${id}`), payload);
   }
 
   delete(id: number): Observable<void> {

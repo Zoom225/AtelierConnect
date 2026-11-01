@@ -9,12 +9,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { RouterLink } from '@angular/router';
 import { catchError, forkJoin, map, of } from 'rxjs';
-import { MembresApiService } from '../../../core/api/membres-api.service';
-import { SitesApiService } from '../../../core/api/sites-api.service';
+import { ParticipantsApiService } from '../../../core/api/participants-api.service';
+import { CentresApiService } from '../../../core/api/centres-api.service';
 import { AdminSessionService } from '../../../core/auth/admin-session.service';
-import { MembreRequest, MembreResponse, categorieParticipant } from '../../../shared/models/membre.model';
-import { TypeMembre, toParticipantCategory } from '../../../shared/models/enums.model';
-import { SiteResponse } from '../../../shared/models/site-terrain.model';
+import { ParticipantRequest, ParticipantResponse, categorieParticipant } from '../../../shared/models/participant.model';
+import { TypeParticipant, toParticipantCategory } from '../../../shared/models/enums.model';
+import { CentreResponse } from '../../../shared/models/centre-salle.model';
 import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
 import { LanguageService } from '../../../core/i18n/language.service';
 
@@ -69,10 +69,10 @@ import { LanguageService } from '../../../core/i18n/language.service';
 
           <mat-form-field appearance="outline">
             <mat-label>{{ language.t('admin.members.type') }}</mat-label>
-            <mat-select formControlName="typeMembre" [disabled]="editingId() !== null">
-              <mat-option value="GLOBAL">{{ language.t('admin.members.typeGlobal') }}</mat-option>
-              <mat-option value="SITE">{{ language.t('admin.members.typeSite') }}</mat-option>
-              <mat-option value="LIBRE">{{ language.t('admin.members.typeLibre') }}</mat-option>
+            <mat-select formControlName="categorie" [disabled]="editingId() !== null">
+              <mat-option value="PARTENAIRE">{{ language.t('admin.members.typeGlobal') }}</mat-option>
+              <mat-option value="ABONNE">{{ language.t('admin.members.typeCentre') }}</mat-option>
+              <mat-option value="VISITEUR">{{ language.t('admin.members.typeLibre') }}</mat-option>
             </mat-select>
           </mat-form-field>
 
@@ -93,9 +93,9 @@ import { LanguageService } from '../../../core/i18n/language.service';
 
           <mat-form-field appearance="outline">
             <mat-label>{{ language.t('admin.members.site') }}</mat-label>
-            <mat-select formControlName="siteId">
-              <mat-option [value]="null">{{ language.t('admin.members.siteNone') }}</mat-option>
-              @for (site of sites(); track site.id) {
+            <mat-select formControlName="centreId">
+              <mat-option [value]="null">{{ language.t('admin.members.centreNone') }}</mat-option>
+              @for (site of centres(); track site.id) {
                 <mat-option [value]="site.id">🏟️ {{ site.nom }}</mat-option>
               }
             </mat-select>
@@ -140,18 +140,18 @@ import { LanguageService } from '../../../core/i18n/language.service';
         <button class="adm-filter-btn" [class.active]="typeFilter() === ''" (click)="typeFilter.set('')">
           {{ language.t('admin.members.filterAll') }} ({{ filteredMembers().length }})
         </button>
-        <button class="adm-filter-btn adm-filter-global" [class.active]="typeFilter() === 'GLOBAL'" (click)="typeFilter.set('GLOBAL')">
-          🌍 {{ language.t('admin.members.filterGlobal') }} ({{ countByType('GLOBAL') }})
+        <button class="adm-filter-btn adm-filter-global" [class.active]="typeFilter() === 'PARTENAIRE'" (click)="typeFilter.set('PARTENAIRE')">
+          🌍 {{ language.t('admin.members.filterGlobal') }} ({{ countByType('PARTENAIRE') }})
         </button>
-        <button class="adm-filter-btn adm-filter-site" [class.active]="typeFilter() === 'SITE'" (click)="typeFilter.set('SITE')">
-          🏟️ {{ language.t('admin.members.filterSite') }} ({{ countByType('SITE') }})
+        <button class="adm-filter-btn adm-filter-site" [class.active]="typeFilter() === 'ABONNE'" (click)="typeFilter.set('ABONNE')">
+          🏟️ {{ language.t('admin.members.filterCentre') }} ({{ countByType('ABONNE') }})
         </button>
-        <button class="adm-filter-btn adm-filter-libre" [class.active]="typeFilter() === 'LIBRE'" (click)="typeFilter.set('LIBRE')">
-          ⚡ {{ language.t('admin.members.filterLibre') }} ({{ countByType('LIBRE') }})
+        <button class="adm-filter-btn adm-filter-libre" [class.active]="typeFilter() === 'VISITEUR'" (click)="typeFilter.set('VISITEUR')">
+          ⚡ {{ language.t('admin.members.filterLibre') }} ({{ countByType('VISITEUR') }})
         </button>
       </div>
 
-      <!-- Liste des membres -->
+      <!-- Liste des participants -->
       @if (displayedMembers().length === 0) {
         <div class="adm-empty">
           <span class="adm-empty-icon">🧩</span>
@@ -164,16 +164,16 @@ import { LanguageService } from '../../../core/i18n/language.service';
 
       <div class="grid gap-4 md:grid-cols-2">
         @for (member of displayedMembers(); track member.id) {
-          <div class="adm-member-card" [class]="'adm-member-' + member.typeMembre.toLowerCase()">
+          <div class="adm-member-card" [class]="'adm-member-' + member.categorie.toLowerCase()">
             <div class="adm-member-top">
               <div class="adm-member-avatar">
-                {{ member.typeMembre === 'GLOBAL' ? '🌍' : member.typeMembre === 'SITE' ? '🏟️' : '⚡' }}
+                {{ member.categorie === 'PARTENAIRE' ? '🌍' : member.categorie === 'ABONNE' ? '🏟️' : '⚡' }}
               </div>
               <div class="adm-member-info">
                 <div class="adm-member-name">{{ member.prenom }} {{ member.nom }}</div>
                 <div class="adm-member-matricule">{{ member.matricule }}</div>
               </div>
-              <span class="ds-badge" [class]="typeBadgeClass(member.typeMembre)">
+              <span class="ds-badge" [class]="typeBadgeClass(member.categorie)">
                 {{ categorieParticipant(member) }}
               </span>
               @if (hasActivePenalty(member.id)) {
@@ -188,7 +188,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
               </div>
               <div class="adm-detail-row ds-data-row">
                 <span class="ds-data-key">{{ language.t('admin.members.site') }}</span>
-                <span class="ds-data-value">{{ member.siteNom || language.t('admin.members.siteAll') }}</span>
+                <span class="ds-data-value">{{ member.centreNom || language.t('admin.members.centreAll') }}</span>
               </div>
               <div class="adm-detail-row ds-data-row">
                 <span class="ds-data-key">{{ language.t('admin.members.balance') }}</span>
@@ -330,9 +330,9 @@ import { LanguageService } from '../../../core/i18n/language.service';
     </style>
   `
 })
-export class AdminMembersPage {
-  private readonly membresApi = inject(MembresApiService);
-  private readonly sitesApi = inject(SitesApiService);
+export class AdminParticipantsPage {
+  private readonly participantsApi = inject(ParticipantsApiService);
+  private readonly centresApi = inject(CentresApiService);
   private readonly adminSession = inject(AdminSessionService);
   readonly language = inject(LanguageService);
   readonly categorieParticipant = categorieParticipant;
@@ -341,18 +341,18 @@ export class AdminMembersPage {
   readonly message = signal('');
   readonly errorMessage = signal('');
   readonly editingId = signal<number | null>(null);
-  readonly members = signal<MembreResponse[]>([]);
-  readonly sites = signal<SiteResponse[]>([]);
+  readonly members = signal<ParticipantResponse[]>([]);
+  readonly centres = signal<CentreResponse[]>([]);
   readonly searchQuery = signal('');
   readonly typeFilter = signal('');
   readonly penalizedMemberIds = signal<Set<number>>(new Set());
 
   readonly filteredMembers = computed(() => {
-    const siteId = this.adminSession.siteId();
-    if (this.adminSession.isGlobalAdmin() || !siteId) {
+    const centreId = this.adminSession.centreId();
+    if (this.adminSession.isGlobalAdmin() || !centreId) {
       return this.members();
     }
-    return this.members().filter((m) => m.siteId === siteId || m.siteId === null);
+    return this.members().filter((m) => m.centreId === centreId || m.centreId === null);
   });
 
   readonly displayedMembers = computed(() => {
@@ -367,20 +367,20 @@ export class AdminMembersPage {
       );
     }
     if (t) {
-      list = list.filter(m => m.typeMembre === t);
+      list = list.filter(m => m.categorie === t);
     }
     return list;
   });
 
   countByType(type: string): number {
-    return this.filteredMembers().filter(m => m.typeMembre === type).length;
+    return this.filteredMembers().filter(m => m.categorie === type).length;
   }
 
-  typeBadgeClass(type: TypeMembre): string {
-    if (type === 'GLOBAL') {
+  typeBadgeClass(type: TypeParticipant): string {
+    if (type === 'PARTENAIRE') {
       return 'ds-badge-info';
     }
-    if (type === 'SITE') {
+    if (type === 'ABONNE') {
       return 'ds-badge-success';
     }
     return 'ds-badge-warning';
@@ -395,8 +395,8 @@ export class AdminMembersPage {
     nom: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     prenom: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     email: new FormControl('', { nonNullable: true, validators: [Validators.email] }),
-    typeMembre: new FormControl<TypeMembre>('GLOBAL', { nonNullable: true, validators: [Validators.required] }),
-    siteId: new FormControl<number | null>(null)
+    categorie: new FormControl<TypeParticipant>('PARTENAIRE', { nonNullable: true, validators: [Validators.required] }),
+    centreId: new FormControl<number | null>(null)
   });
 
   constructor() {
@@ -407,12 +407,12 @@ export class AdminMembersPage {
     this.loading.set(true);
     this.penalizedMemberIds.set(new Set());
     forkJoin({
-      members: this.membresApi.getAll(),
-      sites: this.sitesApi.getAll()
+      members: this.participantsApi.getAll(),
+      centres: this.centresApi.getAll()
     }).subscribe({
-      next: ({ members, sites }) => {
+      next: ({ members, centres }) => {
         this.members.set(members);
-        this.sites.set(this.adminSession.isGlobalAdmin() ? sites : sites.filter((s) => s.id === this.adminSession.siteId()));
+        this.centres.set(this.adminSession.isGlobalAdmin() ? centres : centres.filter((s) => s.id === this.adminSession.centreId()));
         this.loadPenaltyStatuses(members);
         this.loading.set(false);
       },
@@ -424,14 +424,14 @@ export class AdminMembersPage {
     });
   }
 
-  private loadPenaltyStatuses(members: MembreResponse[]): void {
+  private loadPenaltyStatuses(members: ParticipantResponse[]): void {
     if (members.length === 0) {
       this.penalizedMemberIds.set(new Set());
       return;
     }
 
     forkJoin(members.map((member) =>
-      this.membresApi.hasPenalty(member.id).pipe(
+      this.participantsApi.hasPenalty(member.id).pipe(
         map((hasPenalty) => ({ id: member.id, hasPenalty })),
         catchError(() => of({ id: member.id, hasPenalty: false }))
       )
@@ -444,15 +444,15 @@ export class AdminMembersPage {
     });
   }
 
-  edit(member: MembreResponse): void {
+  edit(member: ParticipantResponse): void {
     this.editingId.set(member.id);
     this.form.patchValue({
       matricule: member.matricule,
       nom: member.nom,
       prenom: member.prenom,
       email: member.email,
-      typeMembre: member.typeMembre,
-      siteId: member.siteId
+      categorie: member.categorie,
+      centreId: member.centreId
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -466,8 +466,8 @@ export class AdminMembersPage {
       nom: '',
       prenom: '',
       email: '',
-      typeMembre: this.adminSession.isSiteAdmin() ? 'SITE' : 'GLOBAL',
-      siteId: this.adminSession.isSiteAdmin() ? this.adminSession.siteId() : null
+      categorie: this.adminSession.isCentreAdmin() ? 'ABONNE' : 'PARTENAIRE',
+      centreId: this.adminSession.isCentreAdmin() ? this.adminSession.centreId() : null
     });
   }
 
@@ -478,17 +478,17 @@ export class AdminMembersPage {
     this.message.set('');
     this.errorMessage.set('');
 
-    const payload = this.form.getRawValue() as MembreRequest;
-    if (this.adminSession.isSiteAdmin()) {
-      payload.siteId = this.adminSession.siteId() ?? undefined;
-      payload.typeMembre = 'SITE';
+    const payload = this.form.getRawValue() as ParticipantRequest;
+    if (this.adminSession.isCentreAdmin()) {
+      payload.centreId = this.adminSession.centreId() ?? undefined;
+      payload.categorie = 'ABONNE';
     }
     // Catégorie métier native + ancien code maintenu pour l'API transitoire.
-    payload.categorie = toParticipantCategory(payload.typeMembre);
+    payload.categorie = toParticipantCategory(payload.categorie);
 
     const request$ = this.editingId()
-      ? this.membresApi.update(this.editingId()!, payload)
-      : this.membresApi.create(payload);
+      ? this.participantsApi.update(this.editingId()!, payload)
+      : this.participantsApi.create(payload);
 
     request$.subscribe({
       next: () => {
@@ -511,7 +511,7 @@ export class AdminMembersPage {
     this.message.set('');
     this.errorMessage.set('');
 
-    this.membresApi.delete(id).subscribe({
+    this.participantsApi.delete(id).subscribe({
       next: () => {
         this.loading.set(false);
         this.message.set(this.language.t('admin.members.deleteSuccess'));

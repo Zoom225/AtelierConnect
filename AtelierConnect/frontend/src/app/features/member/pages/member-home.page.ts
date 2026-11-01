@@ -12,7 +12,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { MemberSessionService } from '../../../core/auth/member-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
-import { MembreResponse, categorieParticipant } from '../../../shared/models/membre.model';
+import { ParticipantResponse, categorieParticipant } from '../../../shared/models/participant.model';
 
 @Component({
   selector: 'app-member-home-page',
@@ -29,21 +29,21 @@ import { MembreResponse, categorieParticipant } from '../../../shared/models/mem
     MatChipsModule
   ],
   template: `
-    <div class="padel-hero">
-      <div class="padel-hero-content">
-        <div class="padel-ball">🧩</div>
-        <h1 class="padel-hero-title">{{ language.t('member.home.title') }}</h1>
-        <p class="padel-hero-sub">{{ language.t('member.home.subtitle') }}</p>
+    <div class="atelier-hero">
+      <div class="atelier-hero-content">
+        <div class="atelier-ball">🧩</div>
+        <h1 class="atelier-hero-title">{{ language.t('member.home.title') }}</h1>
+        <p class="atelier-hero-sub">{{ language.t('member.home.subtitle') }}</p>
       </div>
     </div>
 
     <section class="page-shell max-w-4xl">
-      <div class="padel-login-card">
-        <div class="padel-login-icon">🛠️</div>
-        <h2 class="padel-login-title">{{ language.t('member.home.identification') }}</h2>
-        <p class="padel-login-sub">{{ language.t('member.home.loginHint') }}</p>
+      <div class="atelier-login-card">
+        <div class="atelier-login-icon">🛠️</div>
+        <h2 class="atelier-login-title">{{ language.t('member.home.identification') }}</h2>
+        <p class="atelier-login-sub">{{ language.t('member.home.loginHint') }}</p>
 
-        <form [formGroup]="form" class="padel-form" (ngSubmit)="submit()">
+        <form [formGroup]="form" class="atelier-form" (ngSubmit)="submit()">
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>{{ language.t('member.home.matricule') }}</mat-label>
             <input
@@ -74,56 +74,56 @@ import { MembreResponse, categorieParticipant } from '../../../shared/models/mem
             </button>
           </mat-form-field>
 
-          <div class="padel-types-grid">
-            <div class="padel-type-badge padel-type-global">
-              <span class="padel-type-icon">🌍</span>
+          <div class="atelier-types-grid">
+            <div class="atelier-type-badge atelier-type-global">
+              <span class="atelier-type-icon">🌍</span>
               <div>
-                <div class="padel-type-name">{{ language.t('member.home.global') }}</div>
-                <div class="padel-type-hint">{{ language.t('member.home.globalHint') }}</div>
+                <div class="atelier-type-name">{{ language.t('member.home.global') }}</div>
+                <div class="atelier-type-hint">{{ language.t('member.home.globalHint') }}</div>
               </div>
             </div>
-            <div class="padel-type-badge padel-type-site">
-              <span class="padel-type-icon">🏟️</span>
+            <div class="atelier-type-badge atelier-type-site">
+              <span class="atelier-type-icon">🏟️</span>
               <div>
-                <div class="padel-type-name">{{ language.t('member.home.site') }}</div>
-                <div class="padel-type-hint">{{ language.t('member.home.siteHint') }}</div>
+                <div class="atelier-type-name">{{ language.t('member.home.site') }}</div>
+                <div class="atelier-type-hint">{{ language.t('member.home.centreHint') }}</div>
               </div>
             </div>
-            <div class="padel-type-badge padel-type-libre">
-              <span class="padel-type-icon">⚡</span>
+            <div class="atelier-type-badge atelier-type-libre">
+              <span class="atelier-type-icon">⚡</span>
               <div>
-                <div class="padel-type-name">{{ language.t('member.home.livre') }}</div>
-                <div class="padel-type-hint">{{ language.t('member.home.livreHint') }}</div>
+                <div class="atelier-type-name">{{ language.t('member.home.livre') }}</div>
+                <div class="atelier-type-hint">{{ language.t('member.home.livreHint') }}</div>
               </div>
             </div>
           </div>
 
           @if (errorMessage()) {
-            <div class="padel-error"><span>❌</span> {{ errorMessage() }}</div>
+            <div class="atelier-error"><span>❌</span> {{ errorMessage() }}</div>
           }
 
           @if (foundMember()) {
-            <div class="padel-found-card">
-              <div class="padel-found-icon">✅</div>
+            <div class="atelier-found-card">
+              <div class="atelier-found-icon">✅</div>
               <div>
-                <div class="padel-found-name">
+                <div class="atelier-found-name">
                   {{ foundMember()!.prenom }} {{ foundMember()!.nom }}
                 </div>
-                <div class="padel-found-details">
+                <div class="atelier-found-details">
                   <span
-                    class="padel-badge-type"
-                    [class]="'padel-badge-' + foundMember()!.typeMembre.toLowerCase()"
+                    class="atelier-badge-type"
+                    [class]="'atelier-badge-' + foundMember()!.categorie.toLowerCase()"
                   >
                     {{ categorieParticipant(foundMember()!) }}
                   </span>
-                  <span>· {{ foundMember()!.siteNom || language.t('member.home.allSites') }}</span>
+                  <span>· {{ foundMember()!.centreNom || language.t('member.home.allCentres') }}</span>
                 </div>
               </div>
             </div>
           }
 
-          <div class="padel-form-actions">
-            <button class="padel-btn-primary" type="submit" [disabled]="form.invalid || loading()">
+          <div class="atelier-form-actions">
+            <button class="atelier-btn-primary" type="submit" [disabled]="form.invalid || loading()">
               @if (loading()) {
                 <mat-spinner
                   diameter="20"
@@ -138,14 +138,14 @@ import { MembreResponse, categorieParticipant } from '../../../shared/models/mem
     </section>
 
     <style>
-      .padel-hero {
+      .atelier-hero {
         background: linear-gradient(135deg, #166534 0%, #15803d 40%, #16a34a 70%, #86efac 100%);
         padding: 3rem 1.5rem 4rem;
         text-align: center;
         position: relative;
         overflow: hidden;
       }
-      .padel-hero::before {
+      .atelier-hero::before {
         content: '';
         position: absolute;
         inset: 0;
@@ -165,11 +165,11 @@ import { MembreResponse, categorieParticipant } from '../../../shared/models/mem
             rgba(255, 255, 255, 0.04) 42px
           );
       }
-      .padel-hero-content {
+      .atelier-hero-content {
         position: relative;
         z-index: 1;
       }
-      .padel-ball {
+      .atelier-ball {
         font-size: 4rem;
         margin-bottom: 0.5rem;
         animation: spin 8s linear infinite;
@@ -182,20 +182,20 @@ import { MembreResponse, categorieParticipant } from '../../../shared/models/mem
           transform: rotate(360deg);
         }
       }
-      .padel-hero-title {
+      .atelier-hero-title {
         font-size: 2.2rem;
         font-weight: 800;
         color: #fff;
         margin: 0 0 0.5rem;
         text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
       }
-      .padel-hero-sub {
+      .atelier-hero-sub {
         color: rgba(255, 255, 255, 0.88);
         font-size: 1.05rem;
         margin: 0;
       }
 
-      .padel-login-card {
+      .atelier-login-card {
         background: #fff;
         border-radius: 1.5rem;
         box-shadow:
@@ -206,33 +206,33 @@ import { MembreResponse, categorieParticipant } from '../../../shared/models/mem
         border-top: 5px solid #16a34a;
         margin-top: -2.5rem;
       }
-      .padel-login-icon {
+      .atelier-login-icon {
         font-size: 2.5rem;
         margin-bottom: 0.5rem;
       }
-      .padel-login-title {
+      .atelier-login-title {
         font-size: 1.6rem;
         font-weight: 700;
         color: #14532d;
         margin: 0 0 0.3rem;
       }
-      .padel-login-sub {
+      .atelier-login-sub {
         color: #6b7280;
         margin: 0 0 1.5rem;
       }
-      .padel-form {
+      .atelier-form {
         display: flex;
         flex-direction: column;
         gap: 1rem;
         text-align: left;
       }
 
-      .padel-types-grid {
+      .atelier-types-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
         gap: 0.75rem;
       }
-      .padel-type-badge {
+      .atelier-type-badge {
         display: flex;
         align-items: center;
         gap: 0.6rem;
@@ -241,35 +241,35 @@ import { MembreResponse, categorieParticipant } from '../../../shared/models/mem
         border: 2px solid transparent;
         transition: transform 0.15s;
       }
-      .padel-type-badge:hover {
+      .atelier-type-badge:hover {
         transform: translateY(-2px);
       }
-      .padel-type-global {
+      .atelier-type-global {
         background: #eff6ff;
         border-color: #93c5fd;
       }
-      .padel-type-site {
+      .atelier-type-site {
         background: #f0fdf4;
         border-color: #86efac;
       }
-      .padel-type-libre {
+      .atelier-type-libre {
         background: #fefce8;
         border-color: #fde047;
       }
-      .padel-type-icon {
+      .atelier-type-icon {
         font-size: 1.5rem;
       }
-      .padel-type-name {
+      .atelier-type-name {
         font-weight: 700;
         font-size: 0.85rem;
         color: #1e293b;
       }
-      .padel-type-hint {
+      .atelier-type-hint {
         font-size: 0.72rem;
         color: #64748b;
       }
 
-      .padel-error {
+      .atelier-error {
         background: #fef2f2;
         border: 1px solid #fca5a5;
         border-radius: 0.75rem;
@@ -280,7 +280,7 @@ import { MembreResponse, categorieParticipant } from '../../../shared/models/mem
         align-items: center;
         gap: 0.5rem;
       }
-      .padel-found-card {
+      .atelier-found-card {
         background: linear-gradient(135deg, #f0fdf4, #dcfce7);
         border: 2px solid #4ade80;
         border-radius: 1rem;
@@ -289,15 +289,15 @@ import { MembreResponse, categorieParticipant } from '../../../shared/models/mem
         align-items: center;
         gap: 1rem;
       }
-      .padel-found-icon {
+      .atelier-found-icon {
         font-size: 2rem;
       }
-      .padel-found-name {
+      .atelier-found-name {
         font-weight: 700;
         font-size: 1.1rem;
         color: #14532d;
       }
-      .padel-found-details {
+      .atelier-found-details {
         display: flex;
         align-items: center;
         gap: 0.5rem;
@@ -306,7 +306,7 @@ import { MembreResponse, categorieParticipant } from '../../../shared/models/mem
         margin-top: 0.25rem;
       }
 
-      .padel-badge-type {
+      .atelier-badge-type {
         display: inline-block;
         padding: 0.15rem 0.6rem;
         border-radius: 9999px;
@@ -314,25 +314,25 @@ import { MembreResponse, categorieParticipant } from '../../../shared/models/mem
         font-weight: 700;
         letter-spacing: 0.05em;
       }
-      .padel-badge-global {
+      .atelier-badge-global {
         background: #dbeafe;
         color: #1d4ed8;
       }
-      .padel-badge-site {
+      .atelier-badge-site {
         background: #dcfce7;
         color: #15803d;
       }
-      .padel-badge-libre {
+      .atelier-badge-libre {
         background: #fef9c3;
         color: #a16207;
       }
 
-      .padel-form-actions {
+      .atelier-form-actions {
         display: flex;
         justify-content: center;
         padding-top: 0.5rem;
       }
-      .padel-btn-primary {
+      .atelier-btn-primary {
         background: linear-gradient(135deg, #15803d, #16a34a);
         color: #fff;
         border: none;
@@ -349,11 +349,11 @@ import { MembreResponse, categorieParticipant } from '../../../shared/models/mem
           transform 0.15s,
           box-shadow 0.15s;
       }
-      .padel-btn-primary:hover:not(:disabled) {
+      .atelier-btn-primary:hover:not(:disabled) {
         transform: translateY(-2px);
         box-shadow: 0 8px 20px rgba(21, 128, 61, 0.45);
       }
-      .padel-btn-primary:disabled {
+      .atelier-btn-primary:disabled {
         opacity: 0.5;
         cursor: not-allowed;
       }
@@ -376,7 +376,7 @@ export class MemberHomePage {
 
   readonly loading = signal(false);
   readonly errorMessage = signal('');
-  readonly foundMember = signal<MembreResponse | null>(null);
+  readonly foundMember = signal<ParticipantResponse | null>(null);
   showMemberPassword = false;
 
   readonly form = new FormGroup({

@@ -20,56 +20,56 @@ export const ADMIN_ROUTES: Routes = [
 	path: 'participants',
 	canActivate: [adminGuard],
 	data: { roles: ['GLOBAL', 'SITE'] },
-	loadComponent: () => import('./pages/admin-members.page').then((m) => m.AdminMembersPage),
+	loadComponent: () => import('./pages/admin-participants.page').then((m) => m.AdminParticipantsPage),
 	title: () => `AtelierConnect - ${inject(LanguageService).t('nav.members')}`
   },
   {
 	path: 'ateliers',
 	canActivate: [adminGuard],
 	data: { roles: ['GLOBAL', 'SITE'] },
-	loadComponent: () => import('./pages/admin-matches.page').then((m) => m.AdminMatchesPage),
-	title: () => `AtelierConnect - ${inject(LanguageService).t('nav.matches')}`
+	loadComponent: () => import('./pages/admin-ateliers.page').then((m) => m.AdminAteliersPage),
+	title: () => `AtelierConnect - ${inject(LanguageService).t('nav.ateliers')}`
   },
   {
 	path: 'centres',
 	canActivate: [adminGuard],
 	data: { roles: ['GLOBAL', 'SITE'] },
-	loadComponent: () => import('./pages/admin-sites.page').then((m) => m.AdminSitesPage),
-	title: () => `AtelierConnect - ${inject(LanguageService).t('nav.sites')}`
+	loadComponent: () => import('./pages/admin-centres.page').then((m) => m.AdminCentresPage),
+	title: () => `AtelierConnect - ${inject(LanguageService).t('nav.centres')}`
   },
   {
 	path: 'salles',
 	canActivate: [adminGuard],
 	data: { roles: ['GLOBAL', 'SITE'] },
-	loadComponent: () => import('./pages/admin-terrains.page').then((m) => m.AdminTerrainsPage),
+	loadComponent: () => import('./pages/admin-salles.page').then((m) => m.AdminSallesPage),
 	title: () => `AtelierConnect - ${inject(LanguageService).t('nav.courts')}`
   },
   {
 	path: 'members',
 	canActivate: [adminGuard],
 	data: { roles: ['GLOBAL', 'SITE'] },
-	loadComponent: () => import('./pages/admin-members.page').then((m) => m.AdminMembersPage),
+	loadComponent: () => import('./pages/admin-participants.page').then((m) => m.AdminParticipantsPage),
 	title: () => `AtelierConnect - ${inject(LanguageService).t('nav.members')}`
   },
   {
 	path: 'matches',
 	canActivate: [adminGuard],
 	data: { roles: ['GLOBAL', 'SITE'] },
-	loadComponent: () => import('./pages/admin-matches.page').then((m) => m.AdminMatchesPage),
-	title: () => `AtelierConnect - ${inject(LanguageService).t('nav.matches')}`
+	loadComponent: () => import('./pages/admin-ateliers.page').then((m) => m.AdminAteliersPage),
+	title: () => `AtelierConnect - ${inject(LanguageService).t('nav.ateliers')}`
   },
   {
 	path: 'sites',
 	canActivate: [adminGuard],
 	data: { roles: ['GLOBAL', 'SITE'] },
-	loadComponent: () => import('./pages/admin-sites.page').then((m) => m.AdminSitesPage),
-	title: () => `AtelierConnect - ${inject(LanguageService).t('nav.sites')}`
+	loadComponent: () => import('./pages/admin-centres.page').then((m) => m.AdminCentresPage),
+	title: () => `AtelierConnect - ${inject(LanguageService).t('nav.centres')}`
   },
   {
 	path: 'terrains',
 	canActivate: [adminGuard],
 	data: { roles: ['GLOBAL', 'SITE'] },
-	loadComponent: () => import('./pages/admin-terrains.page').then((m) => m.AdminTerrainsPage),
+	loadComponent: () => import('./pages/admin-salles.page').then((m) => m.AdminSallesPage),
 	title: () => `AtelierConnect - ${inject(LanguageService).t('nav.courts')}`
   },
   {

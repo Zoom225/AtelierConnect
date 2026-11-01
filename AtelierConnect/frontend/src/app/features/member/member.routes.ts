@@ -18,25 +18,25 @@ export const MEMBER_ROUTES: Routes = [
   {
     path: 'ateliers',
     canActivate: [memberGuard],
-    loadComponent: () => import('./pages/member-public-matches.page').then((m) => m.MemberPublicMatchesPage),
-    title: () => `AtelierConnect - ${inject(LanguageService).t('nav.matches')}`
+    loadComponent: () => import('./pages/member-public-ateliers.page').then((m) => m.MemberPublicAteliersPage),
+    title: () => `AtelierConnect - ${inject(LanguageService).t('nav.ateliers')}`
   },
   {
     path: 'ateliers/nouveau',
     canActivate: [memberGuard],
-    loadComponent: () => import('./pages/member-create-match.page').then((m) => m.MemberCreateMatchPage),
+    loadComponent: () => import('./pages/member-create-atelier.page').then((m) => m.MemberCreateAtelierPage),
     title: () => `AtelierConnect - ${inject(LanguageService).t('nav.create')}`
   },
   {
     path: 'matches',
     canActivate: [memberGuard],
-    loadComponent: () => import('./pages/member-public-matches.page').then((m) => m.MemberPublicMatchesPage),
-    title: () => `AtelierConnect - ${inject(LanguageService).t('nav.matches')}`
+    loadComponent: () => import('./pages/member-public-ateliers.page').then((m) => m.MemberPublicAteliersPage),
+    title: () => `AtelierConnect - ${inject(LanguageService).t('nav.ateliers')}`
   },
   {
     path: 'matches/new',
     canActivate: [memberGuard],
-    loadComponent: () => import('./pages/member-create-match.page').then((m) => m.MemberCreateMatchPage),
+    loadComponent: () => import('./pages/member-create-atelier.page').then((m) => m.MemberCreateAtelierPage),
     title: () => `AtelierConnect - ${inject(LanguageService).t('nav.create')}`
   },
   {

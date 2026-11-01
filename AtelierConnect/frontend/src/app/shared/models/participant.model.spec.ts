@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { categorieParticipant } from './membre.model';
+import { categorieParticipant } from './participant.model';
 import { toParticipantCategory } from './enums.model';
 
 describe('Catégories AtelierConnect', () => {

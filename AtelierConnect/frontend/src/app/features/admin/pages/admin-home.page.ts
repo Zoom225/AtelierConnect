@@ -5,17 +5,17 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterLink } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
-import { MatchesApiService } from '../../../core/api/matches-api.service';
-import { MembresApiService } from '../../../core/api/membres-api.service';
+import { AteliersApiService } from '../../../core/api/ateliers-api.service';
+import { ParticipantsApiService } from '../../../core/api/participants-api.service';
 import { ReservationsApiService } from '../../../core/api/reservations-api.service';
-import { SitesApiService } from '../../../core/api/sites-api.service';
-import { TerrainsApiService } from '../../../core/api/terrains-api.service';
+import { CentresApiService } from '../../../core/api/centres-api.service';
+import { SallesApiService } from '../../../core/api/salles-api.service';
 import { AdminSessionService } from '../../../core/auth/admin-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
-import { MatchResponse } from '../../../shared/models/match.model';
-import { MembreResponse } from '../../../shared/models/membre.model';
+import { AtelierResponse } from '../../../shared/models/atelier.model';
+import { ParticipantResponse } from '../../../shared/models/participant.model';
 import { ReservationResponse } from '../../../shared/models/reservation.model';
-import { SiteResponse, TerrainResponse } from '../../../shared/models/site-terrain.model';
+import { CentreResponse, SalleResponse } from '../../../shared/models/centre-salle.model';
 
 @Component({
   selector: 'app-admin-home-page',
@@ -34,8 +34,8 @@ import { SiteResponse, TerrainResponse } from '../../../shared/models/site-terra
 
         <div class="admin-actions">
           <a routerLink="/admin/participants">{{ language.t('nav.members') }}</a>
-          <a routerLink="/admin/ateliers">{{ language.t('nav.matches') }}</a>
-          <a routerLink="/admin/centres">{{ language.t('nav.sites') }}</a>
+          <a routerLink="/admin/ateliers">{{ language.t('nav.ateliers') }}</a>
+          <a routerLink="/admin/centres">{{ language.t('nav.centres') }}</a>
           <a routerLink="/admin/salles">{{ language.t('nav.courts') }}</a>
           <a routerLink="/admin/fermetures">{{ language.t('nav.closures') }}</a>
         </div>
@@ -49,8 +49,8 @@ import { SiteResponse, TerrainResponse } from '../../../shared/models/site-terra
       }
       <div class="kpi-grid">
         <div class="admin-kpi green">
-          <p>{{ language.t('admin.home.matches') }}</p>
-          <strong>{{ matches().length }}</strong>
+          <p>{{ language.t('admin.home.ateliers') }}</p>
+          <strong>{{ ateliers().length }}</strong>
           <span>{{ language.t('admin.home.allStatuses') }}</span>
         </div>
         <div class="admin-kpi blue">
@@ -78,10 +78,10 @@ import { SiteResponse, TerrainResponse } from '../../../shared/models/site-terra
           </mat-card-header>
           <mat-card-content>
             <div class="data-list">
-              @for (item of occupancyBySite(); track item.site) {
+              @for (item of occupancyByCentre(); track item.site) {
                 <div class="data-row">
                   <span>{{ item.site }}</span>
-                  <strong>{{ item.count }} {{ language.t('admin.home.matchCount') }}</strong>
+                  <strong>{{ item.count }} {{ language.t('admin.home.atelierCount') }}</strong>
                 </div>
               } @empty {
                 <p class="empty-state">{{ language.t('admin.home.empty') }}</p>
@@ -98,16 +98,16 @@ import { SiteResponse, TerrainResponse } from '../../../shared/models/site-terra
           <mat-card-content>
             <div class="resource-grid">
               <div>
-                <span>{{ language.t('admin.home.sitesVisible') }}</span>
-                <strong>{{ sites().length }}</strong>
+                <span>{{ language.t('admin.home.centresVisible') }}</span>
+                <strong>{{ centres().length }}</strong>
               </div>
               <div>
-                <span>{{ language.t('admin.home.terrainsVisible') }}</span>
-                <strong>{{ terrains().length }}</strong>
+                <span>{{ language.t('admin.home.sallesVisible') }}</span>
+                <strong>{{ salles().length }}</strong>
               </div>
               <div>
-                <span>{{ language.t('admin.home.completeMatches') }}</span>
-                <strong>{{ completeMatchesCount() }}</strong>
+                <span>{{ language.t('admin.home.completeAteliers') }}</span>
+                <strong>{{ completeAteliersCount() }}</strong>
               </div>
               <div>
                 <span>{{ language.t('admin.home.pendingReservations') }}</span>
@@ -351,33 +351,33 @@ import { SiteResponse, TerrainResponse } from '../../../shared/models/site-terra
   `]
 })
 export class AdminHomePage {
-  private readonly matchesApi = inject(MatchesApiService);
-  private readonly membresApi = inject(MembresApiService);
+  private readonly ateliersApi = inject(AteliersApiService);
+  private readonly participantsApi = inject(ParticipantsApiService);
   private readonly reservationsApi = inject(ReservationsApiService);
-  private readonly sitesApi = inject(SitesApiService);
-  private readonly terrainsApi = inject(TerrainsApiService);
+  private readonly centresApi = inject(CentresApiService);
+  private readonly sallesApi = inject(SallesApiService);
   readonly adminSession = inject(AdminSessionService);
   readonly language = inject(LanguageService);
 
   readonly loading = signal(false);
-  readonly matches = signal<MatchResponse[]>([]);
-  readonly members = signal<MembreResponse[]>([]);
+  readonly ateliers = signal<AtelierResponse[]>([]);
+  readonly members = signal<ParticipantResponse[]>([]);
   readonly reservations = signal<ReservationResponse[]>([]);
-  readonly sites = signal<SiteResponse[]>([]);
-  readonly terrains = signal<TerrainResponse[]>([]);
+  readonly centres = signal<CentreResponse[]>([]);
+  readonly salles = signal<SalleResponse[]>([]);
 
   readonly revenue = computed(() =>
     this.reservations()
       .filter((reservation) => reservation.paiement?.statut === 'PAYE')
       .reduce((sum, reservation) => sum + (reservation.paiement?.montant ?? 0), 0)
   );
-  readonly completeMatchesCount = computed(() => this.matches().filter((match) => match.statut === 'COMPLET').length);
+  readonly completeAteliersCount = computed(() => this.ateliers().filter((atelier) => atelier.statut === 'COMPLET').length);
   readonly pendingReservationsCount = computed(
     () => this.reservations().filter((reservation) => reservation.statut === 'EN_ATTENTE').length
   );
-  readonly occupancyBySite = computed(() => {
+  readonly occupancyByCentre = computed(() => {
     const map = new Map<string, number>();
-    this.matches().forEach((match) => map.set(match.siteNom, (map.get(match.siteNom) ?? 0) + 1));
+    this.ateliers().forEach((atelier) => map.set(atelier.centreNom, (map.get(atelier.centreNom) ?? 0) + 1));
     return Array.from(map.entries()).map(([site, count]) => ({ site, count }));
   });
 
@@ -389,53 +389,53 @@ export class AdminHomePage {
     this.loading.set(true);
 
     forkJoin({
-      matches: this.matchesApi.getAll().pipe(
+      ateliers: this.ateliersApi.getAll().pipe(
         catchError((error) => {
           console.error('Dashboard admin: impossible de charger les matchs', error);
-          return of([] as MatchResponse[]);
+          return of([] as AtelierResponse[]);
         })
       ),
-      members: this.membresApi.getAll().pipe(
+      members: this.participantsApi.getAll().pipe(
         catchError((error) => {
-          console.error('Dashboard admin: impossible de charger les membres', error);
-          return of([] as MembreResponse[]);
+          console.error('Dashboard admin: impossible de charger les participants', error);
+          return of([] as ParticipantResponse[]);
         })
       ),
-      sites: this.sitesApi.getAll().pipe(
+      centres: this.centresApi.getAll().pipe(
         catchError((error) => {
-          console.error('Dashboard admin: impossible de charger les sites', error);
-          return of([] as SiteResponse[]);
+          console.error('Dashboard admin: impossible de charger les centres', error);
+          return of([] as CentreResponse[]);
         })
       ),
-      terrains: this.terrainsApi.getAll().pipe(
+      salles: this.sallesApi.getAll().pipe(
         catchError((error) => {
-          console.error('Dashboard admin: impossible de charger les terrains', error);
-          return of([] as TerrainResponse[]);
+          console.error('Dashboard admin: impossible de charger les salles', error);
+          return of([] as SalleResponse[]);
         })
       )
     }).subscribe({
-      next: ({ matches, members, sites, terrains }) => {
-        const filteredSites = this.filterSites(sites);
-        const filteredTerrains = this.filterTerrains(terrains);
+      next: ({ ateliers, members, centres, salles }) => {
+        const filteredCentres = this.filterCentres(centres);
+        const filteredSalles = this.filterSalles(salles);
         const filteredMembers = this.filterMembers(members);
-        const filteredMatches = this.filterMatches(matches, filteredSites);
+        const filteredAteliers = this.filterAteliers(ateliers, filteredCentres);
 
-        this.sites.set(filteredSites);
-        this.terrains.set(filteredTerrains);
+        this.centres.set(filteredCentres);
+        this.salles.set(filteredSalles);
         this.members.set(filteredMembers);
-        this.matches.set(filteredMatches);
+        this.ateliers.set(filteredAteliers);
 
-        if (!filteredMatches.length) {
+        if (!filteredAteliers.length) {
           this.reservations.set([]);
           this.loading.set(false);
           return;
         }
 
         forkJoin(
-          filteredMatches.map((match) =>
-            this.reservationsApi.getByMatch(match.id).pipe(
+          filteredAteliers.map((atelier) =>
+            this.reservationsApi.getByAtelier(atelier.id).pipe(
               catchError((error) => {
-                console.error(`Dashboard admin: impossible de charger les reservations du match ${match.id}`, error);
+                console.error(`Dashboard admin: impossible de charger les reservations du atelier ${atelier.id}`, error);
                 return of([] as ReservationResponse[]);
               })
             )
@@ -452,46 +452,46 @@ export class AdminHomePage {
         });
       },
       error: () => {
-        this.matches.set([]);
+        this.ateliers.set([]);
         this.members.set([]);
-        this.sites.set([]);
-        this.terrains.set([]);
+        this.centres.set([]);
+        this.salles.set([]);
         this.reservations.set([]);
         this.loading.set(false);
       }
     });
   }
 
-  private filterSites(sites: SiteResponse[]): SiteResponse[] {
-    const siteId = this.adminSession.siteId();
-    if (this.adminSession.isGlobalAdmin() || !siteId) {
-      return sites;
+  private filterCentres(centres: CentreResponse[]): CentreResponse[] {
+    const centreId = this.adminSession.centreId();
+    if (this.adminSession.isGlobalAdmin() || !centreId) {
+      return centres;
     }
-    return sites.filter((site) => site.id === siteId);
+    return centres.filter((site) => site.id === centreId);
   }
 
-  private filterTerrains(terrains: TerrainResponse[]): TerrainResponse[] {
-    const siteId = this.adminSession.siteId();
-    if (this.adminSession.isGlobalAdmin() || !siteId) {
-      return terrains;
+  private filterSalles(salles: SalleResponse[]): SalleResponse[] {
+    const centreId = this.adminSession.centreId();
+    if (this.adminSession.isGlobalAdmin() || !centreId) {
+      return salles;
     }
-    return terrains.filter((terrain) => terrain.siteId === siteId);
+    return salles.filter((salle) => salle.centreId === centreId);
   }
 
-  private filterMembers(members: MembreResponse[]): MembreResponse[] {
-    const siteId = this.adminSession.siteId();
-    if (this.adminSession.isGlobalAdmin() || !siteId) {
+  private filterMembers(members: ParticipantResponse[]): ParticipantResponse[] {
+    const centreId = this.adminSession.centreId();
+    if (this.adminSession.isGlobalAdmin() || !centreId) {
       return members;
     }
-    return members.filter((member) => member.siteId === siteId || member.siteId === null);
+    return members.filter((member) => member.centreId === centreId || member.centreId === null);
   }
 
-  private filterMatches(matches: MatchResponse[], sites: SiteResponse[]): MatchResponse[] {
+  private filterAteliers(ateliers: AtelierResponse[], centres: CentreResponse[]): AtelierResponse[] {
     if (this.adminSession.isGlobalAdmin()) {
-      return matches;
+      return ateliers;
     }
 
-    const siteNames = new Set(sites.map((site) => site.nom));
-    return matches.filter((match) => siteNames.has(match.siteNom));
+    const centreNames = new Set(centres.map((site) => site.nom));
+    return ateliers.filter((atelier) => centreNames.has(atelier.centreNom));
   }
 }

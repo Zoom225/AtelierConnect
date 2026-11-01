@@ -35,7 +35,7 @@ import { LanguageSwitcherComponent } from './shared/components/language-switcher
       @if (memberSession.isAuthenticated()) {
         <div class="nav-divider"></div>
         <a routerLink="/member/profile" routerLinkActive="nav-active" class="nav-link">{{ navText().profile }}</a>
-        <a routerLink="/member/ateliers" routerLinkActive="nav-active" class="nav-link">{{ navText().matches }}</a>
+        <a routerLink="/member/ateliers" routerLinkActive="nav-active" class="nav-link">{{ navText().ateliers }}</a>
         <a routerLink="/member/reservations" routerLinkActive="nav-active" class="nav-link">{{ navText().reservations }}</a>
         <a routerLink="/member/payments" routerLinkActive="nav-active" class="nav-link">{{ navText().payments }}</a>
         <div class="nav-divider"></div>
@@ -50,8 +50,8 @@ import { LanguageSwitcherComponent } from './shared/components/language-switcher
         <div class="nav-divider"></div>
         <a routerLink="/admin" routerLinkActive="nav-active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">{{ navText().dashboard }}</a>
         <a routerLink="/admin/participants" routerLinkActive="nav-active" class="nav-link">{{ navText().members }}</a>
-        <a routerLink="/admin/ateliers" routerLinkActive="nav-active" class="nav-link">{{ navText().matches }}</a>
-        <a routerLink="/admin/centres" routerLinkActive="nav-active" class="nav-link">{{ navText().sites }}</a>
+        <a routerLink="/admin/ateliers" routerLinkActive="nav-active" class="nav-link">{{ navText().ateliers }}</a>
+        <a routerLink="/admin/centres" routerLinkActive="nav-active" class="nav-link">{{ navText().centres }}</a>
         <a routerLink="/admin/salles" routerLinkActive="nav-active" class="nav-link">{{ navText().courts }}</a>
         <a routerLink="/admin/fermetures" routerLinkActive="nav-active" class="nav-link">{{ navText().closures }}</a>
         <div class="nav-divider"></div>
@@ -260,10 +260,10 @@ export class App {
     admin: this.language.t('nav.admin'),
     member: this.language.t('nav.member'),
     profile: this.language.t('nav.profile'),
-    matches: this.language.t('nav.matches'),
+    ateliers: this.language.t('nav.ateliers'),
     dashboard: this.language.t('nav.dashboard'),
     members: this.language.t('nav.members'),
-    sites: this.language.t('nav.sites'),
+    centres: this.language.t('nav.centres'),
     courts: this.language.t('nav.courts'),
     closures: this.language.t('nav.closures'),
     reservations: this.language.t('nav.reservations'),

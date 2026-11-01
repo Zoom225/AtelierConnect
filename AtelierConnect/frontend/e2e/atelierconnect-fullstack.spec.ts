@@ -3,13 +3,13 @@ import { expect, test, type APIRequestContext } from '@playwright/test';
 type ParticipantLogin = { id: number; matricule: string; token: string; categorie: string };
 type Atelier = {
   id: number;
-  typeMatch: string;
-  nbJoueursActuels: number;
+  typeAtelier: string;
+  nbParticipantsActuels: number;
   accordOuverturePublique?: boolean | null;
   dateAccordOuverturePublique?: string | null;
 };
-type Reservation = { id: number; matchId: number; statut: string; paiement?: { statut: string } };
-type Salle = { id: number; nom: string; siteId: number };
+type Reservation = { id: number; atelierId: number; statut: string; paiement?: { statut: string } };
+type Salle = { id: number; nom: string; centreId: number };
 
 const demoPassword = process.env.APP_DEMO_MEMBER_PASSWORD;
 const adminPassword = process.env.APP_DEMO_ADMIN_PASSWORD;
@@ -62,7 +62,7 @@ test('parcours complet : identité, atelier privé, invitation, paiement et cons
   });
   expect(creation.status(), await creation.text()).toBe(201);
   const atelier = await creation.json() as Atelier;
-  expect(atelier.typeMatch).toBe('PRIVE');
+  expect(atelier.typeAtelier).toBe('PRIVE');
   expect(atelier.accordOuverturePublique).not.toBe(true);
 
   // Un participant différent ne peut pas gérer les ateliers de l'organisateur.
@@ -73,7 +73,7 @@ test('parcours complet : identité, atelier privé, invitation, paiement et cons
 
   const invitation = await page.request.post('/api/reservations/private-invites', {
     headers: bearer(organisateur.token),
-    data: { matchId: atelier.id, inviteeMatricules: ['S10001'] }
+    data: { atelierId: atelier.id, inviteeMatricules: ['S10001'] }
   });
   expect(invitation.status(), await invitation.text()).toBe(201);
   const reservationsInvite = await invitation.json() as Reservation[];
@@ -91,7 +91,7 @@ test('parcours complet : identité, atelier privé, invitation, paiement et cons
   );
   expect(reservationsOrganisateur.status()).toBe(200);
   const liste = await reservationsOrganisateur.json() as Reservation[];
-  const reservationOrganisateur = liste.find(r => r.matchId === atelier.id);
+  const reservationOrganisateur = liste.find(r => r.atelierId === atelier.id);
   expect(reservationOrganisateur).toBeDefined();
   expect(reservationOrganisateur!.statut).toBe('EN_ATTENTE');
 
@@ -117,7 +117,7 @@ test('parcours complet : identité, atelier privé, invitation, paiement et cons
     headers: bearer(organisateur.token)
   });
   expect(confirmation.status()).toBe(200);
-  expect((await confirmation.json() as Atelier).nbJoueursActuels).toBe(2);
+  expect((await confirmation.json() as Atelier).nbParticipantsActuels).toBe(2);
 
   // Une annulation après paiement doit libérer une place et enregistrer
   // un remboursement dans le système (sans prestataire bancaire).
@@ -142,7 +142,7 @@ test('parcours complet : identité, atelier privé, invitation, paiement et cons
     { headers: bearer(organisateur.token) }
   );
   expect(detailApresAnnulation.status()).toBe(200);
-  expect((await detailApresAnnulation.json() as Atelier).nbJoueursActuels).toBe(1);
+  expect((await detailApresAnnulation.json() as Atelier).nbParticipantsActuels).toBe(1);
 
   const secondeAnnulation = await page.request.patch(
     `/api/reservations/${reservationsInvite[0].id}/cancel`,
@@ -240,14 +240,14 @@ test('administrateur global : créer, modifier et supprimer un centre dans Angul
     nom: string;
     adresse: string;
     ouvertVisiteurs: boolean;
-    dureeMatchMinutes: number;
-    dureeEntreMatchMinutes: number;
+    dureeAtelierMinutes: number;
+    dureeEntreAtelierMinutes: number;
   }>;
   const centre = centres.find(item => item.nom === nom);
   expect(centre).toBeDefined();
   expect(centre!.ouvertVisiteurs).toBe(true);
-  expect(centre!.dureeMatchMinutes).toBe(120);
-  expect(centre!.dureeEntreMatchMinutes).toBe(20);
+  expect(centre!.dureeAtelierMinutes).toBe(120);
+  expect(centre!.dureeEntreAtelierMinutes).toBe(20);
 
   await fiche.locator('button.adm-site-action-edit').click();
   await expect(page.locator('input[formControlName="nom"]')).toHaveValue(nom);

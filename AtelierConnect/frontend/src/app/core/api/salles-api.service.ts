@@ -2,33 +2,33 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
-  TerrainRequest,
-  TerrainResponse
-} from '../../shared/models/site-terrain.model';
+  SalleRequest,
+  SalleResponse
+} from '../../shared/models/centre-salle.model';
 import { apiUrl } from './api-url';
 
 @Injectable({ providedIn: 'root' })
 export class SallesApiService {
   constructor(private readonly http: HttpClient) {}
 
-  getAll(): Observable<TerrainResponse[]> {
-    return this.http.get<TerrainResponse[]>(apiUrl('/salles'));
+  getAll(): Observable<SalleResponse[]> {
+    return this.http.get<SalleResponse[]>(apiUrl('/salles'));
   }
 
-  getById(id: number): Observable<TerrainResponse> {
-    return this.http.get<TerrainResponse>(apiUrl(`/salles/${id}`));
+  getById(id: number): Observable<SalleResponse> {
+    return this.http.get<SalleResponse>(apiUrl(`/salles/${id}`));
   }
 
-  getBySite(siteId: number): Observable<TerrainResponse[]> {
-    return this.http.get<TerrainResponse[]>(apiUrl(`/salles/site/${siteId}`));
+  getByCentre(centreId: number): Observable<SalleResponse[]> {
+    return this.http.get<SalleResponse[]>(apiUrl(`/salles/centre/${centreId}`));
   }
 
-  create(payload: TerrainRequest): Observable<TerrainResponse> {
-    return this.http.post<TerrainResponse>(apiUrl('/salles'), payload);
+  create(payload: SalleRequest): Observable<SalleResponse> {
+    return this.http.post<SalleResponse>(apiUrl('/salles'), payload);
   }
 
-  update(id: number, payload: TerrainRequest): Observable<TerrainResponse> {
-    return this.http.put<TerrainResponse>(apiUrl(`/salles/${id}`), payload);
+  update(id: number, payload: SalleRequest): Observable<SalleResponse> {
+    return this.http.put<SalleResponse>(apiUrl(`/salles/${id}`), payload);
   }
 
   delete(id: number): Observable<void> {

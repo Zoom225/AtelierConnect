@@ -203,7 +203,7 @@ export class MemberPaymentsPage {
     this.loading.set(true);
     this.message.set('');
     this.errorMessage.set('');
-    this.paiementsApi.getByMembre(memberId).subscribe({
+    this.paiementsApi.getByParticipant(memberId).subscribe({
       next: (payments) => {
         this.payments.set(payments);
         this.loading.set(false);

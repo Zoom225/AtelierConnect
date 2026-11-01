@@ -16,7 +16,7 @@ describe('App', () => {
       imports: [App],
       providers: [
         provideRouter([]),
-        { provide: AuthApiService, useValue: { loginMembre: vi.fn() } }
+        { provide: AuthApiService, useValue: { loginParticipant: vi.fn() } }
       ]
     }).compileComponents();
   });
