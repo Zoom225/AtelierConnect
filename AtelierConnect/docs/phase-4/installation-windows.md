@@ -131,7 +131,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate-fullstack.p
 Le script réserve les ports applicatifs libres, crée un serveur PostgreSQL de test
 sur 5549 si nécessaire et deux bases dédiées par exécution. Il ne cible jamais
 `atelierconnect_db`. Il enchaîne wrapper `clean verify`, npm ci, Vitest, build,
-installation Chromium, vrais serveurs, quatre parcours et contrôle de persistance
+installation Chromium, vrais serveurs, six parcours et contrôle de persistance
 après redémarrage du **serveur PostgreSQL de test**. Il ne supprime ni base ni volume.
 Les bases de preuve s'accumulent volontairement ; leur rétention doit être gérée
 séparément, sans toucher à la base applicative.

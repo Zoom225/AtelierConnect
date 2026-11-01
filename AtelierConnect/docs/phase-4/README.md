@@ -5,6 +5,18 @@
 la branche `phase-4/validation-tfe` ne sera créée qu'après validation et intégration
 de la phase 3. Aucun acquis n'est présenté comme officiellement validé par l'EPHEC.
 
+## Recette finale de phase 3
+
+État courant : **179 tests Java, 75 tests Angular, six parcours Chromium** ;
+compilations et persistance PostgreSQL réussies. Les contrôles automatisés sont
+distincts de la recette humaine et des décisions sur les séances héritées futures.
+
+- [Rapport final et avis d'intégration](recette-finale.md)
+- [Matrice des règles et tests](matrice-regles-tests.md)
+- [Matrice des autorisations et vrais JWT](matrice-autorisations.md)
+- [Données historiques : inventaire et plan à approuver](historique-plan.md)
+- [Captures publiques et provenance](preuves/README.md)
+
 ## Dossier de preuve
 
 - [Analyse fonctionnelle et cahier des charges](fonctionnel.md)
@@ -29,12 +41,12 @@ Les classes Java sont sous `src/main/java/com/atelierconnect`, les tests Java so
 | 1. Analyse fonctionnelle | `AtelierRules`, `AtelierServiceImpl.createAtelier`, `ReservationServiceImpl.create` | Cas participant/admin des quatre parcours Playwright ; critères UC du CDC | [fonctionnel](fonctionnel.md) ; faire valider le besoin par les parties prenantes |
 | 2. Cahier des charges | `AtelierRules.delaiReservation`, `validateCentreAccessForOrganizer`, `validateBookingDelay` | `AtelierServiceTest`, `ReservationServiceTest`, tests de formulaire Angular | [fonctionnel](fonctionnel.md) ; arbitrer les règles historiques non spécifiées |
 | 3. Modèle conceptuel et relationnel | `Participant`, `Centre`, `Salle`, `Atelier`, `Reservation`, `Paiement`, `Penalite`, `JourFermeture`, `Administrateur` | `LegacySchemaCompatibilityTest`, restauration d'une copie réelle | [architecture-donnees](architecture-donnees.md) ; revue du modèle avec l'encadrant |
-| 4. Intégrité PostgreSQL | Repositories et FK JPA ; `AtelierRepository.findByIdForUpdate`, `ReservationRepository.lockReservationById` | `PaiementConcurrencyPostgresTest` : quatre courses ; empreinte persistante après redémarrage | [architecture-donnees](architecture-donnees.md) ; stratégie de reprise des données historiques |
+| 4. Intégrité PostgreSQL | Repositories et FK JPA ; verrous atelier, réservation et salle | `PaiementConcurrencyPostgresTest` et `AtelierConcurrencyPostgresTest` : sept scénarios ; empreinte après redémarrage | [architecture-donnees](architecture-donnees.md), [plan historique](historique-plan.md) |
 | 5. Architecture trois couches | `SalleController.update` → `SalleServiceImpl.update` → `SalleRepository` ; DTO et mappers | `SalleWriteEndpointIntegrationTest`, compilations et démarrage réseau réel | [architecture-donnees](architecture-donnees.md) ; expliquer la frontière transactionnelle |
-| 6. Authentification et autorisation | `JwtConfig`, `JwtAuthenticationFilter`, `SecurityConfig`, `CurrentParticipantService`, `AdminAuthorizationService` | `JwtConfigTest`, `JwtAuthenticationFilterTest`, `AdminAuthorizationServiceTest`, tests d'accès HTTP | [api-securite](api-securite.md) ; recette manuelle complète d'un admin SITE |
+| 6. Authentification et autorisation | `JwtConfig`, filtre, `SecurityConfig`, services d'identité et de périmètre | Tests JWT existants et cinq méthodes de `AuthorizationJwtIntegrationTest`, dont centres homonymes et paiements étrangers | [matrice des autorisations](matrice-autorisations.md) ; recette humaine de l'ergonomie SITE restante |
 | 7. API REST sécurisée | Contrôleurs REST, `ParticipantAccessService`, `GlobalExceptionHandler` | Tests contrôleurs ; Swagger et refus 400/403/404 testés dans Chromium | [api-securite](api-securite.md) ; décider d'une éventuelle normalisation 401/409 |
-| 8. Interface Angular | `MemberCreateAtelierPage.submit`, `MemberReservationsPage.pay/cancel/consentToPublicOpening`, pages d'administration | 74 tests Vitest, quatre parcours Chromium, build production | [manuel](manuel-demonstration.md) ; recette FR/EN, mobile et clavier |
-| 9. Métier et erreurs | `ReservationServiceImpl.create/confirm`, `PaiementServiceImpl.pay`, `AtelierServiceImpl.checkAndConvertExpiredPrivateAteliers` | Dette, suspension, consentement, plafond privé et paiement testés ; erreurs JSON | [fonctionnel](fonctionnel.md), [rapport](tests-limites.md) ; frontières de dates à arbitrer |
+| 8. Interface Angular | Création/réservations, administration, `LandingPage`, langue et focus clavier | 75 tests Vitest, six parcours Chromium, build production et trois captures publiques | [preuves](preuves/README.md) ; contrôle humain et lecteur d'écran à compléter |
+| 9. Métier et erreurs | Services Atelier, Réservation, Paiement et `AtelierRules` | `AtelierBoundaryTest`, `ReservationBookingBoundaryTest`, tests de transactions et scheduler | [matrice règles/tests](matrice-regles-tests.md) ; bornes 30/15/7, pause et arbitrages documentés |
 | 10. Tests et CI/CD | `.github/workflows/atelierconnect-backend.yml`, `scripts/validate-fullstack.ps1` | Rapports Surefire, Vitest JSON, Playwright JSON/HTML ; trois jobs CI | [rapport](tests-limites.md) ; aucun déploiement continu de production configuré |
 | 11. Documentation et défense | Ce dossier, README et scripts Windows | Démonstration reproductible ; résultats datés et limites explicites | [manuel](manuel-demonstration.md), [installation](installation-windows.md) ; captures et répétition orale à compléter |
 

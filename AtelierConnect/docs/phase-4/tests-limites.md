@@ -1,5 +1,9 @@
 # Rapport de validation et limites techniques
 
+Ce rapport conserve les preuves de la version `9a4c27e` du 1er novembre 2026.
+Pour les correctifs et résultats de recette finale, lire [recette-finale.md](recette-finale.md)
+et ses matrices associées.
+
 ## Périmètre et environnement
 
 Travail sur `phase-3/refactoring-frontend`, après synchronisation Git sans écraser

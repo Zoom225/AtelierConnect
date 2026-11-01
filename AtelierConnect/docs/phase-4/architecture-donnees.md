@@ -1,5 +1,12 @@
 # Architecture, UML et données
 
+Actualisation de la recette finale : création et déplacement d'atelier verrouillent
+la salle cible avec `SalleService.getByIdForUpdate` dans la transaction métier,
+avant de vérifier les chevauchements et la pause. Les mutations d'atelier utilisent
+également son verrou et rechargent son état. Les sept scénarios PostgreSQL et leurs
+méthodes exactes figurent dans la [matrice règles/tests](matrice-regles-tests.md).
+Cela n'ajoute aucune contrainte SQL destructive ni migration de l'historique.
+
 ## Architecture en couches
 
 ```mermaid

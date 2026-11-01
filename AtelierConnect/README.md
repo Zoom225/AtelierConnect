@@ -10,7 +10,9 @@ Le [dossier de préparation phase 4](docs/phase-4/README.md) contient la matrice
 onze thèmes, les diagrammes, le manuel et la référence API. Le [guide Windows et
 IntelliJ](docs/phase-4/installation-windows.md) décrit la configuration privée et
 le script de validation isolée. Le [rapport de tests](docs/phase-4/tests-limites.md)
-documente les 152 tests Java, 74 tests Angular, quatre parcours Chromium et la CI.
+conserve la validation précédente. Le [rapport de recette finale](docs/phase-4/recette-finale.md)
+documente désormais 179 tests Java, 75 tests Angular, six parcours Chromium, les
+autorisations vérifiées, les captures et le plan des données historiques.
 La PR #2 reste en brouillon ; aucune branche phase 4 avant intégration de phase 3.
 
 ## Prérequis
