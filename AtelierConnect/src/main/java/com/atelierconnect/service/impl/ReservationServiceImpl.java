@@ -42,11 +42,11 @@ public class ReservationServiceImpl implements ReservationService {
 
         // Regle metier : impossible de reserver un match deja complet.
         if (match.getStatut() == StatutAtelier.COMPLET) {
-            throw new BusinessException("Le match est déjà complet.");
+            throw new BusinessException("Cet atelier est déjà complet.");
         }
         // Regle metier : impossible de reserver un match annule.
         if (match.getStatut() == StatutAtelier.ANNULE) {
-            throw new BusinessException("Le match est annulé.");
+            throw new BusinessException("Cet atelier est annulé.");
         }
         if (!match.getDateDebut().isAfter(LocalDateTime.now())) {
             throw new BusinessException("Un atelier passé ne peut plus être réservé.");
@@ -58,29 +58,29 @@ public class ReservationServiceImpl implements ReservationService {
 
         // Regle metier : un membre ne peut pas etre inscrit deux fois au meme match.
         if (reservationRepository.existsByMatchIdAndMembreId(matchId, membreId)) {
-            throw new BusinessException("Ce membre est déjà inscrit à ce match.");
+            throw new BusinessException("Ce participant est déjà inscrit à cet atelier.");
         }
 
         // Regle metier : un membre penalise ne peut pas reserver.
         if (membreService.hasActivePenalty(membreId)) {
-            throw new BusinessException("Vous avez une pénalité active et ne pouvez pas réserver ce match.");
+            throw new BusinessException("Vous avez une suspension active et ne pouvez pas réserver cet atelier.");
         }
 
         // Regle metier : un membre avec un solde impaye ne peut pas reserver.
         if (membreService.hasOutstandingBalance(membreId)) {
-            throw new BusinessException("Vous avez un solde impayé et ne pouvez pas réserver ce match.");
+            throw new BusinessException("Vous avez un solde impayé et ne pouvez pas réserver cet atelier.");
         }
 
         // Le requesterId est l'ID de la personne qui initie la demande de reservation.
         // Regle metier : seul l'organisateur peut inviter des joueurs sur un match prive.
         if (match.getTypeMatch() == TypeAtelier.PRIVE
                 && !match.getOrganisateur().getId().equals(requesterId)) {
-            throw new BusinessException("Pour un match privé, seul l'organisateur peut ajouter des joueurs.");
+            throw new BusinessException("Pour un atelier privé, seul l'organisateur peut inscrire des invités.");
         }
 
         // Regle metier : un membre reserve un match public uniquement pour lui-meme.
         if (match.getTypeMatch() == TypeAtelier.PUBLIC && !membreId.equals(requesterId)) {
-            throw new BusinessException("Un membre ne peut réserver un match public que pour lui-même.");
+            throw new BusinessException("Un participant ne peut réserver un atelier public que pour lui-même.");
         }
 
         if (membre.getTypeMembre() == TypeParticipant.SITE) {
@@ -88,7 +88,7 @@ public class ReservationServiceImpl implements ReservationService {
             Long matchSiteId = match.getTerrain().getSite().getId();
             // Regle metier : un membre SITE ne reserve que sur son site.
             if (!membreSiteId.equals(matchSiteId)) {
-                throw new BusinessException("Un membre SITE ne peut réserver que sur son propre site.");
+                throw new BusinessException("Un abonné ne peut réserver que dans son centre de rattachement.");
             }
         }
         if (membre.getTypeMembre() == TypeParticipant.LIBRE
@@ -114,7 +114,7 @@ public class ReservationServiceImpl implements ReservationService {
         paiement = paiementRepository.save(paiement);
         reservation.setPaiement(paiement);
 
-        log.info("Réservation créée pour le membre {} sur le match {}", membreId, matchId);
+        log.info("Réservation créée pour le participant {} à l'atelier {}", membreId, matchId);
 
         return reservation;
     }
@@ -161,7 +161,7 @@ public class ReservationServiceImpl implements ReservationService {
         Reservation reservation = getById(reservationId);
         // Regle metier : un membre ne peut consulter que ses propres reservations.
         if (!reservation.getMembre().getId().equals(membreId)) {
-            throw new BusinessException("Accès refusé : cette réservation appartient à un autre membre.");
+            throw new BusinessException("Accès refusé : cette réservation appartient à un autre participant.");
         }
     }
 
