@@ -391,7 +391,7 @@ export class AdminHomePage {
     forkJoin({
       ateliers: this.ateliersApi.getAll().pipe(
         catchError((error) => {
-          console.error('Dashboard admin: impossible de charger les matchs', error);
+          console.error('Dashboard admin: impossible de charger les ateliers', error);
           return of([] as AtelierResponse[]);
         })
       ),

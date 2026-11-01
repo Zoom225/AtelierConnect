@@ -301,7 +301,7 @@ export class MemberReservationsPage {
   readonly errorMessage = signal('');
   readonly reservations = signal<ReservationResponse[]>([]);
   readonly organisedAteliers = signal<AtelierResponse[]>([]);
-  // Ne retourne que les matchs PRIVE pour la gestion des participants
+  // Ne retourne que les ateliers PRIVE pour la gestion des participants
   readonly managedAteliers = computed(() => this.organisedAteliers().filter((m) => m.typeAtelier === 'PRIVE'));
   readonly selectedManagedAtelier = computed(() => {
     const atelierId = this.managedAtelierId();
