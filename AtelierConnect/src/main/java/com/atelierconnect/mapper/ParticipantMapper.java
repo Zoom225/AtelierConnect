@@ -14,24 +14,24 @@ public class ParticipantMapper {
                 .nom(request.getNom())
                 .prenom(request.getPrenom())
                 .email(request.getEmail())
-                .typeMembre(request.getCategorie() != null
-                        ? request.getCategorie() : request.getTypeMembre().toCategorie())
+                .typeParticipant(request.getCategorie() != null
+                        ? request.getCategorie() : request.getTypeParticipant().toCategorie())
                 .build();
-        // le site est résolu dans le service via siteId
+        // le centre est résolu dans le service via siteId
     }
 
-    public ParticipantResponse toResponse(Participant membre) {
+    public ParticipantResponse toResponse(Participant participant) {
         return ParticipantResponse.builder()
-                .id(membre.getId())
-                .matricule(membre.getMatricule())
-                .nom(membre.getNom())
-                .prenom(membre.getPrenom())
-                .email(membre.getEmail())
-                .typeMembre(membre.getTypeMembre().toLegacyType())
-                .categorie(membre.getTypeMembre())
-                .siteId(membre.getSite() != null ? membre.getSite().getId() : null)
-                .siteNom(membre.getSite() != null ? membre.getSite().getNom() : null)
-                .solde(membre.getSolde())
+                .id(participant.getId())
+                .matricule(participant.getMatricule())
+                .nom(participant.getNom())
+                .prenom(participant.getPrenom())
+                .email(participant.getEmail())
+                .typeParticipant(participant.getTypeParticipant().toLegacyType())
+                .categorie(participant.getTypeParticipant())
+                .centreId(participant.getCentre() != null ? participant.getCentre().getId() : null)
+                .centreNom(participant.getCentre() != null ? participant.getCentre().getNom() : null)
+                .solde(participant.getSolde())
                 .build();
     }
 }

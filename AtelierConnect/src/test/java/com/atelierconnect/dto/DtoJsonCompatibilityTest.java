@@ -25,15 +25,15 @@ class DtoJsonCompatibilityTest {
         CreateAtelierRequest request = mapper.readValue("""
                 {"salleId": 3, "atelierDate": "2030-05-01T10:00:00", "atelierType": "PUBLIC"}
                 """, CreateAtelierRequest.class);
-        assertThat(request.terrainId()).isEqualTo(3L);
-        assertThat(request.matchDate()).isEqualTo(LocalDateTime.of(2030, 5, 1, 10, 0));
-        assertThat(request.matchType()).isEqualTo("PUBLIC");
+        assertThat(request.salleId()).isEqualTo(3L);
+        assertThat(request.atelierDate()).isEqualTo(LocalDateTime.of(2030, 5, 1, 10, 0));
+        assertThat(request.atelierType()).isEqualTo("PUBLIC");
 
         ReservationRequest reservation = mapper.readValue("""
                 {"atelierId": 4, "participantId": 5, "requesterId": 5}
                 """, ReservationRequest.class);
-        assertThat(reservation.getMatchId()).isEqualTo(4L);
-        assertThat(reservation.getMembreId()).isEqualTo(5L);
+        assertThat(reservation.getAtelierId()).isEqualTo(4L);
+        assertThat(reservation.getParticipantId()).isEqualTo(5L);
     }
 
     @Test

@@ -31,19 +31,19 @@ class AdminAuthorizationServiceTest {
     @Mock
     private AdministrateurRepository administrateurRepository;
     @Mock
-    private AtelierRepository matchRepository;
+    private AtelierRepository atelierRepository;
 
     private AdminAuthorizationService adminAuthorizationService;
-    private Centre siteLyon;
-    private Centre siteParis;
+    private Centre centreLyon;
+    private Centre centreParis;
 
     @BeforeEach
     void setUp() {
-        adminAuthorizationService = new AdminAuthorizationService(administrateurRepository, matchRepository);
-        siteLyon = Centre.builder().nom("Padel Club Lyon").build();
-        siteLyon.setId(1L);
-        siteParis = Centre.builder().nom("Padel Club Paris").build();
-        siteParis.setId(2L);
+        adminAuthorizationService = new AdminAuthorizationService(administrateurRepository, atelierRepository);
+        centreLyon = Centre.builder().nom("Centre collaboratif Lyon").build();
+        centreLyon.setId(1L);
+        centreParis = Centre.builder().nom("Centre collaboratif Paris").build();
+        centreParis.setId(2L);
     }
 
     @AfterEach
@@ -52,73 +52,73 @@ class AdminAuthorizationServiceTest {
     }
 
     @Test
-    @DisplayName("Un admin GLOBAL peut accéder à tous les sites")
-    void globalAdminCanAccessEverySite() {
+    @DisplayName("Un admin GLOBAL peut accéder à tous les centres")
+    void globalAdminCanAccessEveryCentre() {
         String adminEmail = "admin@padel.com";
         authenticate(adminEmail);
         when(administrateurRepository.findByEmail(adminEmail))
                 .thenReturn(Optional.of(admin(adminEmail, TypeAdministrateur.GLOBAL, null)));
 
-        adminAuthorizationService.checkSiteAccess(siteParis.getId());
+        adminAuthorizationService.checkCentreAccess(centreParis.getId());
     }
 
     @Test
-    @DisplayName("Un admin SITE peut accéder uniquement à son site")
-    void siteAdminCanAccessOwnSiteOnly() {
+    @DisplayName("Un admin SITE peut accéder uniquement à son centre")
+    void centreAdminCanAccessOwnCentreOnly() {
         String adminEmail = "admin.lyon@padel.com";
         authenticate(adminEmail);
         when(administrateurRepository.findByEmail(adminEmail))
-                .thenReturn(Optional.of(admin(adminEmail, TypeAdministrateur.SITE, siteLyon)));
+                .thenReturn(Optional.of(admin(adminEmail, TypeAdministrateur.SITE, centreLyon)));
 
-        adminAuthorizationService.checkSiteAccess(siteLyon.getId());
-        assertThatThrownBy(() -> adminAuthorizationService.checkSiteAccess(siteParis.getId()))
+        adminAuthorizationService.checkCentreAccess(centreLyon.getId());
+        assertThatThrownBy(() -> adminAuthorizationService.checkCentreAccess(centreParis.getId()))
                 .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("son propre site");
+                .hasMessageContaining("son propre centre");
     }
 
     @Test
-    @DisplayName("Un admin SITE sans site rattaché est refusé")
-    void siteAdminWithoutSiteIsRejected() {
+    @DisplayName("Un admin SITE sans centre rattaché est refusé")
+    void centreAdminWithoutCentreIsRejected() {
         String adminEmail = "admin.site@padel.com";
         authenticate(adminEmail);
         when(administrateurRepository.findByEmail(adminEmail))
                 .thenReturn(Optional.of(admin(adminEmail, TypeAdministrateur.SITE, null)));
 
-        assertThatThrownBy(() -> adminAuthorizationService.checkSiteAccess(siteLyon.getId()))
+        assertThatThrownBy(() -> adminAuthorizationService.checkCentreAccess(centreLyon.getId()))
                 .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("son propre site");
+                .hasMessageContaining("son propre centre");
     }
 
     @Test
-    @DisplayName("Un admin SITE ne peut gérer que les membres de son site")
-    void siteAdminCanManageOnlyOwnMembers() {
+    @DisplayName("Un admin SITE ne peut gérer que les participants de son centre")
+    void centreAdminCanManageOnlyOwnParticipants() {
         String adminEmail = "admin.lyon@padel.com";
         authenticate(adminEmail);
         // La ligne suivante est la ligne 94 dans le fichier de test si le reste est identique.
         // Elle doit stuber avec 'adminEmail' qui est "admin.lyon@padel.com"
         when(administrateurRepository.findByEmail(adminEmail))
-                .thenReturn(Optional.of(admin(adminEmail, TypeAdministrateur.SITE, siteLyon)));
+                .thenReturn(Optional.of(admin(adminEmail, TypeAdministrateur.SITE, centreLyon)));
 
-        Participant membreParis = Participant.builder().site(siteParis).build();
+        Participant participantParis = Participant.builder().centre(centreParis).build();
 
-        assertThatThrownBy(() -> adminAuthorizationService.checkMembreAccess(membreParis))
+        assertThatThrownBy(() -> adminAuthorizationService.checkParticipantAccess(participantParis))
                 .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("membres de son site");
+                .hasMessageContaining("participants de son centre");
     }
 
     @Test
-    @DisplayName("Un admin SITE ne peut gérer que les terrains de son site")
-    void siteAdminCanManageOnlyOwnTerrains() {
+    @DisplayName("Un admin SITE ne peut gérer que les salles de son centre")
+    void centreAdminCanManageOnlyOwnSalles() {
         String adminEmail = "admin.lyon@padel.com";
         authenticate(adminEmail);
         when(administrateurRepository.findByEmail(adminEmail))
-                .thenReturn(Optional.of(admin(adminEmail, TypeAdministrateur.SITE, siteLyon)));
+                .thenReturn(Optional.of(admin(adminEmail, TypeAdministrateur.SITE, centreLyon)));
 
-        Salle terrainParis = Salle.builder().site(siteParis).build();
+        Salle salleParis = Salle.builder().centre(centreParis).build();
 
-        assertThatThrownBy(() -> adminAuthorizationService.checkTerrainAccess(terrainParis))
+        assertThatThrownBy(() -> adminAuthorizationService.checkSalleAccess(salleParis))
                 .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("son propre site");
+                .hasMessageContaining("son propre centre");
     }
 
     private void authenticate(String email) {
@@ -128,11 +128,11 @@ class AdminAuthorizationServiceTest {
     }
 
     // Méthode admin modifiée pour accepter l'email
-    private Administrateur admin(String email, TypeAdministrateur type, Centre site) {
+    private Administrateur admin(String email, TypeAdministrateur type, Centre centre) {
         return Administrateur.builder()
                 .email(email) // Utilise l'email passé en paramètre
                 .typeAdministrateur(type)
-                .site(site)
+                .centre(centre)
                 .build();
     }
 }

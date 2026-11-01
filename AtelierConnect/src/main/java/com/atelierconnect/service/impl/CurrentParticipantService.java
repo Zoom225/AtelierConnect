@@ -12,31 +12,31 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CurrentParticipantService {
 
-    private final ParticipantRepository membreRepository;
+    private final ParticipantRepository participantRepository;
 
-    public Participant currentMember() {
+    public Participant currentParticipant() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication.getName() == null || "anonymousUser".equals(authentication.getName())) {
-            throw new BusinessException("Authentification membre requise.");
+            throw new BusinessException("Authentification participant requise.");
         }
 
-        return membreRepository.findByMatriculeIgnoreCase(authentication.getName())
-                .orElseThrow(() -> new BusinessException("Membre connecté introuvable."));
+        return participantRepository.findByMatriculeIgnoreCase(authentication.getName())
+                .orElseThrow(() -> new BusinessException("Participant connecté introuvable."));
     }
 
-    public Long currentMemberId() {
-        return currentMember().getId();
+    public Long currentParticipantId() {
+        return currentParticipant().getId();
     }
 
-    public void requireCurrentMember(Long membreId) {
-        if (!currentMemberId().equals(membreId)) {
-            throw new BusinessException("Accès refusé : cette ressource appartient à un autre membre.");
+    public void requireCurrentParticipant(Long participantId) {
+        if (!currentParticipantId().equals(participantId)) {
+            throw new BusinessException("Accès refusé : cette ressource appartient à un autre participant.");
         }
     }
 
-    public boolean isCurrentMemberId(Long membreId) {
+    public boolean isCurrentParticipantId(Long participantId) {
         try {
-            requireCurrentMember(membreId);
+            requireCurrentParticipant(participantId);
             return true;
         } catch (BusinessException ex) {
             return false;

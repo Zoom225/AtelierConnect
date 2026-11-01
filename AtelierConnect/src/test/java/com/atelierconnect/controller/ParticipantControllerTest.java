@@ -49,117 +49,117 @@ class ParticipantControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private ParticipantService membreService;
+    private ParticipantService participantService;
     @MockitoBean
-    private ParticipantMapper membreMapper;
+    private ParticipantMapper participantMapper;
     @MockitoBean(name = "participantAccessService")
-    private ParticipantAccessService membreAccessService;
+    private ParticipantAccessService participantAccessService;
     @MockitoBean
-    private ParticipantCreationService membreCreationService;
+    private ParticipantCreationService participantCreationService;
     @MockitoBean
-    private CurrentParticipantService currentMemberService;
+    private CurrentParticipantService currentParticipantService;
 
     @MockitoBean
     private JwtConfig jwtConfig;
     @MockitoBean
     private AdministrateurRepository administrateurRepository;
     @MockitoBean
-    private ParticipantRepository membreRepository;
+    private ParticipantRepository participantRepository;
 
-    private ParticipantRequest membreRequest;
-    private ParticipantResponse membreResponse;
-    private Participant membreEntity; // Added for authenticate mock
+    private ParticipantRequest participantRequest;
+    private ParticipantResponse participantResponse;
+    private Participant participantEntity; // Added for authenticate mock
 
     @BeforeEach
     void setUp() {
-        membreRequest = new ParticipantRequest();
-        membreRequest.setMatricule("L12345");
-        membreRequest.setNom("Doe");
-        membreRequest.setPrenom("John");
-        membreRequest.setTypeMembre(com.atelierconnect.entity.enums.TypeParticipantLegacy.GLOBAL);
+        participantRequest = new ParticipantRequest();
+        participantRequest.setMatricule("L12345");
+        participantRequest.setNom("Doe");
+        participantRequest.setPrenom("John");
+        participantRequest.setTypeParticipant(com.atelierconnect.entity.enums.TypeParticipantLegacy.GLOBAL);
 
-        when(membreAccessService.canCreate(nullable(Long.class))).thenReturn(true);
-        when(membreAccessService.canManageById(anyLong())).thenReturn(true);
-        when(membreAccessService.canReadById(anyLong())).thenReturn(true);
-        when(membreAccessService.canReadByMatricule(anyString())).thenReturn(true);
+        when(participantAccessService.canCreate(nullable(Long.class))).thenReturn(true);
+        when(participantAccessService.canManageById(anyLong())).thenReturn(true);
+        when(participantAccessService.canReadById(anyLong())).thenReturn(true);
+        when(participantAccessService.canReadByMatricule(anyString())).thenReturn(true);
 
-        membreResponse = new ParticipantResponse();
-        membreResponse.setId(1L);
-        membreResponse.setMatricule("L12345");
+        participantResponse = new ParticipantResponse();
+        participantResponse.setId(1L);
+        participantResponse.setMatricule("L12345");
 
-        membreEntity = new Participant(); // Initialize membreEntity
-        membreEntity.setId(1L);
-        membreEntity.setMatricule("L12345");
-        membreEntity.setTypeMembre(com.atelierconnect.entity.enums.TypeParticipant.LIBRE);
+        participantEntity = new Participant(); // Initialize membreEntity
+        participantEntity.setId(1L);
+        participantEntity.setMatricule("L12345");
+        participantEntity.setTypeParticipant(com.atelierconnect.entity.enums.TypeParticipant.VISITEUR);
     }
 
     @Test
-    @DisplayName("POST /api/membres - Doit refuser la creation sans authentification")
-    void createMember_WithoutAuthentication_ShouldReturnForbidden() throws Exception {
+    @DisplayName("POST /api/participants - Doit refuser la creation sans authentification")
+    void createParticipant_WithoutAuthentication_ShouldReturnForbidden() throws Exception {
         mockMvc.perform(post("/api/membres")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(membreRequest)))
+                        .content(objectMapper.writeValueAsString(participantRequest)))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(roles = "MEMBER")
-    @DisplayName("POST /api/membres - Doit refuser la creation avec un role membre")
-    void createMember_WithMemberRole_ShouldReturnForbidden() throws Exception {
+    @DisplayName("POST /api/participants - Doit refuser la creation avec un role participant")
+    void createParticipant_WithParticipantRole_ShouldReturnForbidden() throws Exception {
         mockMvc.perform(post("/api/membres")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(membreRequest)))
+                        .content(objectMapper.writeValueAsString(participantRequest)))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("POST /api/membres - Doit creer un membre avec un role admin")
-    void createMember_WithAdminRole_ShouldReturnCreated() throws Exception {
-        when(membreCreationService.create(any(ParticipantRequest.class))).thenReturn(membreEntity);
-        when(membreMapper.toResponse(any(Participant.class))).thenReturn(membreResponse);
+    @DisplayName("POST /api/participants - Doit creer un participant avec un role admin")
+    void createParticipant_WithAdminRole_ShouldReturnCreated() throws Exception {
+        when(participantCreationService.create(any(ParticipantRequest.class))).thenReturn(participantEntity);
+        when(participantMapper.toResponse(any(Participant.class))).thenReturn(participantResponse);
 
         mockMvc.perform(post("/api/membres")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(membreRequest)))
+                        .content(objectMapper.writeValueAsString(participantRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1L));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("PUT /api/membres/{id} - Doit mettre à jour un membre avec un rôle autorisé")
-    void updateMember_WithAuthorizedRole_ShouldReturnOk() throws Exception {
-        when(membreService.update(anyLong(), any(Participant.class))).thenReturn(new Participant());
-        when(membreMapper.toEntity(any(ParticipantRequest.class))).thenReturn(new Participant());
-        when(membreMapper.toResponse(any(Participant.class))).thenReturn(membreResponse);
+    @DisplayName("PUT /api/participants/{id} - Doit mettre à jour un participant avec un rôle autorisé")
+    void updateParticipant_WithAuthorizedRole_ShouldReturnOk() throws Exception {
+        when(participantService.update(anyLong(), any(Participant.class))).thenReturn(new Participant());
+        when(participantMapper.toEntity(any(ParticipantRequest.class))).thenReturn(new Participant());
+        when(participantMapper.toResponse(any(Participant.class))).thenReturn(participantResponse);
 
         mockMvc.perform(put("/api/membres/1")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(membreRequest)))
+                        .content(objectMapper.writeValueAsString(participantRequest)))
                 .andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(roles = "MEMBER")
-    @DisplayName("PUT /api/membres/{id} - Doit retourner 403 pour un rôle non autorisé")
-    void updateMember_WithUnauthorizedRole_ShouldReturnForbidden() throws Exception {
+    @DisplayName("PUT /api/participants/{id} - Doit retourner 403 pour un rôle non autorisé")
+    void updateParticipant_WithUnauthorizedRole_ShouldReturnForbidden() throws Exception {
         mockMvc.perform(put("/api/membres/1")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(membreRequest)))
+                        .content(objectMapper.writeValueAsString(participantRequest)))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("DELETE /api/membres/{id} - Doit supprimer un membre avec un rôle autorisé")
-    void deleteMember_WithAuthorizedRole_ShouldReturnNoContent() throws Exception {
-        doNothing().when(membreService).delete(1L);
+    @DisplayName("DELETE /api/participants/{id} - Doit supprimer un participant avec un rôle autorisé")
+    void deleteParticipant_WithAuthorizedRole_ShouldReturnNoContent() throws Exception {
+        doNothing().when(participantService).delete(1L);
 
         mockMvc.perform(delete("/api/membres/1")
                         .with(csrf()))
@@ -167,11 +167,11 @@ class ParticipantControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/membres/login - Doit authentifier un membre et retourner un token")
-    void loginMembre_ShouldAuthenticateAndReturnToken() throws Exception {
+    @DisplayName("POST /api/participants/login - Doit authentifier un participant et retourner un token")
+    void loginParticipant_ShouldAuthenticateAndReturnToken() throws Exception {
         ParticipantLoginRequest loginRequest = new ParticipantLoginRequest("L12345", "Membre1234!");
-        when(membreService.authenticate("L12345", "Membre1234!")).thenReturn(membreEntity);
-        when(membreMapper.toResponse(any(Participant.class))).thenReturn(membreResponse);
+        when(participantService.authenticate("L12345", "Membre1234!")).thenReturn(participantEntity);
+        when(participantMapper.toResponse(any(Participant.class))).thenReturn(participantResponse);
         when(jwtConfig.generateToken(anyString(), anyString(), anyString())).thenReturn("mocked-jwt-token");
 
         mockMvc.perform(post("/api/membres/login")

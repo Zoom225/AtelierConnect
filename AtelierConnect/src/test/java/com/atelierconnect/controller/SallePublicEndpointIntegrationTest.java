@@ -38,7 +38,7 @@ class SallePublicEndpointIntegrationTest {
         List<Salle> salles = salleRepository.findAll();
         assertThat(salles).isNotEmpty();
         Long salleId = salles.get(0).getId();
-        Long centreId = salles.get(0).getSite().getId();
+        Long centreId = salles.get(0).getCentre().getId();
 
         mvc.perform(get("/api/salles/{id}", salleId))
                 .andExpect(status().isOk())

@@ -35,20 +35,20 @@ public class PaiementServiceImpl implements PaiementService {
     private final ReservationRepository reservationRepository;
     private final EntityManager entityManager;
     private final ReservationService reservationService;
-    private final ParticipantRepository membreRepository;
-    private final AtelierRepository matchRepository;
+    private final ParticipantRepository participantRepository;
+    private final AtelierRepository atelierRepository;
 
     @Override
     @Transactional
-    public Paiement pay(Long reservationId, Long membreId) {
+    public Paiement pay(Long reservationId, Long participantId) {
         // Toujours verrouiller avant de lire les statuts : deux requêtes simultanées
         // sur la même réservation ne doivent jamais confirmer deux paiements.
         reservationRepository.lockReservationById(reservationId);
         Reservation reservation = reservationService.getById(reservationId);
-        Participant membre = reservation.getMembre();
+        Participant participant = reservation.getParticipant();
 
-        // Regle metier : seul le membre lié a la reservation peut payer.
-        if (!membre.getId().equals(membreId)) {
+        // Regle metier : seul le participant lié a la reservation peut payer.
+        if (!participant.getId().equals(participantId)) {
             throw new BusinessException("Seul le participant associé à cette réservation peut payer.");
         }
 
@@ -75,27 +75,27 @@ public class PaiementServiceImpl implements PaiementService {
         if (reservation.getStatut() != StatutReservation.EN_ATTENTE) {
             throw new BusinessException("Seules les réservations en attente peuvent être payées.");
         }
-        // La place est attribuee uniquement au moment du paiement, apres verification du match sous verrou.
-        Atelier match = matchRepository.findByIdForUpdate(reservation.getMatch().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Atelier introuvable avec l'ID : " + reservation.getMatch().getId()));
+        // La place est attribuee uniquement au moment du paiement, apres verification de l'atelier sous verrou.
+        Atelier atelier = atelierRepository.findByIdForUpdate(reservation.getAtelier().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Atelier introuvable avec l'ID : " + reservation.getAtelier().getId()));
         // Rafraîchir sous verrou : l'atelier peut avoir été chargé en mémoire
         // AVANT le SELECT FOR UPDATE d'une transaction concurrente.
-        entityManager.refresh(match);
-        // Regle metier : le match doit toujours etre valide une fois verrouille.
-        if (match.getStatut() == StatutAtelier.ANNULE) {
+        entityManager.refresh(atelier);
+        // Regle metier : l'atelier doit toujours etre valide une fois verrouille.
+        if (atelier.getStatut() == StatutAtelier.ANNULE) {
             throw new BusinessException("Cet atelier est annulé.");
         }
-        if (match.getNbJoueursActuels() != null && match.getNbJoueursActuels() >= AtelierRules.CAPACITE) {
+        if (atelier.getNbParticipantsActuels() != null && atelier.getNbParticipantsActuels() >= AtelierRules.CAPACITE) {
             throw new BusinessException("Cet atelier est déjà complet.");
         }
         double montantFinal = paiement.getMontant();
-        if (membre.getSolde() > 0.0) {
+        if (participant.getSolde() > 0.0) {
             // Regle metier : un solde impaye est recupere au paiement suivant.
-            montantFinal += membre.getSolde();
-            log.info("Solde impayé de {} ajouté au paiement du membre {}",
-                    membre.getSolde(), membreId);
-            membre.setSolde(0.0);
-            membreRepository.save(membre);
+            montantFinal += participant.getSolde();
+            log.info("Solde impayé de {} ajouté au paiement du participant {}",
+                    participant.getSolde(), participantId);
+            participant.setSolde(0.0);
+            participantRepository.save(participant);
         }
 
         paiement.setMontant(montantFinal);
@@ -104,15 +104,15 @@ public class PaiementServiceImpl implements PaiementService {
         paiementRepository.save(paiement);
 
         reservationService.confirm(reservationId);
-        int nbJoueursActuels = match.getNbJoueursActuels() == null ? 0 : match.getNbJoueursActuels();
-        nbJoueursActuels++;
-        match.setNbJoueursActuels(nbJoueursActuels);
-        if (nbJoueursActuels == AtelierRules.CAPACITE) {
-            match.setStatut(StatutAtelier.COMPLET);
+        int nbParticipantsActuels = atelier.getNbParticipantsActuels() == null ? 0 : atelier.getNbParticipantsActuels();
+        nbParticipantsActuels++;
+        atelier.setNbParticipantsActuels(nbParticipantsActuels);
+        if (nbParticipantsActuels == AtelierRules.CAPACITE) {
+            atelier.setStatut(StatutAtelier.COMPLET);
         }
-        matchRepository.save(match);
+        atelierRepository.save(atelier);
 
-        log.info("Paiement effectué pour la réservation {} par le participant {}", reservationId, membreId);
+        log.info("Paiement effectué pour la réservation {} par le participant {}", reservationId, participantId);
 
         return paiement;
     }
@@ -130,37 +130,37 @@ public class PaiementServiceImpl implements PaiementService {
     }
 
     @Override
-    public List<Paiement> getByMembreId(Long membreId) {
-        return paiementRepository.findByReservationMembreId(membreId);
+    public List<Paiement> getByParticipantId(Long participantId) {
+        return paiementRepository.findByReservationParticipantId(participantId);
     }
 
     @Override
-    public void checkPaiementOwner(Long paiementId, Long membreId) {
+    public void checkPaiementOwner(Long paiementId, Long participantId) {
         Paiement paiement = getById(paiementId);
-        // Regle metier : un membre ne peut consulter que ses propres paiements.
-        if (!paiement.getReservation().getMembre().getId().equals(membreId)) {
-            throw new BusinessException("Accès refusé : ce paiement appartient à un autre membre.");
+        // Regle metier : un participant ne peut consulter que ses propres paiements.
+        if (!paiement.getReservation().getParticipant().getId().equals(participantId)) {
+            throw new BusinessException("Accès refusé : ce paiement appartient à un autre participant.");
         }
     }
 
     @Override
-    public void checkReservationPaiementOwner(Long reservationId, Long membreId) {
+    public void checkReservationPaiementOwner(Long reservationId, Long participantId) {
         Paiement paiement = getByReservationId(reservationId);
-        // Regle metier : un membre ne peut agir que sur le paiement de sa reservation.
-        if (!paiement.getReservation().getMembre().getId().equals(membreId)) {
-            throw new BusinessException("Accès refusé : ce paiement appartient à un autre membre.");
+        // Regle metier : un participant ne peut agir que sur le paiement de sa reservation.
+        if (!paiement.getReservation().getParticipant().getId().equals(participantId)) {
+            throw new BusinessException("Accès refusé : ce paiement appartient à un autre participant.");
         }
     }
 
     @Override
     @Transactional
-    public void checkUnpaidBeforeMatch() {
+    public void checkUnpaidBeforeAtelier() {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
 
         // Regle metier : a J-1, les reservations non payees sont annulees et imputees a l'organisateur.
         paiementRepository.findByStatut(StatutPaiement.EN_ATTENTE)
                 .stream()
-                .filter(p -> p.getReservation().getMatch()
+                .filter(p -> p.getReservation().getAtelier()
                         .getDateDebut().toLocalDate().equals(tomorrow))
                 .forEach(p -> {
                     Long reservationId = p.getReservation().getId();
@@ -175,13 +175,13 @@ public class PaiementServiceImpl implements PaiementService {
                         return;
                     }
 
-                    Atelier match = reservation.getMatch();
+                    Atelier atelier = reservation.getAtelier();
                     reservationService.cancel(reservationId);
 
-                    double partManquante = match.getPrixParJoueur();
-                    Participant organisateur = match.getOrganisateur();
+                    double partManquante = atelier.getPrixParParticipant();
+                    Participant organisateur = atelier.getOrganisateur();
                     organisateur.setSolde(organisateur.getSolde() + partManquante);
-                    membreRepository.save(organisateur);
+                    participantRepository.save(organisateur);
 
                     log.info("Réservation impayée {} annulée, solde {} ajouté à l'organisateur {}",
                             reservation.getId(), partManquante, organisateur.getId());

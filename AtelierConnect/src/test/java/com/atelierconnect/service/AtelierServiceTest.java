@@ -42,9 +42,9 @@ import static org.mockito.Mockito.*;
 class AtelierServiceTest {
 
     @Mock
-    private AtelierRepository matchRepository;
+    private AtelierRepository atelierRepository;
     @Mock
-    private ParticipantRepository membreRepository;
+    private ParticipantRepository participantRepository;
     @Mock
     private ReservationRepository reservationRepository;
     @Mock
@@ -52,60 +52,60 @@ class AtelierServiceTest {
     @Mock
     private JourFermetureRepository jourFermetureRepository;
     @Mock
-    private SalleService terrainService;
+    private SalleService salleService;
     @Mock
-    private ParticipantService membreService;
+    private ParticipantService participantService;
     @Mock
-    private AtelierMapper matchMapper;
+    private AtelierMapper atelierMapper;
 
     @InjectMocks
-    private AtelierServiceImpl matchService;
+    private AtelierServiceImpl atelierService;
 
     private Participant organisateur;
-    private Salle terrain;
-    private Centre site;
-    private CreateAtelierRequest createMatchRequest;
-    private AtelierDto matchDto;
+    private Salle salle;
+    private Centre centre;
+    private CreateAtelierRequest createAtelierRequest;
+    private AtelierDto atelierDto;
 
     @BeforeEach
     void setUp() {
-        site = new Centre();
-        site.setId(1L);
-        site.setDureeMatchMinutes(AtelierRules.DUREE_MINUTES);
-        site.setDureeEntreMatchMinutes(AtelierRules.PAUSE_MINUTES);
-        site.setHeureOuverture(LocalTime.of(9, 0));
-        site.setHeureFermeture(LocalTime.of(22, 0));
-        site.setOuvertVisiteurs(true);
+        centre = new Centre();
+        centre.setId(1L);
+        centre.setDureeAtelierMinutes(AtelierRules.DUREE_MINUTES);
+        centre.setDureeEntreAtelierMinutes(AtelierRules.PAUSE_MINUTES);
+        centre.setHeureOuverture(LocalTime.of(9, 0));
+        centre.setHeureFermeture(LocalTime.of(22, 0));
+        centre.setOuvertVisiteurs(true);
 
         organisateur = new Participant();
         organisateur.setId(1L);
         organisateur.setMatricule("user123");
         organisateur.setPrenom("John");
         organisateur.setNom("Doe");
-        organisateur.setTypeMembre(TypeParticipant.LIBRE);
+        organisateur.setTypeParticipant(TypeParticipant.VISITEUR);
 
-        terrain = new Salle();
-        terrain.setId(1L);
-        terrain.setNom("Court Central");
-        terrain.setPrix(20.0);
-        terrain.setSite(site);
+        salle = new Salle();
+        salle.setId(1L);
+        salle.setNom("Court Central");
+        salle.setPrix(20.0);
+        salle.setCentre(centre);
 
-        createMatchRequest = new CreateAtelierRequest(
-                terrain.getId(),
+        createAtelierRequest = new CreateAtelierRequest(
+                salle.getId(),
                 LocalDate.now().plusDays(5).atTime(10, 0),
                 "PUBLIC"
         );
 
-        matchDto = new AtelierDto(
+        atelierDto = new AtelierDto(
                 1L,
-                terrain.getId(),
-                terrain.getNom(),
+                salle.getId(),
+                salle.getNom(),
                 null, // siteNom
                 organisateur.getId(),
                 organisateur.getPrenom() + " " + organisateur.getNom(),
-                createMatchRequest.matchDate().toLocalDate(),
-                createMatchRequest.matchDate().toLocalTime(),
-                createMatchRequest.matchDate().plusMinutes(AtelierRules.DUREE_MINUTES).toLocalTime(),
+                createAtelierRequest.atelierDate().toLocalDate(),
+                createAtelierRequest.atelierDate().toLocalTime(),
+                createAtelierRequest.atelierDate().plusMinutes(AtelierRules.DUREE_MINUTES).toLocalTime(),
                 TypeAtelier.PUBLIC,
                 StatutAtelier.PLANIFIE,
                 0,
@@ -120,51 +120,51 @@ class AtelierServiceTest {
         existant.setId(21L);
         existant.setOrganisateur(organisateur);
         existant.setStatut(StatutAtelier.PLANIFIE);
-        when(matchRepository.findById(21L)).thenReturn(Optional.of(existant));
-        when(terrainService.getById(1L)).thenReturn(terrain);
+        when(atelierRepository.findById(21L)).thenReturn(Optional.of(existant));
+        when(salleService.getById(1L)).thenReturn(salle);
 
         AtelierRequest demande = AtelierRequest.builder()
-                .terrainId(1L)
+                .salleId(1L)
                 .organisateurId(1L)
                 .date(LocalDate.now().plusDays(AtelierRules.VISITEUR_JOURS + 1))
                 .heureDebut(LocalTime.of(11, 0))
-                .typeMatch(TypeAtelier.PUBLIC)
+                .typeAtelier(TypeAtelier.PUBLIC)
                 .build();
 
         BusinessException erreur = assertThrows(BusinessException.class,
-                () -> matchService.updateMatch(21L, demande));
+                () -> atelierService.updateAtelier(21L, demande));
 
         assertTrue(erreur.getMessage().contains("7 jours"));
-        verify(matchRepository, never()).save(any());
+        verify(atelierRepository, never()).save(any());
     }
 
     @Test
     void modificationRefuseUnCentreEtrangerPourAbonne() {
-        organisateur.setTypeMembre(TypeParticipant.ABONNE);
-        organisateur.setSite(site);
+        organisateur.setTypeParticipant(TypeParticipant.ABONNE);
+        organisateur.setCentre(centre);
         Centre autreCentre = new Centre();
         autreCentre.setId(2L);
         Salle autreSalle = new Salle();
         autreSalle.setId(2L);
-        autreSalle.setSite(autreCentre);
+        autreSalle.setCentre(autreCentre);
         Atelier existant = new Atelier();
         existant.setId(22L);
         existant.setOrganisateur(organisateur);
         existant.setStatut(StatutAtelier.PLANIFIE);
-        when(matchRepository.findById(22L)).thenReturn(Optional.of(existant));
-        when(terrainService.getById(2L)).thenReturn(autreSalle);
+        when(atelierRepository.findById(22L)).thenReturn(Optional.of(existant));
+        when(salleService.getById(2L)).thenReturn(autreSalle);
 
         AtelierRequest demande = AtelierRequest.builder()
-                .terrainId(2L)
+                .salleId(2L)
                 .organisateurId(1L)
                 .date(LocalDate.now().plusDays(3))
                 .heureDebut(LocalTime.of(11, 0))
-                .typeMatch(TypeAtelier.PUBLIC)
+                .typeAtelier(TypeAtelier.PUBLIC)
                 .build();
 
         assertThrows(BusinessException.class,
-                () -> matchService.updateMatch(22L, demande));
-        verify(matchRepository, never()).save(any());
+                () -> atelierService.updateAtelier(22L, demande));
+        verify(atelierRepository, never()).save(any());
     }
 
     @Test
@@ -172,21 +172,21 @@ class AtelierServiceTest {
         Atelier prive = new Atelier();
         prive.setId(10L);
         prive.setOrganisateur(organisateur);
-        prive.setTypeMatch(TypeAtelier.PRIVE);
+        prive.setTypeAtelier(TypeAtelier.PRIVE);
         prive.setStatut(StatutAtelier.PLANIFIE);
-        prive.setNbJoueursActuels(1);
+        prive.setNbParticipantsActuels(1);
         prive.setDateDebut(LocalDate.now().plusDays(AtelierRules.OUVERTURE_PUBLIQUE_JOURS).atTime(10, 0));
-        when(matchRepository.findById(10L)).thenReturn(Optional.of(prive));
+        when(atelierRepository.findById(10L)).thenReturn(Optional.of(prive));
 
-        assertThrows(BusinessException.class, () -> matchService.convertToPublic(10L));
-        verify(matchRepository, never()).save(any());
+        assertThrows(BusinessException.class, () -> atelierService.convertToPublic(10L));
+        verify(atelierRepository, never()).save(any());
 
-        matchService.consentToPublicOpening(10L, organisateur.getId());
+        atelierService.consentToPublicOpening(10L, organisateur.getId());
         assertNotNull(prive.getDateAccordOuverturePublique());
-        matchService.convertToPublic(10L);
-        assertEquals(TypeAtelier.PUBLIC, prive.getTypeMatch());
+        atelierService.convertToPublic(10L);
+        assertEquals(TypeAtelier.PUBLIC, prive.getTypeAtelier());
         assertNotNull(prive.getDateConversionPublic());
-        verify(membreService, never()).addPenalty(any());
+        verify(participantService, never()).addPenalty(any());
     }
 
     @Test
@@ -196,32 +196,32 @@ class AtelierServiceTest {
         Atelier consenti = new Atelier();
         consenti.setId(31L);
         consenti.setOrganisateur(organisateur);
-        consenti.setTypeMatch(TypeAtelier.PRIVE);
+        consenti.setTypeAtelier(TypeAtelier.PRIVE);
         consenti.setStatut(StatutAtelier.PLANIFIE);
         consenti.setDateDebut(date);
         consenti.setAccordOuverturePublique(true);
-        consenti.setNbJoueursActuels(1);
+        consenti.setNbParticipantsActuels(1);
 
         Atelier sansAccord = new Atelier();
         sansAccord.setId(32L);
-        sansAccord.setTypeMatch(TypeAtelier.PRIVE);
+        sansAccord.setTypeAtelier(TypeAtelier.PRIVE);
         sansAccord.setStatut(StatutAtelier.PLANIFIE);
         sansAccord.setDateDebut(date);
         sansAccord.setAccordOuverturePublique(false);
-        sansAccord.setNbJoueursActuels(1);
+        sansAccord.setNbParticipantsActuels(1);
 
-        when(matchRepository.findByDateDebutBetweenAndStatut(any(), any(), eq(StatutAtelier.PLANIFIE)))
+        when(atelierRepository.findByDateDebutBetweenAndStatut(any(), any(), eq(StatutAtelier.PLANIFIE)))
                 .thenReturn(List.of(consenti, sansAccord));
-        when(matchRepository.findById(31L)).thenReturn(Optional.of(consenti));
+        when(atelierRepository.findById(31L)).thenReturn(Optional.of(consenti));
 
-        matchService.checkAndConvertExpiredPrivateAteliers();
+        atelierService.checkAndConvertExpiredPrivateAteliers();
 
-        assertEquals(TypeAtelier.PUBLIC, consenti.getTypeMatch());
+        assertEquals(TypeAtelier.PUBLIC, consenti.getTypeAtelier());
         assertNotNull(consenti.getDateConversionPublic());
-        assertEquals(TypeAtelier.PRIVE, sansAccord.getTypeMatch());
-        verify(matchRepository).save(consenti);
-        verify(matchRepository, never()).save(sansAccord);
-        verify(membreService, never()).addPenalty(any());
+        assertEquals(TypeAtelier.PRIVE, sansAccord.getTypeAtelier());
+        verify(atelierRepository).save(consenti);
+        verify(atelierRepository, never()).save(sansAccord);
+        verify(participantService, never()).addPenalty(any());
     }
 
     @Test
@@ -229,20 +229,20 @@ class AtelierServiceTest {
         Atelier consenti = new Atelier();
         consenti.setId(33L);
         consenti.setOrganisateur(organisateur);
-        consenti.setTypeMatch(TypeAtelier.PRIVE);
+        consenti.setTypeAtelier(TypeAtelier.PRIVE);
         consenti.setStatut(StatutAtelier.PLANIFIE);
         consenti.setDateDebut(LocalDate.now().plusDays(AtelierRules.OUVERTURE_PUBLIQUE_JOURS).atTime(10, 0));
         consenti.setAccordOuverturePublique(true);
-        consenti.setNbJoueursActuels(null);
+        consenti.setNbParticipantsActuels(null);
 
-        when(matchRepository.findByDateDebutBetweenAndStatut(any(), any(), eq(StatutAtelier.PLANIFIE)))
+        when(atelierRepository.findByDateDebutBetweenAndStatut(any(), any(), eq(StatutAtelier.PLANIFIE)))
                 .thenReturn(List.of(consenti));
-        when(matchRepository.findById(33L)).thenReturn(Optional.of(consenti));
+        when(atelierRepository.findById(33L)).thenReturn(Optional.of(consenti));
 
-        matchService.checkAndConvertExpiredPrivateAteliers();
+        atelierService.checkAndConvertExpiredPrivateAteliers();
 
-        assertEquals(TypeAtelier.PUBLIC, consenti.getTypeMatch());
-        verify(matchRepository).save(consenti);
+        assertEquals(TypeAtelier.PUBLIC, consenti.getTypeAtelier());
+        verify(atelierRepository).save(consenti);
     }
 
     @Test
@@ -250,36 +250,36 @@ class AtelierServiceTest {
         Atelier prive = new Atelier();
         prive.setId(10L);
         prive.setOrganisateur(organisateur);
-        when(matchRepository.findById(10L)).thenReturn(Optional.of(prive));
+        when(atelierRepository.findById(10L)).thenReturn(Optional.of(prive));
 
-        assertThrows(BusinessException.class, () -> matchService.consentToPublicOpening(10L, 999L));
-        verify(matchRepository, never()).save(any());
+        assertThrows(BusinessException.class, () -> atelierService.consentToPublicOpening(10L, 999L));
+        verify(atelierRepository, never()).save(any());
     }
 
     @Test
     @DisplayName("createMatch - Succès")
-    void createMatch_ShouldSucceed_WhenAllRulesAreMet() {
+    void createAtelier_ShouldSucceed_WhenAllRulesAreMet() {
         // Arrange
-        when(membreRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
-        when(terrainService.getById(terrain.getId())).thenReturn(terrain);
-        when(membreService.hasOutstandingBalance(organisateur.getId())).thenReturn(false);
-        when(membreService.hasActivePenalty(organisateur.getId())).thenReturn(false);
-        when(matchRepository.findOverlappingAteliers(any(), any(), any(), any())).thenReturn(Collections.emptyList());
-        when(matchRepository.save(any(Atelier.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(participantRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
+        when(salleService.getById(salle.getId())).thenReturn(salle);
+        when(participantService.hasOutstandingBalance(organisateur.getId())).thenReturn(false);
+        when(participantService.hasActivePenalty(organisateur.getId())).thenReturn(false);
+        when(atelierRepository.findOverlappingAteliers(any(), any(), any(), any())).thenReturn(Collections.emptyList());
+        when(atelierRepository.save(any(Atelier.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(reservationRepository.save(any(Reservation.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(paiementRepository.save(any(Paiement.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(matchMapper.toAtelierDto(any(Atelier.class))).thenReturn(matchDto); // Utiliser le DTO corrigé
+        when(atelierMapper.toAtelierDto(any(Atelier.class))).thenReturn(atelierDto); // Utiliser le DTO corrigé
 
         // Act
-        AtelierDto result = matchService.createMatch(createMatchRequest, "user123");
+        AtelierDto result = atelierService.createAtelier(createAtelierRequest, "user123");
 
         // Assert
         assertNotNull(result);
-        assertEquals(0, result.nbJoueursActuels());
-        assertEquals(TypeAtelier.PUBLIC, result.typeMatch());
-        verify(matchRepository, times(1)).save(argThat(match ->
-                match.getStatut() == StatutAtelier.PLANIFIE &&
-                        match.getNbJoueursActuels() == 0
+        assertEquals(0, result.nbParticipantsActuels());
+        assertEquals(TypeAtelier.PUBLIC, result.typeAtelier());
+        verify(atelierRepository, times(1)).save(argThat(atelier ->
+                atelier.getStatut() == StatutAtelier.PLANIFIE &&
+                        atelier.getNbParticipantsActuels() == 0
         ));
         verify(reservationRepository, times(1)).save(argThat(reservation ->
                 reservation.getStatut() == StatutReservation.EN_ATTENTE
@@ -290,93 +290,93 @@ class AtelierServiceTest {
     }
 
     @Test
-    @DisplayName("createMatch - Échoue si le membre a un solde impayé")
-    void createMatch_ShouldFail_WhenMemberHasOutstandingBalance() {
+    @DisplayName("createMatch - Échoue si le participant a un solde impayé")
+    void createAtelier_ShouldFail_WhenParticipantHasOutstandingBalance() {
         // Arrange
-        when(membreRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
-        when(terrainService.getById(terrain.getId())).thenReturn(terrain);
-        when(membreService.hasOutstandingBalance(organisateur.getId())).thenReturn(true);
+        when(participantRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
+        when(salleService.getById(salle.getId())).thenReturn(salle);
+        when(participantService.hasOutstandingBalance(organisateur.getId())).thenReturn(true);
 
         // Act & Assert
         BusinessException exception = assertThrows(BusinessException.class, () -> {
-            matchService.createMatch(createMatchRequest, "user123");
+            atelierService.createAtelier(createAtelierRequest, "user123");
         });
         assertEquals("Vous avez un solde impayé et ne pouvez pas créer d'atelier.", exception.getMessage());
-        verify(matchRepository, never()).save(any());
+        verify(atelierRepository, never()).save(any());
     }
 
     @Test
-    @DisplayName("createMatch - Échoue si le membre a une pénalité active")
-    void createMatch_ShouldFail_WhenMemberHasActivePenalty() {
+    @DisplayName("createMatch - Échoue si le participant a une pénalité active")
+    void createAtelier_ShouldFail_WhenParticipantHasActivePenalty() {
         // Arrange
-        when(membreRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
-        when(terrainService.getById(terrain.getId())).thenReturn(terrain);
-        when(membreService.hasOutstandingBalance(organisateur.getId())).thenReturn(false);
-        when(membreService.hasActivePenalty(organisateur.getId())).thenReturn(true);
+        when(participantRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
+        when(salleService.getById(salle.getId())).thenReturn(salle);
+        when(participantService.hasOutstandingBalance(organisateur.getId())).thenReturn(false);
+        when(participantService.hasActivePenalty(organisateur.getId())).thenReturn(true);
 
         // Act & Assert
         BusinessException exception = assertThrows(BusinessException.class, () -> {
-            matchService.createMatch(createMatchRequest, "user123");
+            atelierService.createAtelier(createAtelierRequest, "user123");
         });
         assertEquals("Vous avez une suspension active et ne pouvez pas créer d'atelier.", exception.getMessage());
     }
 
     @Test
     @DisplayName("createMatch - Échoue si le délai de réservation n'est pas respecté")
-    void createMatch_ShouldFail_WhenBookingDelayIsNotMet() {
+    void createAtelier_ShouldFail_WhenBookingDelayIsNotMet() {
         // Arrange
-        CreateAtelierRequest tooFarRequest = new CreateAtelierRequest(terrain.getId(), LocalDateTime.now().plusDays(8), "PUBLIC");
-        when(membreRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
-        when(terrainService.getById(terrain.getId())).thenReturn(terrain);
+        CreateAtelierRequest tooFarRequest = new CreateAtelierRequest(salle.getId(), LocalDateTime.now().plusDays(8), "PUBLIC");
+        when(participantRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
+        when(salleService.getById(salle.getId())).thenReturn(salle);
 
         // Act & Assert
         BusinessException exception = assertThrows(BusinessException.class, () -> {
-            matchService.createMatch(tooFarRequest, "user123");
+            atelierService.createAtelier(tooFarRequest, "user123");
         });
         assertTrue(exception.getMessage().contains("ne peut pas réserver plus de 7 jours à l'avance"));
     }
 
     @Test
     void delaisDesTroisCategoriesSontAppliques() {
-        when(membreRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
-        when(terrainService.getById(terrain.getId())).thenReturn(terrain);
+        when(participantRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
+        when(salleService.getById(salle.getId())).thenReturn(salle);
 
         for (TypeParticipant type : TypeParticipant.values()) {
-            organisateur.setTypeMembre(type);
+            organisateur.setTypeParticipant(type);
             int delai = AtelierRules.delaiReservation(type);
             CreateAtelierRequest demande = new CreateAtelierRequest(
-                    terrain.getId(), LocalDate.now().plusDays(delai + 1).atTime(10, 0), "PUBLIC");
+                    salle.getId(), LocalDate.now().plusDays(delai + 1).atTime(10, 0), "PUBLIC");
             BusinessException erreur = assertThrows(BusinessException.class,
-                    () -> matchService.createMatch(demande, "user123"));
+                    () -> atelierService.createAtelier(demande, "user123"));
             assertTrue(erreur.getMessage().contains(delai + " jours"));
         }
-        verify(matchRepository, never()).save(any());
+        verify(atelierRepository, never()).save(any());
     }
 
     @Test
     @DisplayName("createMatch - Échoue si le créneau est déjà pris")
-    void createMatch_ShouldFail_WhenSlotIsAlreadyBooked() {
+    void createAtelier_ShouldFail_WhenSlotIsAlreadyBooked() {
         // Arrange
-        when(membreRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
-        when(terrainService.getById(terrain.getId())).thenReturn(terrain);
-        when(matchRepository.findOverlappingAteliers(any(), any(), any(), any())).thenReturn(Collections.singletonList(new Atelier()));
+        when(participantRepository.findByMatriculeIgnoreCase("user123")).thenReturn(Optional.of(organisateur));
+        when(salleService.getById(salle.getId())).thenReturn(salle);
+        when(atelierRepository.findOverlappingAteliers(any(), any(), any(), any())).thenReturn(Collections.singletonList(new Atelier()));
 
         // Act & Assert
         BusinessException exception = assertThrows(BusinessException.class, () -> {
-            matchService.createMatch(createMatchRequest, "user123");
+            atelierService.createAtelier(createAtelierRequest, "user123");
         });
-        assertEquals("Ce créneau est déjà réservé pour la salle : " + terrain.getId(), exception.getMessage());
+        assertEquals("Ce créneau est déjà réservé pour la salle : " + salle.getId(), exception.getMessage());
     }
 
     @Test
-    @DisplayName("createMatch - Échoue si le membre n'est pas trouvé")
-    void createMatch_ShouldFail_WhenMemberNotFound() {
+    @DisplayName("createMatch - Échoue si le participant n'est pas trouvé")
+    void createAtelier_ShouldFail_WhenParticipantNotFound() {
         // Arrange
-        when(membreRepository.findByMatriculeIgnoreCase("unknownUser")).thenReturn(Optional.empty());
+        when(participantRepository.findByMatriculeIgnoreCase("unknownUser")).thenReturn(Optional.empty());
 
         // Act & Assert
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
-            matchService.createMatch(createMatchRequest, "unknownUser");
+            atelierService.createAtelier(createAtelierRequest, "unknownUser");
         });
         assertEquals("Participant introuvable pour l'utilisateur : unknownUser", exception.getMessage());
     }

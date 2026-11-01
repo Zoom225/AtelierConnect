@@ -15,14 +15,14 @@ public interface SalleRepository extends JpaRepository<Salle, Long> {
     // Les DTO utilisent centre.nom alors que spring.jpa.open-in-view=false.
     // Le graphe charge le centre dans la transaction de lecture JPA.
     @Override
-    @EntityGraph(attributePaths = "site")
+    @EntityGraph(attributePaths = "centre")
     List<Salle> findAll();
 
     @Override
-    @EntityGraph(attributePaths = "site")
+    @EntityGraph(attributePaths = "centre")
     Optional<Salle> findById(Long id);
 
-    @EntityGraph(attributePaths = "site")
-    @Query("SELECT s FROM Salle s WHERE s.site.id = :centreId")
+    @EntityGraph(attributePaths = "centre")
+    @Query("SELECT s FROM Salle s WHERE s.centre.id = :centreId")
     List<Salle> findByCentreId(@Param("centreId") Long centreId);
 }

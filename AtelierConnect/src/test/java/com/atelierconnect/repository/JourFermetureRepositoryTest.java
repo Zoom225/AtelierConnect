@@ -20,7 +20,7 @@ class JourFermetureRepositoryTest {
     private JourFermetureRepository jourFermetureRepository;
 
     @Autowired
-    private CentreRepository siteRepository;
+    private CentreRepository centreRepository;
 
     @Test
     @DisplayName("existsByDateAndGlobalTrue détecte une fermeture globale")
@@ -36,28 +36,28 @@ class JourFermetureRepositoryTest {
     }
 
     @Test
-    @DisplayName("existsByDateAndSiteId détecte une fermeture de site")
-    void shouldFindSiteClosingDay() {
-        Centre site = siteRepository.save(site());
+    @DisplayName("existsByDateAndSiteId détecte une fermeture de centre")
+    void shouldFindCentreClosingDay() {
+        Centre centre = centreRepository.save(centre());
         LocalDate date = LocalDate.of(2026, 7, 14);
         jourFermetureRepository.save(JourFermeture.builder()
                 .date(date)
                 .raison("Maintenance")
                 .global(false)
-                .site(site)
+                .centre(centre)
                 .build());
 
-        assertThat(jourFermetureRepository.existsByDateAndSiteId(date, site.getId())).isTrue();
+        assertThat(jourFermetureRepository.existsByDateAndCentreId(date, centre.getId())).isTrue();
     }
 
-    private Centre site() {
+    private Centre centre() {
         return Centre.builder()
-                .nom("Padel Club Lyon")
+                .nom("Centre collaboratif Lyon")
                 .adresse("12 rue de la République")
                 .heureOuverture(LocalTime.of(8, 0))
                 .heureFermeture(LocalTime.of(22, 0))
-                .dureeMatchMinutes(90)
-                .dureeEntreMatchMinutes(15)
+                .dureeAtelierMinutes(90)
+                .dureeEntreAtelierMinutes(15)
                 .anneeCivile(2026)
                 .build();
     }

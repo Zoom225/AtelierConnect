@@ -9,5 +9,5 @@ import java.time.LocalDate;
 
 @Repository
 public interface PenaliteRepository extends JpaRepository<Penalite, Long> {
-    boolean existsByMembreIdAndDateFinAfter(Long membreId, LocalDate date);
+    boolean existsByParticipantIdAndDateFinAfter(Long participantId, LocalDate date);
 }

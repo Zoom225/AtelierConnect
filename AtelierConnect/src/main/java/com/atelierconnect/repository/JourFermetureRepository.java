@@ -12,9 +12,9 @@ public interface JourFermetureRepository extends JpaRepository<JourFermeture, Lo
 
     boolean existsByDateAndGlobalTrue(LocalDate date);
 
-    boolean existsByDateAndSiteId(LocalDate date, Long siteId);
+    boolean existsByDateAndCentreId(LocalDate date, Long centreId);
 
     List<JourFermeture> findByGlobalTrue();
 
-    List<JourFermeture> findBySiteId(Long siteId);
+    List<JourFermeture> findByCentreId(Long centreId);
 }

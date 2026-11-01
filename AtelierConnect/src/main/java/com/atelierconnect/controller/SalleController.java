@@ -25,138 +25,138 @@ import java.util.List;
 @RestController
 @RequestMapping({"/api/salles", "/api/terrains"})
 @RequiredArgsConstructor
-@Tag(name = "Terrains", description = "Endpoints de gestion des terrains de padel.")
+@Tag(name = "Terrains", description = "Endpoints de gestion des salles collaboratif.")
 public class SalleController {
 
-    private final SalleService terrainService;
-    private final SalleMapper terrainMapper;
+    private final SalleService salleService;
+    private final SalleMapper salleMapper;
     private final AdminAuthorizationService adminAuthorizationService;
 
     @Operation(
-            summary = "Créer un terrain",
-            description = "Crée un terrain et le rattache à un site existant. " +
+            summary = "Créer une salle",
+            description = "Crée une salle et le rattache à un centre existant. " +
                     "Accessible à un admin GLOBAL ou à un admin SITE dans son périmètre.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Terrain créé",
+            @ApiResponse(responseCode = "201", description = "Salle créé",
                     content = @Content(schema = @Schema(implementation = SalleResponse.class))),
             @ApiResponse(responseCode = "400", description = "Requête invalide ou erreur de validation",
                     content = @Content),
             @ApiResponse(responseCode = "403", description = "Accès refusé",
                     content = @Content),
-            @ApiResponse(responseCode = "404", description = "Site introuvable",
+            @ApiResponse(responseCode = "404", description = "Centre introuvable",
                     content = @Content)
     })
     @PostMapping
     public ResponseEntity<SalleResponse> create(@Valid @RequestBody SalleRequest request) {
-        adminAuthorizationService.checkSiteAccess(request.getSiteId());
-        Salle terrain = terrainMapper.toEntity(request);
-        Salle saved = terrainService.create(terrain, request.getSiteId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(terrainMapper.toResponse(saved));
+        adminAuthorizationService.checkCentreAccess(request.getCentreId());
+        Salle salle = salleMapper.toEntity(request);
+        Salle saved = salleService.create(salle, request.getCentreId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(salleMapper.toResponse(saved));
     }
 
     @Operation(
-            summary = "Lister les terrains",
-            description = "Retourne la liste des terrains. Endpoint public."
+            summary = "Lister les salles",
+            description = "Retourne la liste des salles. Endpoint public."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Liste des terrains retournée",
+            @ApiResponse(responseCode = "200", description = "Liste des salles retournée",
                     content = @Content(schema = @Schema(implementation = SalleResponse.class)))
     })
     @GetMapping
     public ResponseEntity<List<SalleResponse>> getAll() {
-        List<SalleResponse> terrains = terrainService.getAll()
+        List<SalleResponse> salles = salleService.getAll()
                 .stream()
-                .map(terrainMapper::toResponse)
+                .map(salleMapper::toResponse)
                 .toList();
-        return ResponseEntity.ok(terrains);
+        return ResponseEntity.ok(salles);
     }
 
     @Operation(
-            summary = "Consulter un terrain",
-            description = "Retourne un terrain par son ID. Endpoint public."
+            summary = "Consulter une salle",
+            description = "Retourne une salle par son ID. Endpoint public."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Terrain trouvé",
+            @ApiResponse(responseCode = "200", description = "Salle trouvé",
                     content = @Content(schema = @Schema(implementation = SalleResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Terrain introuvable",
+            @ApiResponse(responseCode = "404", description = "Salle introuvable",
                     content = @Content)
     })
     @GetMapping("/{id}")
     public ResponseEntity<SalleResponse> getById(
-            @Parameter(description = "ID du terrain", required = true)
-            @PathVariable Long id) {
-        return ResponseEntity.ok(terrainMapper.toResponse(terrainService.getById(id)));
+            @Parameter(description = "ID de la salle", required = true)
+            @PathVariable("id") Long id) {
+        return ResponseEntity.ok(salleMapper.toResponse(salleService.getById(id)));
     }
 
     @Operation(
-            summary = "Lister les terrains d'un site",
-            description = "Retourne les terrains d'un site donné. Endpoint public."
+            summary = "Lister les salles d'un centre",
+            description = "Retourne les salles d'un centre donné. Endpoint public."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Terrains du site retournés",
+            @ApiResponse(responseCode = "200", description = "Terrains du centre retournés",
                     content = @Content(schema = @Schema(implementation = SalleResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Site introuvable",
+            @ApiResponse(responseCode = "404", description = "Centre introuvable",
                     content = @Content)
     })
     @GetMapping("/site/{siteId}")
-    public ResponseEntity<List<SalleResponse>> getBySiteId(
-            @Parameter(description = "ID du site", required = true)
-            @PathVariable Long siteId) {
-        List<SalleResponse> terrains = terrainService.getBySiteId(siteId)
+    public ResponseEntity<List<SalleResponse>> getByCentreId(
+            @Parameter(description = "ID du centre", required = true)
+            @PathVariable("siteId") Long centreId) {
+        List<SalleResponse> salles = salleService.getByCentreId(centreId)
                 .stream()
-                .map(terrainMapper::toResponse)
+                .map(salleMapper::toResponse)
                 .toList();
-        return ResponseEntity.ok(terrains);
+        return ResponseEntity.ok(salles);
     }
 
     @Operation(
-            summary = "Modifier un terrain",
-            description = "Modifie un terrain existant. " +
+            summary = "Modifier une salle",
+            description = "Modifie une salle existant. " +
                     "Accessible à un admin GLOBAL ou à un admin SITE dans son périmètre.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Terrain modifié",
+            @ApiResponse(responseCode = "200", description = "Salle modifié",
                     content = @Content(schema = @Schema(implementation = SalleResponse.class))),
             @ApiResponse(responseCode = "400", description = "Requête invalide ou erreur de validation",
                     content = @Content),
             @ApiResponse(responseCode = "403", description = "Accès refusé",
                     content = @Content),
-            @ApiResponse(responseCode = "404", description = "Terrain introuvable",
+            @ApiResponse(responseCode = "404", description = "Salle introuvable",
                     content = @Content)
     })
     @PutMapping("/{id}")
     public ResponseEntity<SalleResponse> update(
-            @Parameter(description = "ID du terrain à modifier", required = true)
-            @PathVariable Long id,
+            @Parameter(description = "ID de la salle à modifier", required = true)
+            @PathVariable("id") Long id,
             @Valid @RequestBody SalleRequest request) {
-        adminAuthorizationService.checkTerrainAccess(terrainService.getById(id));
-        Salle terrain = terrainMapper.toEntity(request);
-        Salle updated = terrainService.update(id, terrain);
-        return ResponseEntity.ok(terrainMapper.toResponse(updated));
+        adminAuthorizationService.checkSalleAccess(salleService.getById(id));
+        Salle salle = salleMapper.toEntity(request);
+        Salle updated = salleService.update(id, salle);
+        return ResponseEntity.ok(salleMapper.toResponse(updated));
     }
 
     @Operation(
-            summary = "Supprimer un terrain",
-            description = "Supprime définitivement un terrain et ses matchs associés. " +
+            summary = "Supprimer une salle",
+            description = "Supprime définitivement une salle et ses atelier associés. " +
                     "Accessible à un admin GLOBAL ou à un admin SITE dans son périmètre.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Terrain supprimé"),
+            @ApiResponse(responseCode = "204", description = "Salle supprimé"),
             @ApiResponse(responseCode = "403", description = "Accès refusé",
                     content = @Content),
-            @ApiResponse(responseCode = "404", description = "Terrain introuvable",
+            @ApiResponse(responseCode = "404", description = "Salle introuvable",
                     content = @Content)
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
-            @Parameter(description = "ID du terrain à supprimer", required = true)
-            @PathVariable Long id) {
-        adminAuthorizationService.checkTerrainAccess(terrainService.getById(id));
-        terrainService.delete(id);
+            @Parameter(description = "ID de la salle à supprimer", required = true)
+            @PathVariable("id") Long id) {
+        adminAuthorizationService.checkSalleAccess(salleService.getById(id));
+        salleService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -23,12 +23,12 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     // Le mapper construit des DTO après la transaction repository :
     // éviter LazyInitializationException avec open-in-view=false.
-    @EntityGraph(attributePaths = {"match", "membre", "paiement"})
-    List<Reservation> findByMatchId(Long matchId);
+    @EntityGraph(attributePaths = {"atelier", "participant", "paiement"})
+    List<Reservation> findByAtelierId(Long atelierId);
 
-    @EntityGraph(attributePaths = {"match", "membre", "paiement"})
-    List<Reservation> findByMembreId(Long membreId);
-    boolean existsByMatchIdAndMembreId(Long matchId, Long membreId);
-    boolean existsByMatchIdAndMembreIdAndStatutNot(
-            Long matchId, Long membreId, StatutReservation statut);
+    @EntityGraph(attributePaths = {"atelier", "participant", "paiement"})
+    List<Reservation> findByParticipantId(Long participantId);
+    boolean existsByAtelierIdAndParticipantId(Long atelierId, Long participantId);
+    boolean existsByAtelierIdAndParticipantIdAndStatutNot(
+            Long atelierId, Long participantId, StatutReservation statut);
 }

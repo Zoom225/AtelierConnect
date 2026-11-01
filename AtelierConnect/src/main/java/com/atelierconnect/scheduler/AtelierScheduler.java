@@ -27,7 +27,7 @@ public class AtelierScheduler {
     @Scheduled(cron = "0 5 0 * * *")
     public void processUnpaidReservations() {
         log.info("Vérification des réservations impayées avant les ateliers");
-        paiementService.checkUnpaidBeforeMatch();
+        paiementService.checkUnpaidBeforeAtelier();
         log.info("Vérification des réservations impayées terminée");
     }
 }

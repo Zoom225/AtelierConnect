@@ -17,44 +17,44 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SalleServiceImpl implements SalleService {
 
-    private final SalleRepository terrainRepository;
-    private final CentreService siteService;
+    private final SalleRepository salleRepository;
+    private final CentreService centreService;
 
     @Override
-    public Salle create(Salle terrain, Long siteId) {
-        Centre site = siteService.getById(siteId);
-        terrain.setSite(site);
-        log.info("Terrain créé pour le site {}", siteId);
-        return terrainRepository.save(terrain);
+    public Salle create(Salle salle, Long centreId) {
+        Centre centre = centreService.getById(centreId);
+        salle.setCentre(centre);
+        log.info("Salle créé pour le centre {}", centreId);
+        return salleRepository.save(salle);
     }
 
     @Override
     public Salle getById(Long id) {
-        return terrainRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Terrain introuvable avec l'ID : " + id));
+        return salleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Salle introuvable avec l'ID : " + id));
     }
 
     @Override
     public List<Salle> getAll() {
-        return terrainRepository.findAll();
+        return salleRepository.findAll();
     }
 
     @Override
-    public List<Salle> getBySiteId(Long siteId) {
-        siteService.getById(siteId);
-        return terrainRepository.findByCentreId(siteId);
+    public List<Salle> getByCentreId(Long centreId) {
+        centreService.getById(centreId);
+        return salleRepository.findByCentreId(centreId);
     }
 
     @Override
-    public Salle update(Long id, Salle terrain) {
+    public Salle update(Long id, Salle salle) {
         Salle existing = getById(id);
-        existing.setNom(terrain.getNom());
-        return terrainRepository.save(existing);
+        existing.setNom(salle.getNom());
+        return salleRepository.save(existing);
     }
 
     @Override
     public void delete(Long id) {
         Salle existing = getById(id);
-        terrainRepository.delete(existing);
+        salleRepository.delete(existing);
     }
 }

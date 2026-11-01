@@ -30,51 +30,51 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/reservations")
 @RequiredArgsConstructor
-@Tag(name = "Réservations", description = "Endpoints de gestion des réservations de match. " +
-        "Une réservation relie un membre à un match et génère automatiquement un paiement en attente. " +
+@Tag(name = "Réservations", description = "Endpoints de gestion des réservations de atelier. " +
+        "Une réservation relie un participant à un atelier et génère automatiquement un paiement en attente. " +
         "La place n'est confirmée qu'après paiement : premier payé, premier servi.")
 public class ReservationController {
 
     private final ReservationService reservationService;
     private final ReservationMapper reservationMapper;
-    private final CurrentParticipantService currentMemberService;
+    private final CurrentParticipantService currentParticipantService;
     private final AtelierService atelierService;
     private final AdminAuthorizationService adminAuthorizationService;
 
     @Operation(
             summary = "Créer une réservation",
-            description = "Crée une réservation pour le membre connecté sur un match donné. " +
+            description = "Crée une réservation pour le participant connecté sur un atelier donné. " +
                     "Un paiement EN_ATTENTE est créé automatiquement. " +
-                    "Pour un match PUBLIC, le membre ne peut réserver que pour lui-même. " +
-                    "Pour un match PRIVÉ, seul l'organisateur peut ajouter des joueurs. " +
-                    "Accessible uniquement à un membre authentifié.",
+                    "Pour un atelier PUBLIC, le participant ne peut réserver que pour lui-même. " +
+                    "Pour un atelier PRIVÉ, seul l'organisateur peut ajouter des participants. " +
+                    "Accessible uniquement à un participant authentifié.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Réservation créée avec un paiement en attente",
                     content = @Content(schema = @Schema(implementation = ReservationResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Règle métier non respectée : match complet, membre déjà inscrit, pénalité, solde dû, mauvais site ou restriction de match privé",
+            @ApiResponse(responseCode = "400", description = "Règle métier non respectée : atelier complet, participant déjà inscrit, pénalité, solde dû, mauvais centre ou restriction de atelier privé",
                     content = @Content),
-            @ApiResponse(responseCode = "404", description = "Match ou membre introuvable",
+            @ApiResponse(responseCode = "404", description = "Atelier ou participant introuvable",
                     content = @Content)
     })
     @PostMapping
     public ResponseEntity<ReservationResponse> create(@Valid @RequestBody ReservationRequest request) {
-        Participant currentMember = currentMemberService.currentMember();
+        Participant currentParticipant = currentParticipantService.currentParticipant();
         Reservation reservation = reservationService.create(
-                request.getMatchId(),
-                request.getMembreId(),
-                currentMember.getId()
+                request.getAtelierId(),
+                request.getParticipantId(),
+                currentParticipant.getId()
         );
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(reservationMapper.toResponse(reservation));
     }
 
     @Operation(
-            summary = "Ajouter des joueurs à un match privé",
+            summary = "Ajouter des participants à un atelier privé",
             description = "Crée plusieurs réservations à partir de matricules. " +
-                    "Le membre connecté doit être l'organisateur du match privé. " +
-                    "Aucune fiche complète d'un autre membre n'est exposée au front.",
+                    "Le participant connecté doit être l'organisateur de l'atelier privé. " +
+                    "Aucune fiche complète d'un autre participant n'est exposée au front.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @ApiResponses({
@@ -86,9 +86,9 @@ public class ReservationController {
     @PostMapping("/private-invites")
     public ResponseEntity<List<ReservationResponse>> createPrivateInvites(
             @Valid @RequestBody ReservationInviteRequest request) {
-        Participant currentMember = currentMemberService.currentMember();
+        Participant currentParticipant = currentParticipantService.currentParticipant();
         List<ReservationResponse> reservations = reservationService
-                .createForInvites(request.getMatchId(), currentMember.getId(), request.getInviteeMatricules())
+                .createForInvites(request.getAtelierId(), currentParticipant.getId(), request.getInviteeMatricules())
                 .stream()
                 .map(reservationMapper::toResponse)
                 .toList();
@@ -98,7 +98,7 @@ public class ReservationController {
     @Operation(
             summary = "Consulter une réservation",
             description = "Retourne une réservation par son ID. " +
-                    "Accessible uniquement au membre propriétaire de la réservation.",
+                    "Accessible uniquement au participant propriétaire de la réservation.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @ApiResponses({
@@ -111,38 +111,38 @@ public class ReservationController {
     @Transactional(readOnly = true)
     public ResponseEntity<ReservationResponse> getById(
             @Parameter(description = "ID de la réservation", required = true)
-            @PathVariable Long id) {
+            @PathVariable("id") Long id) {
         Reservation reservation = reservationService.getById(id);
-        currentMemberService.requireCurrentMember(reservation.getMembre().getId());
+        currentParticipantService.requireCurrentParticipant(reservation.getParticipant().getId());
         return ResponseEntity.ok(reservationMapper.toResponse(reservation));
     }
 
     @Operation(
-            summary = "Lister les réservations d'un match",
-            description = "Retourne les réservations liées à un match. " +
-                    "Accessible aux membres et aux administrateurs selon la configuration de sécurité.",
+            summary = "Lister les réservations d'un atelier",
+            description = "Retourne les réservations liées à un atelier. " +
+                    "Accessible aux participants et aux administrateurs selon la configuration de sécurité.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Réservations du match retournées",
+            @ApiResponse(responseCode = "200", description = "Réservations de l'atelier retournées",
                     content = @Content(schema = @Schema(implementation = ReservationResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Match introuvable",
+            @ApiResponse(responseCode = "404", description = "Atelier introuvable",
                     content = @Content)
     })
     @GetMapping({"/match/{matchId}", "/atelier/{matchId}"})
-    public ResponseEntity<List<ReservationResponse>> getByMatchId(
-            @Parameter(description = "ID du match", required = true)
-            @PathVariable Long matchId) {
+    public ResponseEntity<List<ReservationResponse>> getByAtelierId(
+            @Parameter(description = "ID de l'atelier", required = true)
+            @PathVariable("matchId") Long atelierId) {
         var authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
         boolean admin = authentication.getAuthorities().stream()
                 .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
         if (admin) {
-            adminAuthorizationService.checkMatchAccess(matchId);
+            adminAuthorizationService.checkAtelierAccess(atelierId);
         } else {
-            currentMemberService.requireCurrentMember(
-                    atelierService.getMatchEntityById(matchId).getOrganisateur().getId());
+            currentParticipantService.requireCurrentParticipant(
+                    atelierService.getAtelierEntityById(atelierId).getOrganisateur().getId());
         }
-        List<ReservationResponse> reservations = reservationService.getByMatchId(matchId)
+        List<ReservationResponse> reservations = reservationService.getByAtelierId(atelierId)
                 .stream()
                 .map(reservationMapper::toResponse)
                 .toList();
@@ -150,23 +150,23 @@ public class ReservationController {
     }
 
     @Operation(
-            summary = "Lister les réservations d'un membre",
-            description = "Retourne les réservations du membre indiqué. " +
-                    "Accessible uniquement au membre connecté correspondant à cet ID.",
+            summary = "Lister les réservations d'un participant",
+            description = "Retourne les réservations du participant indiqué. " +
+                    "Accessible uniquement au participant connecté correspondant à cet ID.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Réservations du membre retournées",
+            @ApiResponse(responseCode = "200", description = "Réservations du participant retournées",
                     content = @Content(schema = @Schema(implementation = ReservationResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Membre introuvable",
+            @ApiResponse(responseCode = "404", description = "Participant introuvable",
                     content = @Content)
     })
     @GetMapping({"/membre/{membreId}", "/participant/{membreId}"})
-    public ResponseEntity<List<ReservationResponse>> getByMembreId(
-            @Parameter(description = "ID du membre", required = true)
-            @PathVariable Long membreId) {
-        currentMemberService.requireCurrentMember(membreId);
-        List<ReservationResponse> reservations = reservationService.getByMembreId(membreId)
+    public ResponseEntity<List<ReservationResponse>> getByParticipantId(
+            @Parameter(description = "ID du participant", required = true)
+            @PathVariable("membreId") Long participantId) {
+        currentParticipantService.requireCurrentParticipant(participantId);
+        List<ReservationResponse> reservations = reservationService.getByParticipantId(participantId)
                 .stream()
                 .map(reservationMapper::toResponse)
                 .toList();
@@ -177,8 +177,8 @@ public class ReservationController {
             summary = "Annuler une réservation",
             description = "Annule une réservation existante. " +
                     "Si le paiement était PAYE, il passe à REMBOURSE. " +
-                    "Si la réservation était seulement EN_ATTENTE, le nombre de joueurs confirmés n'est pas décrémenté. " +
-                    "Accessible uniquement au membre propriétaire de la réservation.",
+                    "Si la réservation était seulement EN_ATTENTE, le nombre de participants confirmés n'est pas décrémenté. " +
+                    "Accessible uniquement au participant propriétaire de la réservation.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @ApiResponses({
@@ -193,8 +193,8 @@ public class ReservationController {
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<Void> cancel(
             @Parameter(description = "ID de la réservation à annuler", required = true)
-            @PathVariable Long id) {
-        currentMemberService.requireCurrentMember(reservationService.getById(id).getMembre().getId());
+            @PathVariable("id") Long id) {
+        currentParticipantService.requireCurrentParticipant(reservationService.getById(id).getParticipant().getId());
         reservationService.cancel(id);
         return ResponseEntity.noContent().build();
     }

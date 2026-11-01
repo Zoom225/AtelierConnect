@@ -28,8 +28,8 @@ import java.util.List;
 @Tag(name = "Centres", description = "Gestion des centres accueillant les ateliers collaboratifs.")
 public class CentreController {
 
-    private final CentreService siteService;
-    private final CentreMapper siteMapper;
+    private final CentreService centreService;
+    private final CentreMapper centreMapper;
     private final AdminAuthorizationService adminAuthorizationService;
 
     @Operation(
@@ -49,9 +49,9 @@ public class CentreController {
     @PostMapping
     public ResponseEntity<CentreResponse> create(@Valid @RequestBody CentreRequest request) {
         adminAuthorizationService.requireGlobalAdmin();
-        Centre site = siteMapper.toEntity(request);
-        Centre saved = siteService.create(site);
-        return ResponseEntity.status(HttpStatus.CREATED).body(siteMapper.toResponse(saved));
+        Centre centre = centreMapper.toEntity(request);
+        Centre saved = centreService.create(centre);
+        return ResponseEntity.status(HttpStatus.CREATED).body(centreMapper.toResponse(saved));
     }
 
     @Operation(
@@ -64,11 +64,11 @@ public class CentreController {
     })
     @GetMapping
     public ResponseEntity<List<CentreResponse>> getAll() {
-        List<CentreResponse> sites = siteService.getAll()
+        List<CentreResponse> centres = centreService.getAll()
                 .stream()
-                .map(siteMapper::toResponse)
+                .map(centreMapper::toResponse)
                 .toList();
-        return ResponseEntity.ok(sites);
+        return ResponseEntity.ok(centres);
     }
 
     @Operation(
@@ -84,8 +84,8 @@ public class CentreController {
     @GetMapping("/{id}")
     public ResponseEntity<CentreResponse> getById(
             @Parameter(description = "Identifiant du centre", required = true)
-            @PathVariable Long id) {
-        return ResponseEntity.ok(siteMapper.toResponse(siteService.getById(id)));
+            @PathVariable("id") Long id) {
+        return ResponseEntity.ok(centreMapper.toResponse(centreService.getById(id)));
     }
 
     @Operation(
@@ -105,13 +105,13 @@ public class CentreController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<CentreResponse> update(
-            @Parameter(description = "ID du site à modifier", required = true)
-            @PathVariable Long id,
+            @Parameter(description = "ID du centre à modifier", required = true)
+            @PathVariable("id") Long id,
             @Valid @RequestBody CentreRequest request) {
         adminAuthorizationService.requireGlobalAdmin();
-        Centre site = siteMapper.toEntity(request);
-        Centre updated = siteService.update(id, site);
-        return ResponseEntity.ok(siteMapper.toResponse(updated));
+        Centre centre = centreMapper.toEntity(request);
+        Centre updated = centreService.update(id, centre);
+        return ResponseEntity.ok(centreMapper.toResponse(updated));
     }
 
     @Operation(
@@ -128,10 +128,10 @@ public class CentreController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
-            @Parameter(description = "ID du site à supprimer", required = true)
-            @PathVariable Long id) {
+            @Parameter(description = "ID du centre à supprimer", required = true)
+            @PathVariable("id") Long id) {
         adminAuthorizationService.requireGlobalAdmin();
-        siteService.delete(id);
+        centreService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -5,12 +5,12 @@ import com.atelierconnect.entity.Reservation;
 import java.util.List;
 
 public interface ReservationService {
-    Reservation create(Long matchId, Long membreId, Long requesterId);
-    List<Reservation> createForInvites(Long matchId, Long requesterId, List<String> inviteeMatricules);
+    Reservation create(Long atelierId, Long participantId, Long requesterId);
+    List<Reservation> createForInvites(Long atelierId, Long requesterId, List<String> inviteeMatricules);
     Reservation getById(Long id);
-    List<Reservation> getByMatchId(Long matchId);
-    List<Reservation> getByMembreId(Long membreId);
-    void checkReservationOwner(Long reservationId, Long membreId);
+    List<Reservation> getByAtelierId(Long atelierId);
+    List<Reservation> getByParticipantId(Long participantId);
+    void checkReservationOwner(Long reservationId, Long participantId);
     void cancel(Long reservationId);
     void confirm(Long reservationId);
 }

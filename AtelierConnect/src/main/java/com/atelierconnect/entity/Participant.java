@@ -33,24 +33,24 @@ public class Participant extends BaseEntity {
 
     @Convert(converter = TypeParticipantConverter.class)
     @Column(name = "type_membre", nullable = false)
-    private TypeParticipant typeMembre;
+    private TypeParticipant typeParticipant;
 
     @Column(nullable = false)
     private Double solde;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id")
-    private Centre site;
+    private Centre centre;
 
     @OneToMany(mappedBy = "organisateur", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
-    private Set<Atelier> matchesOrganises = new HashSet<>();
+    private Set<Atelier> ateliersOrganises = new HashSet<>();
 
-    @OneToMany(mappedBy = "membre", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "participant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private Set<Reservation> reservations = new HashSet<>();
 
-    @OneToMany(mappedBy = "membre", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "participant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private Set<Penalite> penalites = new HashSet<>();
 }

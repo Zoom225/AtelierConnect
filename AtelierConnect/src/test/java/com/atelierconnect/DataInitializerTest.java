@@ -28,12 +28,12 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class DataInitializerTest {
 
-    @Mock private CentreRepository siteRepository;
-    @Mock private SalleRepository terrainRepository;
-    @Mock private ParticipantRepository membreRepository;
+    @Mock private CentreRepository centreRepository;
+    @Mock private SalleRepository salleRepository;
+    @Mock private ParticipantRepository participantRepository;
     @Mock private AdministrateurRepository administrateurRepository;
     @Mock private JourFermetureRepository jourFermetureRepository;
-    @Mock private AtelierRepository matchRepository;
+    @Mock private AtelierRepository atelierRepository;
     @Mock private ReservationRepository reservationRepository;
     @Mock private PaiementRepository paiementRepository;
     @Mock private PenaliteRepository penaliteRepository;
@@ -44,48 +44,48 @@ class DataInitializerTest {
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(dataInitializer, "demoMemberPassword", "Membre1234!");
+        ReflectionTestUtils.setField(dataInitializer, "demoParticipantPassword", "Membre1234!");
         ReflectionTestUtils.setField(dataInitializer, "demoAdminPassword", "Admin1234!");
     }
 
     @Test
-    void run_shouldBackfillLegacyMemberPasswordHashes() {
-        Participant legacyMember = Participant.builder()
+    void run_shouldBackfillLegacyParticipantPasswordHashes() {
+        Participant legacyParticipant = Participant.builder()
                 .matricule("g1001")
                 .nom("Martin")
                 .prenom("Lucas")
                 .email("lucas@email.com")
-                .typeMembre(TypeParticipant.GLOBAL)
+                .typeParticipant(TypeParticipant.PARTENAIRE)
                 .solde(0.0)
                 .passwordHash(null)
                 .build();
 
-        Participant penalizedMember = Participant.builder()
+        Participant penalizedParticipant = Participant.builder()
                 .matricule("L10002")
                 .nom("Penalise")
                 .prenom("Demo")
                 .email("demo@email.com")
-                .typeMembre(TypeParticipant.LIBRE)
+                .typeParticipant(TypeParticipant.VISITEUR)
                 .solde(0.0)
                 .passwordHash("existing-hash")
                 .build();
-        penalizedMember.setId(2L);
+        penalizedParticipant.setId(2L);
 
-        when(siteRepository.count()).thenReturn(1L);
-        when(matchRepository.count()).thenReturn(1L);
-        when(membreRepository.findAll()).thenReturn(List.of(legacyMember, penalizedMember));
+        when(centreRepository.count()).thenReturn(1L);
+        when(atelierRepository.count()).thenReturn(1L);
+        when(participantRepository.findAll()).thenReturn(List.of(legacyParticipant, penalizedParticipant));
         when(passwordEncoder.encode("Membre1234!")).thenReturn("hashed-default-password");
-        when(membreRepository.findByMatriculeIgnoreCase("L10002")).thenReturn(Optional.of(penalizedMember));
-        when(penaliteRepository.existsByMembreIdAndDateFinAfter(eq(2L), any(LocalDate.class))).thenReturn(true);
+        when(participantRepository.findByMatriculeIgnoreCase("L10002")).thenReturn(Optional.of(penalizedParticipant));
+        when(penaliteRepository.existsByParticipantIdAndDateFinAfter(eq(2L), any(LocalDate.class))).thenReturn(true);
 
         dataInitializer.run();
 
         ArgumentCaptor<List<Participant>> captor = ArgumentCaptor.forClass(List.class);
-        verify(membreRepository).saveAll(captor.capture());
+        verify(participantRepository).saveAll(captor.capture());
         assertThat(captor.getValue())
                 .extracting(Participant::getPasswordHash)
                 .contains("hashed-default-password");
-        assertThat(legacyMember.getPasswordHash()).isEqualTo("hashed-default-password");
+        assertThat(legacyParticipant.getPasswordHash()).isEqualTo("hashed-default-password");
     }
 
     @Test
@@ -108,18 +108,18 @@ class DataInitializerTest {
                 .build();
         adminParis.setId(11L);
 
-        when(siteRepository.count()).thenReturn(1L);
-        when(matchRepository.count()).thenReturn(1L);
-        when(membreRepository.findAll()).thenReturn(List.of());
+        when(centreRepository.count()).thenReturn(1L);
+        when(atelierRepository.count()).thenReturn(1L);
+        when(participantRepository.findAll()).thenReturn(List.of());
         when(administrateurRepository.findByEmail("admin@padel.com")).thenReturn(Optional.empty());
         when(administrateurRepository.findByEmail("admin.lyon@padel.com")).thenReturn(Optional.of(adminLyon));
         when(administrateurRepository.findByEmail("admin.paris@padel.com")).thenReturn(Optional.of(adminParis));
-        when(membreRepository.save(any(Participant.class))).thenAnswer(invocation -> {
+        when(participantRepository.save(any(Participant.class))).thenAnswer(invocation -> {
             Participant saved = invocation.getArgument(0);
             saved.setId(99L);
             return saved;
         });
-        when(penaliteRepository.existsByMembreIdAndDateFinAfter(any(), any(LocalDate.class))).thenReturn(true);
+        when(penaliteRepository.existsByParticipantIdAndDateFinAfter(any(), any(LocalDate.class))).thenReturn(true);
         when(passwordEncoder.encode("Membre1234!")).thenReturn("hashed-member-password");
 
 
@@ -139,22 +139,22 @@ class DataInitializerTest {
                 .prenom("Demo")
                 .email("adresse.personnalisee@example.com")
                 .passwordHash("mon-hachage-bcrypt-existant")
-                .typeMembre(TypeParticipant.VISITEUR)
+                .typeParticipant(TypeParticipant.VISITEUR)
                 .solde(0.0)
                 .build();
         existing.setId(50L);
 
-        when(siteRepository.count()).thenReturn(1L);
-        when(matchRepository.count()).thenReturn(1L);
-        when(membreRepository.findAll()).thenReturn(List.of(existing));
-        when(membreRepository.findByMatriculeIgnoreCase("L10002")).thenReturn(Optional.of(existing));
-        when(penaliteRepository.existsByMembreIdAndDateFinAfter(eq(50L), any(LocalDate.class)))
+        when(centreRepository.count()).thenReturn(1L);
+        when(atelierRepository.count()).thenReturn(1L);
+        when(participantRepository.findAll()).thenReturn(List.of(existing));
+        when(participantRepository.findByMatriculeIgnoreCase("L10002")).thenReturn(Optional.of(existing));
+        when(penaliteRepository.existsByParticipantIdAndDateFinAfter(eq(50L), any(LocalDate.class)))
                 .thenReturn(true);
 
         dataInitializer.run();
 
         assertThat(existing.getEmail()).isEqualTo("adresse.personnalisee@example.com");
         assertThat(existing.getPasswordHash()).isEqualTo("mon-hachage-bcrypt-existant");
-        verify(membreRepository, never()).save(existing);
+        verify(participantRepository, never()).save(existing);
     }
 }

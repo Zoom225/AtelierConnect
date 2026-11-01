@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Tag(name = "Authentification", description = "Endpoints d'authentification des administrateurs. " +
-        "Les membres ne s'authentifient pas ici : ils utilisent leur matricule via /api/membres/login. " +
+        "Les participants ne s'authentifient pas ici : ils utilisent leur matricule via /api/participants/login. " +
         "Ce flux est réservé aux administrateurs GLOBAL ou SITE qui doivent accéder aux endpoints de gestion. " +
         "Le serveur retourne un JWT valable 24 heures après validation des identifiants.")
 public class AuthController {

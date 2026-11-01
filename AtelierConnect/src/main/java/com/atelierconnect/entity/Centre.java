@@ -29,11 +29,11 @@ public class Centre extends BaseEntity {
     @Column(nullable = false)
     private LocalTime heureFermeture;
 
-    @Column(nullable = false)
-    private Integer dureeMatchMinutes;
+    @Column(name = "duree_match_minutes", nullable = false)
+    private Integer dureeAtelierMinutes;
 
-    @Column(nullable = false)
-    private Integer dureeEntreMatchMinutes;
+    @Column(name = "duree_entre_match_minutes", nullable = false)
+    private Integer dureeEntreAtelierMinutes;
 
     @Column(nullable = false)
     private Integer anneeCivile;
@@ -41,12 +41,12 @@ public class Centre extends BaseEntity {
     @Column(name = "ouvert_visiteurs")
     private Boolean ouvertVisiteurs;
 
-    @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "centre", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference("site-terrains")
     @Builder.Default
-    private Set<Salle> terrains = new HashSet<>();
+    private Set<Salle> salles = new HashSet<>();
 
-    @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "centre", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference("site-joursFermeture")
     @Builder.Default
     private Set<JourFermeture> joursFermeture = new HashSet<>();

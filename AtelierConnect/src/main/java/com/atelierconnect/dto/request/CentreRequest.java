@@ -28,14 +28,17 @@ public class CentreRequest {
 
     @NotNull(message = "La durée de l’atelier est obligatoire.")
     @Min(value = 1, message = "La durée de l’atelier doit être d’au moins 1 minute.")
-    private Integer dureeMatchMinutes;
+    @com.fasterxml.jackson.annotation.JsonAlias("dureeMatchMinutes")
+    private Integer dureeAtelierMinutes;
 
     @NotNull(message = "La durée de pause est obligatoire.")
     @Min(value = 0, message = "La durée de pause doit être positive.")
-    private Integer dureeEntreMatchMinutes;
+    @com.fasterxml.jackson.annotation.JsonAlias("dureeEntreMatchMinutes")
+    private Integer dureeEntreAtelierMinutes;
 
     @NotNull(message = "L'année civile est obligatoire.")
     private Integer anneeCivile;
 
+    @com.fasterxml.jackson.annotation.JsonAlias("ouvertVisiteurs")
     private Boolean ouvertVisiteurs;
 }

@@ -9,31 +9,31 @@ import java.util.List;
 
 public interface AtelierService {
 
-    AtelierDto createMatch(CreateAtelierRequest request, String username);
+    AtelierDto createAtelier(CreateAtelierRequest request, String username);
 
-    List<AtelierDto> findAllMatches();
+    List<AtelierDto> findAllAteliers();
 
-    List<AtelierDto> getPublicAvailableMatches();
+    List<AtelierDto> getPublicAvailableAteliers();
 
     List<AtelierDto> findByOrganisateur(Long organisateurId);
 
-    List<AtelierDto> findBySite(Long siteId);
+    List<AtelierDto> findByCentre(Long centreId);
 
-    Atelier getMatchEntityById(Long id);
+    Atelier getAtelierEntityById(Long id);
 
-    AtelierDto getMatchDtoById(Long id);
+    AtelierDto getAtelierDtoById(Long id);
 
-    AtelierDto updateMatch(Long matchId, AtelierRequest request);
+    AtelierDto updateAtelier(Long atelierId, AtelierRequest request);
 
-    void cancelMatch(Long matchId, Long requesterId);
+    void cancelAtelier(Long atelierId, Long requesterId);
 
-    void convertToPublic(Long matchId);
+    void convertToPublic(Long atelierId);
 
-    void consentToPublicOpening(Long matchId, Long requesterId);
+    void consentToPublicOpening(Long atelierId, Long requesterId);
 
-    void incrementPlayers(Long matchId);
+    void incrementParticipants(Long atelierId);
 
-    void decrementPlayers(Long matchId);
+    void decrementParticipants(Long atelierId);
 
     void checkAndConvertExpiredPrivateAteliers();
 }

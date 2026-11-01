@@ -22,7 +22,7 @@ public class Atelier extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "terrain_id", nullable = false)
     @JsonBackReference("terrain-matches")
-    private Salle terrain;
+    private Salle salle;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organisateur_id", nullable = false)
@@ -35,21 +35,21 @@ public class Atelier extends BaseEntity {
     private LocalDateTime dateFin;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TypeAtelier typeMatch;
+    @Column(name = "type_match", nullable = false)
+    private TypeAtelier typeAtelier;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatutAtelier statut;
 
-    @Column(nullable = false)
-    private Integer nbJoueursActuels;
+    @Column(name = "nb_joueurs_actuels", nullable = false)
+    private Integer nbParticipantsActuels;
 
     @Column(nullable = false)
     private Double prixTotal;
 
-    @Column(nullable = false)
-    private Double prixParJoueur;
+    @Column(name = "prix_par_joueur", nullable = false)
+    private Double prixParParticipant;
 
     private LocalDateTime dateConversionPublic;
 
@@ -59,7 +59,7 @@ public class Atelier extends BaseEntity {
     @Column(name = "date_accord_ouverture_publique")
     private LocalDateTime dateAccordOuverturePublique;
 
-    @OneToMany(mappedBy = "match", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "atelier", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("match-reservations")
     private List<Reservation> reservations;
 

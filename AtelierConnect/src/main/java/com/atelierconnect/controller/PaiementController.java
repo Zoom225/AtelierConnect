@@ -28,12 +28,12 @@ public class PaiementController {
 
     private final PaiementService paiementService;
     private final PaiementMapper paiementMapper;
-    private final CurrentParticipantService currentMemberService;
+    private final CurrentParticipantService currentParticipantService;
 
     @Operation(
-            summary = "Payer une réservation pour un membre donné",
+            summary = "Payer une réservation pour un participant donné",
             description = "Traite le paiement d'une réservation. " +
-                    "Le membre connecté doit correspondre à l'ID fourni et être propriétaire de la réservation. " +
+                    "Le participant connecté doit correspondre à l'ID fourni et être propriétaire de la réservation. " +
                     "Endpoint conservé pour compatibilité ; préférer /api/paiements/reservation/{reservationId}/pay.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
@@ -51,18 +51,18 @@ public class PaiementController {
             "/reservation/{reservationId}/participant/{membreId}"})
     public ResponseEntity<PaiementResponse> pay(
             @Parameter(description = "ID de la réservation à payer", required = true)
-            @PathVariable Long reservationId,
-            @Parameter(description = "ID du membre payeur, qui doit correspondre au membre connecté", required = true)
-            @PathVariable Long membreId) {
-        currentMemberService.requireCurrentMember(membreId);
+            @PathVariable("reservationId") Long reservationId,
+            @Parameter(description = "ID du participant payeur, qui doit correspondre au participant connecté", required = true)
+            @PathVariable("membreId") Long participantId) {
+        currentParticipantService.requireCurrentParticipant(participantId);
         return ResponseEntity.ok(
-                paiementMapper.toResponse(paiementService.pay(reservationId, membreId))
+                paiementMapper.toResponse(paiementService.pay(reservationId, participantId))
         );
     }
 
     @Operation(
-            summary = "Payer une réservation du membre connecté",
-            description = "Permet au membre connecté de payer une réservation qui lui appartient. " +
+            summary = "Payer une réservation du participant connecté",
+            description = "Permet au participant connecté de payer une réservation qui lui appartient. " +
                     "La place est confirmée uniquement après ce paiement.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
@@ -77,19 +77,19 @@ public class PaiementController {
                     content = @Content)
     })
     @PostMapping("/reservation/{reservationId}/pay")
-    public ResponseEntity<PaiementResponse> payCurrentMember(
+    public ResponseEntity<PaiementResponse> payCurrentParticipant(
             @Parameter(description = "ID de la réservation à payer", required = true)
-            @PathVariable Long reservationId) {
-        Long membreId = currentMemberService.currentMemberId();
+            @PathVariable("reservationId") Long reservationId) {
+        Long participantId = currentParticipantService.currentParticipantId();
         return ResponseEntity.ok(
-                paiementMapper.toResponse(paiementService.pay(reservationId, membreId))
+                paiementMapper.toResponse(paiementService.pay(reservationId, participantId))
         );
     }
 
     @Operation(
             summary = "Consulter un paiement",
             description = "Retourne un paiement par son ID. " +
-                    "Accessible uniquement au membre propriétaire de la réservation associée.",
+                    "Accessible uniquement au participant propriétaire de la réservation associée.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @ApiResponses({
@@ -101,15 +101,15 @@ public class PaiementController {
     @GetMapping("/{id}")
     public ResponseEntity<PaiementResponse> getById(
             @Parameter(description = "ID du paiement", required = true)
-            @PathVariable Long id) {
-        paiementService.checkPaiementOwner(id, currentMemberService.currentMemberId());
+            @PathVariable("id") Long id) {
+        paiementService.checkPaiementOwner(id, currentParticipantService.currentParticipantId());
         return ResponseEntity.ok(paiementMapper.toResponse(paiementService.getById(id)));
     }
 
     @Operation(
             summary = "Consulter le paiement d'une réservation",
             description = "Retourne le paiement associé à une réservation. " +
-                    "Accessible uniquement au membre propriétaire de cette réservation.",
+                    "Accessible uniquement au participant propriétaire de cette réservation.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @ApiResponses({
@@ -121,31 +121,31 @@ public class PaiementController {
     @GetMapping("/reservation/{reservationId}")
     public ResponseEntity<PaiementResponse> getByReservationId(
             @Parameter(description = "ID de la réservation", required = true)
-            @PathVariable Long reservationId) {
-        paiementService.checkReservationPaiementOwner(reservationId, currentMemberService.currentMemberId());
+            @PathVariable("reservationId") Long reservationId) {
+        paiementService.checkReservationPaiementOwner(reservationId, currentParticipantService.currentParticipantId());
         return ResponseEntity.ok(
                 paiementMapper.toResponse(paiementService.getByReservationId(reservationId))
         );
     }
 
     @Operation(
-            summary = "Lister les paiements d'un membre",
-            description = "Retourne l'historique des paiements du membre indiqué. " +
-                    "Accessible uniquement au membre connecté correspondant à cet ID.",
+            summary = "Lister les paiements d'un participant",
+            description = "Retourne l'historique des paiements du participant indiqué. " +
+                    "Accessible uniquement au participant connecté correspondant à cet ID.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Paiements du membre retournés",
+            @ApiResponse(responseCode = "200", description = "Paiements du participant retournés",
                     content = @Content(schema = @Schema(implementation = PaiementResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Membre introuvable",
+            @ApiResponse(responseCode = "404", description = "Participant introuvable",
                     content = @Content)
     })
     @GetMapping({"/membre/{membreId}", "/participant/{membreId}"})
-    public ResponseEntity<List<PaiementResponse>> getByMembreId(
-            @Parameter(description = "ID du membre", required = true)
-            @PathVariable Long membreId) {
-        currentMemberService.requireCurrentMember(membreId);
-        List<PaiementResponse> paiements = paiementService.getByMembreId(membreId)
+    public ResponseEntity<List<PaiementResponse>> getByParticipantId(
+            @Parameter(description = "ID du participant", required = true)
+            @PathVariable("membreId") Long participantId) {
+        currentParticipantService.requireCurrentParticipant(participantId);
+        List<PaiementResponse> paiements = paiementService.getByParticipantId(participantId)
                 .stream()
                 .map(paiementMapper::toResponse)
                 .toList();

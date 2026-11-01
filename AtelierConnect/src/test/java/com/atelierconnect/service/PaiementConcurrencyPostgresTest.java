@@ -55,7 +55,7 @@ class PaiementConcurrencyPostgresTest {
         );
 
         assertThat(resultats).containsExactlyInAnyOrder(true, false);
-        assertThat(atelierRepository.findById(atelierId).orElseThrow().getNbJoueursActuels())
+        assertThat(atelierRepository.findById(atelierId).orElseThrow().getNbParticipantsActuels())
                 .isEqualTo(6);
         assertThat(paiementRepository.findByReservationId(reservationA).orElseThrow().getStatut())
                 .isIn(StatutPaiement.PAYE, StatutPaiement.EN_ATTENTE);
@@ -77,7 +77,7 @@ class PaiementConcurrencyPostgresTest {
         );
 
         assertThat(resultats).containsExactlyInAnyOrder(true, false);
-        assertThat(atelierRepository.findById(atelierId).orElseThrow().getNbJoueursActuels())
+        assertThat(atelierRepository.findById(atelierId).orElseThrow().getNbParticipantsActuels())
                 .isEqualTo(6);
         assertThat(reservationRepository.findById(reservationId).orElseThrow().getStatut())
                 .isEqualTo(StatutReservation.CONFIRMEE);
@@ -100,7 +100,7 @@ class PaiementConcurrencyPostgresTest {
         assertThat(resultats).contains(true);
         assertThat(reservationRepository.findById(reservationId).orElseThrow().getStatut())
                 .isEqualTo(StatutReservation.ANNULEE);
-        assertThat(atelierRepository.findById(atelierId).orElseThrow().getNbJoueursActuels())
+        assertThat(atelierRepository.findById(atelierId).orElseThrow().getNbParticipantsActuels())
                 .isEqualTo(5);
         assertThat(paiementRepository.findByReservationId(reservationId).orElseThrow().getStatut())
                 .isIn(StatutPaiement.ANNULE, StatutPaiement.REMBOURSE);
@@ -137,13 +137,13 @@ class PaiementConcurrencyPostgresTest {
                 .adresse("Adresse de test")
                 .heureOuverture(LocalTime.of(8, 0))
                 .heureFermeture(LocalTime.of(22, 0))
-                .dureeMatchMinutes(120)
-                .dureeEntreMatchMinutes(20)
+                .dureeAtelierMinutes(120)
+                .dureeEntreAtelierMinutes(20)
                 .anneeCivile(LocalDateTime.now().getYear())
                 .ouvertVisiteurs(true).build());
         centreId = centre.getId();
         Salle salle = salleRepository.save(Salle.builder()
-                .nom("Salle de test").site(centre).prix(90.0).build());
+                .nom("Salle de test").centre(centre).prix(90.0).build());
         salleId = salle.getId();
         Participant a = creerParticipant("A-" + identifiant);
         Participant b = creerParticipant("B-" + identifiant);
@@ -151,10 +151,10 @@ class PaiementConcurrencyPostgresTest {
         LocalDateTime debut = LocalDateTime.now().plusDays(3)
                 .withHour(10).withMinute(0).withSecond(0).withNano(0);
         Atelier atelier = atelierRepository.save(Atelier.builder()
-                .terrain(salle).organisateur(a)
+                .salle(salle).organisateur(a)
                 .dateDebut(debut).dateFin(debut.plusMinutes(120))
-                .typeMatch(TypeAtelier.PUBLIC).statut(StatutAtelier.PLANIFIE)
-                .nbJoueursActuels(5).prixTotal(90.0).prixParJoueur(15.0)
+                .typeAtelier(TypeAtelier.PUBLIC).statut(StatutAtelier.PLANIFIE)
+                .nbParticipantsActuels(5).prixTotal(90.0).prixParParticipant(15.0)
                 .build());
         atelierId = atelier.getId();
         return new JeuEssai(atelier, a, b);
@@ -164,7 +164,7 @@ class PaiementConcurrencyPostgresTest {
         Participant p = participantRepository.save(Participant.builder()
                 .matricule("IT-" + matricule)
                 .nom("Participant").prenom("Test")
-                .typeMembre(TypeParticipant.PARTENAIRE)
+                .typeParticipant(TypeParticipant.PARTENAIRE)
                 .solde(0.0).build());
         participantIds.add(p.getId());
         return p;
@@ -172,7 +172,7 @@ class PaiementConcurrencyPostgresTest {
 
     private long creerReservation(Atelier atelier, Participant participant) {
         Reservation reservation = reservationRepository.save(Reservation.builder()
-                .match(atelier).membre(participant).statut(StatutReservation.EN_ATTENTE)
+                .atelier(atelier).participant(participant).statut(StatutReservation.EN_ATTENTE)
                 .build());
         reservationIds.add(reservation.getId());
         Paiement paiement = paiementRepository.save(Paiement.builder()

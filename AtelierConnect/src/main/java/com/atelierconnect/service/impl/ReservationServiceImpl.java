@@ -31,74 +31,74 @@ public class ReservationServiceImpl implements ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final PaiementRepository paiementRepository;
-    private final AtelierService matchService;
-    private final ParticipantService membreService;
+    private final AtelierService atelierService;
+    private final ParticipantService participantService;
 
     @Override
     @Transactional
-    public Reservation create(Long matchId, Long membreId, Long requesterId) {
-        Atelier match = matchService.getMatchEntityById(matchId);
-        Participant membre = membreService.getById(membreId);
+    public Reservation create(Long atelierId, Long participantId, Long requesterId) {
+        Atelier atelier = atelierService.getAtelierEntityById(atelierId);
+        Participant participant = participantService.getById(participantId);
 
-        // Regle metier : impossible de reserver un match deja complet.
-        if (match.getStatut() == StatutAtelier.COMPLET) {
+        // Regle metier : impossible de reserver un atelier deja complet.
+        if (atelier.getStatut() == StatutAtelier.COMPLET) {
             throw new BusinessException("Cet atelier est déjà complet.");
         }
-        // Regle metier : impossible de reserver un match annule.
-        if (match.getStatut() == StatutAtelier.ANNULE) {
+        // Regle metier : impossible de reserver un atelier annule.
+        if (atelier.getStatut() == StatutAtelier.ANNULE) {
             throw new BusinessException("Cet atelier est annulé.");
         }
-        if (!match.getDateDebut().isAfter(LocalDateTime.now())) {
+        if (!atelier.getDateDebut().isAfter(LocalDateTime.now())) {
             throw new BusinessException("Un atelier passé ne peut plus être réservé.");
         }
-        long joursAvant = ChronoUnit.DAYS.between(LocalDate.now(), match.getDateDebut().toLocalDate());
-        if (joursAvant > AtelierRules.delaiReservation(membre.getTypeMembre())) {
+        long joursAvant = ChronoUnit.DAYS.between(LocalDate.now(), atelier.getDateDebut().toLocalDate());
+        if (joursAvant > AtelierRules.delaiReservation(participant.getTypeParticipant())) {
             throw new BusinessException("Ce participant ne peut pas réserver aussi tôt pour sa catégorie.");
         }
 
-        // Regle metier : un membre ne peut pas etre inscrit deux fois au meme match.
-        if (reservationRepository.existsByMatchIdAndMembreId(matchId, membreId)) {
+        // Regle metier : un participant ne peut pas etre inscrit deux fois au meme atelier.
+        if (reservationRepository.existsByAtelierIdAndParticipantId(atelierId, participantId)) {
             throw new BusinessException("Ce participant est déjà inscrit à cet atelier.");
         }
 
-        // Regle metier : un membre penalise ne peut pas reserver.
-        if (membreService.hasActivePenalty(membreId)) {
+        // Regle metier : un participant penalise ne peut pas reserver.
+        if (participantService.hasActivePenalty(participantId)) {
             throw new BusinessException("Vous avez une suspension active et ne pouvez pas réserver cet atelier.");
         }
 
-        // Regle metier : un membre avec un solde impaye ne peut pas reserver.
-        if (membreService.hasOutstandingBalance(membreId)) {
+        // Regle metier : un participant avec un solde impaye ne peut pas reserver.
+        if (participantService.hasOutstandingBalance(participantId)) {
             throw new BusinessException("Vous avez un solde impayé et ne pouvez pas réserver cet atelier.");
         }
 
         // Le requesterId est l'ID de la personne qui initie la demande de reservation.
-        // Regle metier : seul l'organisateur peut inviter des joueurs sur un match prive.
-        if (match.getTypeMatch() == TypeAtelier.PRIVE
-                && !match.getOrganisateur().getId().equals(requesterId)) {
+        // Regle metier : seul l'organisateur peut inviter des participants sur un atelier prive.
+        if (atelier.getTypeAtelier() == TypeAtelier.PRIVE
+                && !atelier.getOrganisateur().getId().equals(requesterId)) {
             throw new BusinessException("Pour un atelier privé, seul l'organisateur peut inscrire des invités.");
         }
 
-        // Regle metier : un membre reserve un match public uniquement pour lui-meme.
-        if (match.getTypeMatch() == TypeAtelier.PUBLIC && !membreId.equals(requesterId)) {
+        // Regle metier : un participant reserve un atelier public uniquement pour lui-meme.
+        if (atelier.getTypeAtelier() == TypeAtelier.PUBLIC && !participantId.equals(requesterId)) {
             throw new BusinessException("Un participant ne peut réserver un atelier public que pour lui-même.");
         }
 
-        if (membre.getTypeMembre() == TypeParticipant.SITE) {
-            Long membreSiteId = membre.getSite().getId();
-            Long matchSiteId = match.getTerrain().getSite().getId();
-            // Regle metier : un membre SITE ne reserve que sur son site.
-            if (!membreSiteId.equals(matchSiteId)) {
+        if (participant.getTypeParticipant() == TypeParticipant.ABONNE) {
+            Long participantCentreId = participant.getCentre().getId();
+            Long atelierCentreId = atelier.getSalle().getCentre().getId();
+            // Regle metier : un participant SITE ne reserve que sur son centre.
+            if (!participantCentreId.equals(atelierCentreId)) {
                 throw new BusinessException("Un abonné ne peut réserver que dans son centre de rattachement.");
             }
         }
-        if (membre.getTypeMembre() == TypeParticipant.LIBRE
-                && !Boolean.TRUE.equals(match.getTerrain().getSite().getOuvertVisiteurs())) {
+        if (participant.getTypeParticipant() == TypeParticipant.VISITEUR
+                && !Boolean.TRUE.equals(atelier.getSalle().getCentre().getOuvertVisiteurs())) {
             throw new BusinessException("Ce centre n'est pas ouvert aux visiteurs.");
         }
 
         Reservation reservation = Reservation.builder()
-                .match(match)
-                .membre(membre)
+                .atelier(atelier)
+                .participant(participant)
                 .statut(StatutReservation.EN_ATTENTE)
                 .build();
 
@@ -107,21 +107,21 @@ public class ReservationServiceImpl implements ReservationService {
         // Regle metier : chaque reservation cree automatiquement un paiement en attente.
         Paiement paiement = Paiement.builder()
                 .reservation(reservation)
-                .montant(match.getPrixParJoueur())
+                .montant(atelier.getPrixParParticipant())
                 .statut(StatutPaiement.EN_ATTENTE)
                 .build();
 
         paiement = paiementRepository.save(paiement);
         reservation.setPaiement(paiement);
 
-        log.info("Réservation créée pour le participant {} à l'atelier {}", membreId, matchId);
+        log.info("Réservation créée pour le participant {} à l'atelier {}", participantId, atelierId);
 
         return reservation;
     }
 
     @Override
     @Transactional
-    public List<Reservation> createForInvites(Long matchId, Long requesterId, List<String> inviteeMatricules) {
+    public List<Reservation> createForInvites(Long atelierId, Long requesterId, List<String> inviteeMatricules) {
         if (inviteeMatricules == null || inviteeMatricules.isEmpty()) {
             return List.of();
         }
@@ -133,8 +133,8 @@ public class ReservationServiceImpl implements ReservationService {
                 continue;
             }
 
-            Participant membre = membreService.getByMatricule(normalizedMatricule);
-            createdReservations.add(create(matchId, membre.getId(), requesterId));
+            Participant participant = participantService.getByMatricule(normalizedMatricule);
+            createdReservations.add(create(atelierId, participant.getId(), requesterId));
         }
 
         return createdReservations;
@@ -147,20 +147,20 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public List<Reservation> getByMatchId(Long matchId) {
-        return reservationRepository.findByMatchId(matchId);
+    public List<Reservation> getByAtelierId(Long atelierId) {
+        return reservationRepository.findByAtelierId(atelierId);
     }
 
     @Override
-    public List<Reservation> getByMembreId(Long membreId) {
-        return reservationRepository.findByMembreId(membreId);
+    public List<Reservation> getByParticipantId(Long participantId) {
+        return reservationRepository.findByParticipantId(participantId);
     }
 
     @Override
-    public void checkReservationOwner(Long reservationId, Long membreId) {
+    public void checkReservationOwner(Long reservationId, Long participantId) {
         Reservation reservation = getById(reservationId);
-        // Regle metier : un membre ne peut consulter que ses propres reservations.
-        if (!reservation.getMembre().getId().equals(membreId)) {
+        // Regle metier : un participant ne peut consulter que ses propres reservations.
+        if (!reservation.getParticipant().getId().equals(participantId)) {
             throw new BusinessException("Accès refusé : cette réservation appartient à un autre participant.");
         }
     }
@@ -195,7 +195,7 @@ public class ReservationServiceImpl implements ReservationService {
 
         // Regle metier : seule une reservation confirmee libere une place.
         if (wasConfirmed) {
-            matchService.decrementPlayers(reservation.getMatch().getId());
+            atelierService.decrementParticipants(reservation.getAtelier().getId());
         }
 
         log.info("Réservation {} annulée", reservationId);
