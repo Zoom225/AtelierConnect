@@ -266,7 +266,7 @@ class ReservationServiceTest {
 
             assertThatThrownBy(() -> reservationService.create(11L, 2L, 1L))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("pénalité active");
+                    .hasMessageContaining("suspension active");
 
             verify(reservationRepository, never()).save(any());
         }
