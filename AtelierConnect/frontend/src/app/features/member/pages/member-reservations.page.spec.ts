@@ -182,6 +182,18 @@ describe('MemberReservationsPage', () => {
     expect(ateliersApiMock.consentToPublicOpening).not.toHaveBeenCalled();
   });
 
+  it('ne marque pas un autre atelier privé comme consenti', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const secondPrivate = { ...organizedAteliers.find(atelier => atelier.id === 2)!, id: 3,
+      accordOuverturePublique: false };
+    ateliersApiMock.getByOrganisateur.mockReturnValue(of([...organizedAteliers, secondPrivate]));
+    const component = TestBed.createComponent(MemberReservationsPage).componentInstance;
+    component.onManagedAtelierChange(2);
+    component.consentToPublicOpening();
+    expect(component.organisedAteliers().find(atelier => atelier.id === 2)?.accordOuverturePublique).toBe(true);
+    expect(component.organisedAteliers().find(atelier => atelier.id === 3)?.accordOuverturePublique).toBe(false);
+  });
+
   it('restaure l’accord depuis le DTO après rechargement et empêche son renvoi', () => {
     const ateliersWithPersistedConsent: AtelierResponse[] = organizedAteliers.map(atelier =>
       atelier.id === 2

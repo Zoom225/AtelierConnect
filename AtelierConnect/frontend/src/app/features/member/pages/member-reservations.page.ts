@@ -501,8 +501,8 @@ export class MemberReservationsPage {
         this.actionId.set(null);
         // Mettre immédiatement à jour la réponse locale ; le rechargement
         // récupérera ensuite l'accord enregistré en base via le DTO.
-        this.organisedAteliers.update(ateliers => ateliers.map(atelier =>
-          atelier.id === atelier.id ? { ...atelier, accordOuverturePublique: true } : atelier));
+        this.organisedAteliers.update(ateliers => ateliers.map(candidate =>
+          candidate.id === atelier.id ? { ...candidate, accordOuverturePublique: true } : candidate));
         this.message.set(this.language.t('member.reservations.consentSuccess'));
       },
       error: (error) => {
