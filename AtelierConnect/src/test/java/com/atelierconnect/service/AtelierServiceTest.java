@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -186,6 +187,62 @@ class AtelierServiceTest {
         assertEquals(TypeAtelier.PUBLIC, prive.getTypeMatch());
         assertNotNull(prive.getDateConversionPublic());
         verify(membreService, never()).addPenalty(any());
+    }
+
+    @Test
+    void schedulerOuvreADeuxJoursSeulementLesAteliersAvecAccord() {
+        LocalDateTime date = LocalDate.now()
+                .plusDays(AtelierRules.OUVERTURE_PUBLIQUE_JOURS).atTime(10, 0);
+        Atelier consenti = new Atelier();
+        consenti.setId(31L);
+        consenti.setOrganisateur(organisateur);
+        consenti.setTypeMatch(TypeAtelier.PRIVE);
+        consenti.setStatut(StatutAtelier.PLANIFIE);
+        consenti.setDateDebut(date);
+        consenti.setAccordOuverturePublique(true);
+        consenti.setNbJoueursActuels(1);
+
+        Atelier sansAccord = new Atelier();
+        sansAccord.setId(32L);
+        sansAccord.setTypeMatch(TypeAtelier.PRIVE);
+        sansAccord.setStatut(StatutAtelier.PLANIFIE);
+        sansAccord.setDateDebut(date);
+        sansAccord.setAccordOuverturePublique(false);
+        sansAccord.setNbJoueursActuels(1);
+
+        when(matchRepository.findByDateDebutBetweenAndStatut(any(), any(), eq(StatutAtelier.PLANIFIE)))
+                .thenReturn(List.of(consenti, sansAccord));
+        when(matchRepository.findById(31L)).thenReturn(Optional.of(consenti));
+
+        matchService.checkAndConvertExpiredPrivateAteliers();
+
+        assertEquals(TypeAtelier.PUBLIC, consenti.getTypeMatch());
+        assertNotNull(consenti.getDateConversionPublic());
+        assertEquals(TypeAtelier.PRIVE, sansAccord.getTypeMatch());
+        verify(matchRepository).save(consenti);
+        verify(matchRepository, never()).save(sansAccord);
+        verify(membreService, never()).addPenalty(any());
+    }
+
+    @Test
+    void schedulerAccepteUnCompteurParticipantsHistoriqueNull() {
+        Atelier consenti = new Atelier();
+        consenti.setId(33L);
+        consenti.setOrganisateur(organisateur);
+        consenti.setTypeMatch(TypeAtelier.PRIVE);
+        consenti.setStatut(StatutAtelier.PLANIFIE);
+        consenti.setDateDebut(LocalDate.now().plusDays(AtelierRules.OUVERTURE_PUBLIQUE_JOURS).atTime(10, 0));
+        consenti.setAccordOuverturePublique(true);
+        consenti.setNbJoueursActuels(null);
+
+        when(matchRepository.findByDateDebutBetweenAndStatut(any(), any(), eq(StatutAtelier.PLANIFIE)))
+                .thenReturn(List.of(consenti));
+        when(matchRepository.findById(33L)).thenReturn(Optional.of(consenti));
+
+        matchService.checkAndConvertExpiredPrivateAteliers();
+
+        assertEquals(TypeAtelier.PUBLIC, consenti.getTypeMatch());
+        verify(matchRepository).save(consenti);
     }
 
     @Test
