@@ -38,7 +38,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
         </div>
 
         <div class="workshop-panel" [attr.aria-label]="copy().atelierPreviewLabel">
-          <div class="workshop-layout">
+          <div class="workshop-layout" aria-hidden="true">
             <span></span>
             <span></span>
           </div>
@@ -123,6 +123,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
     }
 
     .home-hero-copy {
+      min-width: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -147,7 +148,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
     h1 {
       margin: 0;
       color: #0f172a;
-      font-size: clamp(3rem, 8vw, 6rem);
+      font-size: clamp(2rem, 5vw, 4rem);
       line-height: 0.95;
       font-weight: 900;
       letter-spacing: 0;
@@ -185,40 +186,19 @@ import { LanguageService } from '../../../core/i18n/language.service';
     .workshop-layout {
       position: absolute;
       inset: 42px;
-      border: 2px solid rgba(255, 255, 255, 0.48);
-      border-radius: 28px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: center;
+      gap: 2rem;
       transform: rotate(-6deg);
-      background:
-        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.2) 0 27%, transparent 28%),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 65%);
-    }
-
-    .workshop-layout::before {
-      content: '';
-      position: absolute;
-      inset: 24% 22%;
-      border: 16px solid rgba(255, 255, 255, 0.17);
-      border-radius: 22px;
-      box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.07);
     }
 
     .workshop-layout span {
-      position: absolute;
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
-      border: 2px solid rgba(255, 255, 255, 0.68);
-      background: rgba(15, 118, 110, 0.56);
-    }
-
-    .workshop-layout span:first-child {
-      top: 12%;
-      left: 22%;
-    }
-
-    .workshop-layout span:last-child {
-      right: 22%;
-      bottom: 12%;
+      height: 160px;
+      border-radius: 12px;
+      border: 8px solid #d6a66b;
+      background: linear-gradient(120deg, #ffedd5, #e7c69d);
+      box-shadow: 0 24px 0 -12px rgba(15, 23, 42, 0.22);
     }
 
     .workshop-card {
@@ -314,7 +294,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
     @media (max-width: 920px) {
       .home-hero,
       .feature-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
 
       .workshop-panel {

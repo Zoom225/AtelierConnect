@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { By } from '@angular/platform-browser';
+import { MatSelect } from '@angular/material/select';
 import { ActivatedRoute } from '@angular/router';
 import { provideRouter, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
@@ -121,6 +123,19 @@ describe('MemberCreateAtelierPage', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     TestBed.resetTestingModule();
+  });
+
+  it('affiche le tarif atelier de 90 EUR même si la salle conserve un ancien prix', () => {
+    sallesApiMock.getByCentre.mockReturnValue(of([{ ...salles[0], prix: 60 }]));
+    const fixture = TestBed.createComponent(MemberCreateAtelierPage);
+    fixture.detectChanges();
+    const select = fixture.debugElement.query(By.css('mat-select[formControlName="salleId"]')).componentInstance as MatSelect;
+    select.open();
+    fixture.detectChanges();
+    const option = document.querySelector('mat-option');
+    expect(option?.textContent).toContain('90 EUR');
+    expect(option?.textContent).not.toContain('60 EUR');
+    select.close();
   });
 
   it('initialise le site, le salle et la date minimale pour un participant SITE', () => {

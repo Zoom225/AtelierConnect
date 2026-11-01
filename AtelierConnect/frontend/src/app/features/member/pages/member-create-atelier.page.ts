@@ -15,7 +15,7 @@ import { SallesApiService } from '../../../core/api/salles-api.service';
 import { MemberSessionService } from '../../../core/auth/member-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { TypeParticipant, toParticipantCategory } from '../../../shared/models/enums.model';
-import { BOOKING_MAX_DAYS } from '../../../shared/models/atelier-rules';
+import { ATELIER_TOTAL_PRICE_EUR, BOOKING_MAX_DAYS } from '../../../shared/models/atelier-rules';
 import { AtelierResponse } from '../../../shared/models/atelier.model';
 import { CentreResponse, SalleResponse } from '../../../shared/models/centre-salle.model';
 import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
@@ -87,7 +87,7 @@ const createMaxBookingDateValidator = (getMaxDate: () => string): ValidatorFn =>
               <mat-label>{{ language.t('member.create.salle') }}</mat-label>
               <mat-select formControlName="salleId" [disabled]="!salles().length">
                 @for (salle of salles(); track salle.id) {
-                  <mat-option [value]="salle.id">{{ salle.nom }}{{ salle.prix != null ? ' - ' + salle.prix + ' EUR' : '' }}</mat-option>
+                  <mat-option [value]="salle.id">{{ salle.nom }} - {{ ATELIER_TOTAL_PRICE_EUR }} EUR</mat-option>
                 }
               </mat-select>
             </mat-form-field>
@@ -182,6 +182,7 @@ const createMaxBookingDateValidator = (getMaxDate: () => string): ValidatorFn =>
   `
 })
 export class MemberCreateAtelierPage {
+  readonly ATELIER_TOTAL_PRICE_EUR = ATELIER_TOTAL_PRICE_EUR;
   private readonly centresApi = inject(CentresApiService);
   private readonly sallesApi = inject(SallesApiService);
   private readonly ateliersApi = inject(AteliersApiService);

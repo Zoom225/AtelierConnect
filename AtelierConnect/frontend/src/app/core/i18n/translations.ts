@@ -870,7 +870,7 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'landing.eyebrow': 'Collaborative workshop booking across multiple centers',
     'landing.title': 'AtelierConnect',
     'landing.lead':
-      'A clear interface to book, join a atelier, track payments, and run the club from an admin dashboard.',
+      'A clear interface to book or join a workshop, track payments, and manage collaborative centres from an admin dashboard.',
     'landing.memberCta': 'Enter with a participant ID',
     'landing.memberCtaConnected': 'Open my area',
     'landing.adminCta': 'Admin login',
