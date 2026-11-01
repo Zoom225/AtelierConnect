@@ -165,4 +165,3 @@ les restaure à la sortie. Les quatre tests concurrents sont activés avec
 | CORS | Vérifier OPTIONS puis requête réelle ; la sécurité CORS est activée, JWT reste obligatoire pour écrire |
 | LazyInitializationException | Vérifier transaction et graphes JPA ; ne pas réactiver Open Session in View pour cacher l'erreur |
 | Import Angular ancien | Recharger la branche, npm ci puis tests ; ne pas masquer les conflits avec --force |
-

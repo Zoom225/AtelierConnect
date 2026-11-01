@@ -119,4 +119,3 @@ Les JWT stockés dans le navigateur n'ont pas de révocation centralisée ni ref
 token dans le périmètre réalisé. Une capture bancaire, des remboursements externes,
 des notifications et une limitation de débit globale ne sont pas implémentés.
 Cette documentation n'est pas une homologation de sécurité de production.
-

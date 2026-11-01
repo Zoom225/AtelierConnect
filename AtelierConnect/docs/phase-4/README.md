@@ -44,4 +44,3 @@ Le démarrage, les échanges HTTP, les données et les principaux parcours sont
 vérifiés. L'intégration de phase 3 reste une décision de revue : recette manuelle,
 stratégie pour les anciens ateliers et examen des limites doivent précéder la
 sortie du brouillon puis la fusion explicite de la PR #2. Aucune fusion automatique.
-

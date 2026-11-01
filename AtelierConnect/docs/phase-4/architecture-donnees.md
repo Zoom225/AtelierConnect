@@ -118,4 +118,3 @@ tables d'origine a confirmé qu'elles étaient inchangées.
 Aucune suppression/recréation de table ou volume ; aucune modification des mots
 de passe applicatifs existants ; aucun Flyway. La reprise des tarifs et durées
 historiques exige un plan séparé, une sauvegarde et une décision métier explicite.
-

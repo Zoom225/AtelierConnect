@@ -85,4 +85,3 @@ développement. `ddl-auto=update`, sans Flyway, avec mappings physiques conserv�
 Les nouveaux développements sont validés sur des bases dédiées. Les critères
 ergonomie, accessibilité, performances de charge et disponibilité de production
 ne sont pas réputés validés par les tests fonctionnels actuels.
-

@@ -103,4 +103,3 @@ horaire déjà observé.
   API et données ensemble, au-delà d'une compilation ou d'un mock.
 - Que manque-t-il avant une exploitation financière réelle ? Prestataire, preuves
   de paiement, idempotence externe, remboursements réels et exploitation adaptée.
-

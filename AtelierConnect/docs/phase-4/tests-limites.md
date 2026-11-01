@@ -122,4 +122,3 @@ chaque catégorie aux bornes 30/15/7 jours ; fermetures ; dette/suspension ; ann
 selon l'état ; consentement de plusieurs privés ; déclenchement réel du scheduler
 à J−2 ; sessions historiques et erreurs FR/EN. Conserver les captures anonymisées,
 le commit testé et les observations. Aucune validation officielle EPHEC n'en découle.
-
