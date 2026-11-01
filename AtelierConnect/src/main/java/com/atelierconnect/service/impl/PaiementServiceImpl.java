@@ -135,6 +135,7 @@ public class PaiementServiceImpl implements PaiementService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public void checkPaiementOwner(Long paiementId, Long participantId) {
         Paiement paiement = getById(paiementId);
         // Regle metier : un participant ne peut consulter que ses propres paiements.
@@ -144,6 +145,7 @@ public class PaiementServiceImpl implements PaiementService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public void checkReservationPaiementOwner(Long reservationId, Long participantId) {
         Paiement paiement = getByReservationId(reservationId);
         // Regle metier : un participant ne peut agir que sur le paiement de sa reservation.

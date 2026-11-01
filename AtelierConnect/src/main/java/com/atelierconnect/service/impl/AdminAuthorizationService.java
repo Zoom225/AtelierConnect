@@ -122,9 +122,12 @@ public class AdminAuthorizationService {
         if (admin.getTypeAdministrateur() == TypeAdministrateur.GLOBAL) {
             return ateliers;
         }
-        String centreNom = admin.getCentre() != null ? admin.getCentre().getNom() : null;
+        Long centreId = admin.getCentre() != null ? admin.getCentre().getId() : null;
+        if (centreId == null) return List.of();
+        var allowedIds = atelierRepository.findBySalleCentreId(centreId).stream()
+                .map(Atelier::getId).collect(java.util.stream.Collectors.toSet());
         return ateliers.stream()
-                .filter(atelier -> atelier.centreNom() != null && atelier.centreNom().equals(centreNom))
+                .filter(atelier -> allowedIds.contains(atelier.id()))
                 .toList();
     }
 }
