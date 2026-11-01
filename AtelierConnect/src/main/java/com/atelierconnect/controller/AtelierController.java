@@ -125,7 +125,7 @@ public class AtelierController {
             description = "Retourne les ateliers d'un centre. Accessible à un administrateur autorisé pour ce centre.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
-    @GetMapping("/site/{siteId}")
+    @GetMapping({"/centre/{siteId}", "/site/{siteId}"})
     public ResponseEntity<List<AtelierDto>> getByCentre(
             @Parameter(description = "ID du centre", required = true)
             @PathVariable("siteId") Long centreId) {

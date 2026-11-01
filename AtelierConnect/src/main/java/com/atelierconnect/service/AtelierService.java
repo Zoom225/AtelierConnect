@@ -21,6 +21,8 @@ public interface AtelierService {
 
     Atelier getAtelierEntityById(Long id);
 
+    Atelier getAtelierEntityByIdForUpdate(Long id);
+
     AtelierDto getAtelierDtoById(Long id);
 
     AtelierDto updateAtelier(Long atelierId, AtelierRequest request);

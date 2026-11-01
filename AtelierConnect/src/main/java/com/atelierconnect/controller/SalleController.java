@@ -100,7 +100,7 @@ public class SalleController {
             @ApiResponse(responseCode = "404", description = "Centre introuvable",
                     content = @Content)
     })
-    @GetMapping("/site/{siteId}")
+    @GetMapping({"/centre/{siteId}", "/site/{siteId}"})
     public ResponseEntity<List<SalleResponse>> getByCentreId(
             @Parameter(description = "ID du centre", required = true)
             @PathVariable("siteId") Long centreId) {

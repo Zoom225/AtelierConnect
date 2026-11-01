@@ -44,6 +44,42 @@ class PaiementConcurrencyPostgresTest {
     private Long centreId;
 
     @Test
+    void deuxInvitationsPriveesPourDernierInviteUneSeuleReussit() throws Exception {
+        JeuEssai jeu = creerJeuEssai();
+        Atelier atelier = jeu.atelier();
+        atelier.setTypeAtelier(TypeAtelier.PRIVE);
+        atelier.setNbParticipantsActuels(0);
+        atelierRepository.save(atelier);
+        creerReservation(atelier, jeu.participantA());
+        for (int i = 0; i < 4; i++) {
+            creerReservation(atelier, creerParticipant("Invite-" + UUID.randomUUID()));
+        }
+        Participant dernierInvite = creerParticipant("Concurrent-" + UUID.randomUUID());
+        List<Boolean> resultats = executerSimultanement(
+                () -> inviterOuRefuser(atelier.getId(), jeu.participantB().getId(), jeu.participantA().getId()),
+                () -> inviterOuRefuser(atelier.getId(), dernierInvite.getId(), jeu.participantA().getId()));
+
+        assertThat(resultats).containsExactlyInAnyOrder(true, false);
+        assertThat(reservationRepository.countByAtelierIdAndStatutNot(atelierId, StatutReservation.ANNULEE))
+                .isEqualTo(6);
+        assertThat(atelierRepository.findById(atelierId).orElseThrow().getNbParticipantsActuels()).isZero();
+        // Inclure les lignes de l'invitation gagnante dans le nettoyage ciblé.
+        for (Reservation reservation : reservationRepository.findByAtelierId(atelierId)) {
+            if (!reservationIds.contains(reservation.getId())) reservationIds.add(reservation.getId());
+            if (!paiementIds.contains(reservation.getPaiement().getId())) paiementIds.add(reservation.getPaiement().getId());
+        }
+    }
+
+    private boolean inviterOuRefuser(Long atelierId, Long participantId, Long organisateurId) {
+        try {
+            reservationService.create(atelierId, participantId, organisateurId);
+            return true;
+        } catch (BusinessException refused) {
+            return false;
+        }
+    }
+
+    @Test
     void deuxParticipantsPourDernierePlaceUnSeulPaiementReussit() throws Exception {
         JeuEssai jeu = creerJeuEssai();
         long reservationA = creerReservation(jeu.atelier(), jeu.participantA());

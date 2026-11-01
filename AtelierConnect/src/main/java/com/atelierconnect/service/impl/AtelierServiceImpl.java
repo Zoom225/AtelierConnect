@@ -130,6 +130,13 @@ public class AtelierServiceImpl implements AtelierService {
     }
 
     @Override
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public Atelier getAtelierEntityByIdForUpdate(Long id) {
+        return atelierRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Atelier introuvable avec l'identifiant : " + id));
+    }
+
+    @Override
     public AtelierDto getAtelierDtoById(Long id) {
         return atelierMapper.toAtelierDto(getAtelierEntityById(id));
     }

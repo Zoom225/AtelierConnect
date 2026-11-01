@@ -37,7 +37,8 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public Reservation create(Long atelierId, Long participantId, Long requesterId) {
-        Atelier atelier = atelierService.getAtelierEntityById(atelierId);
+        // Même verrou que les paiements : invitations et sixième place sont sérialisées.
+        Atelier atelier = atelierService.getAtelierEntityByIdForUpdate(atelierId);
         Participant participant = participantService.getById(participantId);
 
         // Regle metier : impossible de reserver un atelier deja complet.
@@ -94,6 +95,12 @@ public class ReservationServiceImpl implements ReservationService {
         if (participant.getTypeParticipant() == TypeParticipant.VISITEUR
                 && !Boolean.TRUE.equals(atelier.getSalle().getCentre().getOuvertVisiteurs())) {
             throw new BusinessException("Ce centre n'est pas ouvert aux visiteurs.");
+        }
+
+        if (atelier.getTypeAtelier() == TypeAtelier.PRIVE
+                && reservationRepository.countByAtelierIdAndStatutNot(atelierId, StatutReservation.ANNULEE)
+                        >= AtelierRules.CAPACITE) {
+            throw new BusinessException("Un atelier privé accepte l'organisateur et au maximum cinq invités.");
         }
 
         Reservation reservation = Reservation.builder()
@@ -211,6 +218,10 @@ public class ReservationServiceImpl implements ReservationService {
         }
         if (reservation.getStatut() != StatutReservation.EN_ATTENTE) {
             throw new BusinessException("Seule une réservation en attente peut être confirmée.");
+        }
+
+        if (reservation.getPaiement() == null || reservation.getPaiement().getStatut() != StatutPaiement.PAYE) {
+            throw new BusinessException("Un paiement validé est requis pour confirmer une place.");
         }
 
         reservation.setStatut(StatutReservation.CONFIRMEE);

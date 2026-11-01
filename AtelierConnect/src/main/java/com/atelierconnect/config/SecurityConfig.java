@@ -49,7 +49,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/matches", "/api/ateliers").hasRole("MEMBER")
                         .requestMatchers(HttpMethod.GET, "/api/matches/organisateur/**", "/api/ateliers/organisateur/**").hasRole("MEMBER")
                         .requestMatchers(HttpMethod.GET, "/api/matches", "/api/ateliers").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/matches/site/**", "/api/ateliers/site/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/matches/site/**", "/api/ateliers/site/**", "/api/matches/centre/**", "/api/ateliers/centre/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/matches/*", "/api/ateliers/*").hasAnyRole("MEMBER", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/matches/*", "/api/ateliers/*").hasRole("MEMBER")
                         .requestMatchers(HttpMethod.PATCH, "/api/matches/*/cancel", "/api/ateliers/*/cancel").hasRole("MEMBER")

@@ -71,7 +71,7 @@ public class JourFermetureController {
                     "Accessible à un admin GLOBAL ou à un admin SITE dans son périmètre.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
-    @GetMapping("/site/{siteId}")
+    @GetMapping({"/centre/{siteId}", "/site/{siteId}"})
     public ResponseEntity<List<JourFermetureResponse>> getByCentre(
             @Parameter(description = "ID du centre", required = true)
             @PathVariable("siteId") Long centreId) {

@@ -154,7 +154,7 @@ class ReservationServiceTest {
         @Test
         @DisplayName("✅ doit créer une réservation pour un atelier PUBLIC avec un participant valide")
         void shouldCreateReservationForPublicAtelier() {
-            when(atelierService.getAtelierEntityById(11L)).thenReturn(atelierPublic); // MODIFIÉ
+            when(atelierService.getAtelierEntityByIdForUpdate(11L)).thenReturn(atelierPublic); // MODIFIÉ
             when(participantService.getById(2L)).thenReturn(participant);
             when(participantService.hasActivePenalty(2L)).thenReturn(false);
             when(participantService.hasOutstandingBalance(2L)).thenReturn(false);
@@ -180,7 +180,7 @@ class ReservationServiceTest {
         @Test
         @DisplayName("✅ doit créer une réservation pour un atelier PRIVE quand l'organisateur ajoute un participant")
         void shouldCreateReservationForPriveAtelierByOrganizer() {
-            when(atelierService.getAtelierEntityById(10L)).thenReturn(atelierPrive); // MODIFIÉ
+            when(atelierService.getAtelierEntityByIdForUpdate(10L)).thenReturn(atelierPrive); // MODIFIÉ
             when(participantService.getById(2L)).thenReturn(participant);
             when(participantService.hasActivePenalty(2L)).thenReturn(false);
             when(participantService.hasOutstandingBalance(2L)).thenReturn(false);
@@ -197,9 +197,22 @@ class ReservationServiceTest {
         }
 
         @Test
+        void refusesSixthPrivateGuestEvenBeforePayment() {
+            when(atelierService.getAtelierEntityByIdForUpdate(10L)).thenReturn(atelierPrive);
+            when(participantService.getById(2L)).thenReturn(participant);
+            when(reservationRepository.countByAtelierIdAndStatutNot(10L, StatutReservation.ANNULEE))
+                    .thenReturn(6L);
+
+            assertThatThrownBy(() -> reservationService.create(10L, 2L, 1L))
+                    .isInstanceOf(BusinessException.class).hasMessageContaining("cinq invités");
+            verify(reservationRepository, never()).save(any());
+            verify(paiementRepository, never()).save(any());
+        }
+
+        @Test
         @DisplayName("✅ doit créer des réservations à partir de matricules invités")
         void shouldCreateReservationsForInvites() {
-            when(atelierService.getAtelierEntityById(10L)).thenReturn(atelierPrive);
+            when(atelierService.getAtelierEntityByIdForUpdate(10L)).thenReturn(atelierPrive);
             when(participantService.getByMatricule("g1002")).thenReturn(participant);
             when(participantService.getById(2L)).thenReturn(participant);
             when(participantService.hasActivePenalty(2L)).thenReturn(false);
@@ -218,7 +231,7 @@ class ReservationServiceTest {
         @Test
         @DisplayName("❌ doit lever une BusinessException quand l'atelier est COMPLET")
         void shouldThrowWhenAtelierIsFull() {
-            when(atelierService.getAtelierEntityById(12L)).thenReturn(atelierComplet); // MODIFIÉ
+            when(atelierService.getAtelierEntityByIdForUpdate(12L)).thenReturn(atelierComplet); // MODIFIÉ
             when(participantService.getById(2L)).thenReturn(participant);
 
             assertThatThrownBy(() -> reservationService.create(12L, 2L, 1L))
@@ -232,7 +245,7 @@ class ReservationServiceTest {
         @DisplayName("❌ doit lever une BusinessException quand l'atelier est ANNULE")
         void shouldThrowWhenAtelierIsCancelled() {
             atelierPublic.setStatut(StatutAtelier.ANNULE);
-            when(atelierService.getAtelierEntityById(11L)).thenReturn(atelierPublic); // MODIFIÉ
+            when(atelierService.getAtelierEntityByIdForUpdate(11L)).thenReturn(atelierPublic); // MODIFIÉ
             when(participantService.getById(2L)).thenReturn(participant);
 
             assertThatThrownBy(() -> reservationService.create(11L, 2L, 1L))
@@ -245,7 +258,7 @@ class ReservationServiceTest {
         @Test
         @DisplayName("❌ doit lever une BusinessException quand le participant est déjà inscrit au atelier")
         void shouldThrowWhenParticipantAlreadyRegistered() {
-            when(atelierService.getAtelierEntityById(11L)).thenReturn(atelierPublic); // MODIFIÉ
+            when(atelierService.getAtelierEntityByIdForUpdate(11L)).thenReturn(atelierPublic); // MODIFIÉ
             when(participantService.getById(2L)).thenReturn(participant);
             when(reservationRepository.existsByAtelierIdAndParticipantId(11L, 2L)).thenReturn(true);
 
@@ -259,7 +272,7 @@ class ReservationServiceTest {
         @Test
         @DisplayName("❌ doit lever une BusinessException quand le participant a une pénalité active")
         void shouldThrowWhenParticipantHasActivePenalty() {
-            when(atelierService.getAtelierEntityById(11L)).thenReturn(atelierPublic); // MODIFIÉ
+            when(atelierService.getAtelierEntityByIdForUpdate(11L)).thenReturn(atelierPublic); // MODIFIÉ
             when(participantService.getById(2L)).thenReturn(participant);
             when(reservationRepository.existsByAtelierIdAndParticipantId(11L, 2L)).thenReturn(false);
             when(participantService.hasActivePenalty(2L)).thenReturn(true);
@@ -274,7 +287,7 @@ class ReservationServiceTest {
         @Test
         @DisplayName("❌ doit lever une BusinessException quand le participant a un solde impayé")
         void shouldThrowWhenParticipantHasOutstandingBalance() {
-            when(atelierService.getAtelierEntityById(11L)).thenReturn(atelierPublic); // MODIFIÉ
+            when(atelierService.getAtelierEntityByIdForUpdate(11L)).thenReturn(atelierPublic); // MODIFIÉ
             when(participantService.getById(2L)).thenReturn(participant);
             when(reservationRepository.existsByAtelierIdAndParticipantId(11L, 2L)).thenReturn(false);
             when(participantService.hasActivePenalty(2L)).thenReturn(false);
@@ -292,7 +305,7 @@ class ReservationServiceTest {
         void shouldThrowWhenNonOrganizerJoinsPriveAtelier() {
             // participant (id=2) essaie de rejoindre directement un atelier privé
             // sans passer par l'organisateur (id=1)
-            when(atelierService.getAtelierEntityById(10L)).thenReturn(atelierPrive); // MODIFIÉ
+            when(atelierService.getAtelierEntityByIdForUpdate(10L)).thenReturn(atelierPrive); // MODIFIÉ
             when(participantService.getById(2L)).thenReturn(participant);
             when(reservationRepository.existsByAtelierIdAndParticipantId(10L, 2L)).thenReturn(false);
             when(participantService.hasActivePenalty(2L)).thenReturn(false);
@@ -310,7 +323,7 @@ class ReservationServiceTest {
         void shouldThrowWhenCentreParticipantBooksOnWrongCentre() {
             atelierPublic.setDateDebut(LocalDate.now().plusDays(10).atTime(15, 0));
             // joueurSiteB est rattaché à Paris → ne peut pas réserver sur Lyon
-            when(atelierService.getAtelierEntityById(11L)).thenReturn(atelierPublic); // MODIFIÉ
+            when(atelierService.getAtelierEntityByIdForUpdate(11L)).thenReturn(atelierPublic); // MODIFIÉ
             when(participantService.getById(3L)).thenReturn(participantCentreB);
             when(reservationRepository.existsByAtelierIdAndParticipantId(11L, 3L)).thenReturn(false);
             when(participantService.hasActivePenalty(3L)).thenReturn(false);
@@ -327,7 +340,7 @@ class ReservationServiceTest {
         void visiteurRefuseSiCentreFermeAuxVisiteurs() {
             participant.setTypeParticipant(TypeParticipant.VISITEUR);
             atelierPublic.setDateDebut(LocalDate.now().plusDays(3).atTime(15, 0));
-            when(atelierService.getAtelierEntityById(11L)).thenReturn(atelierPublic);
+            when(atelierService.getAtelierEntityByIdForUpdate(11L)).thenReturn(atelierPublic);
             when(participantService.getById(2L)).thenReturn(participant);
 
             assertThatThrownBy(() -> reservationService.create(11L, 2L, 2L))
@@ -339,7 +352,7 @@ class ReservationServiceTest {
         @Test
         @DisplayName("✅ paiement créé avec le montant correct = prixParJoueur de l'atelier")
         void shouldCreatePaiementWithCorrectAmount() {
-            when(atelierService.getAtelierEntityById(11L)).thenReturn(atelierPublic); // MODIFIÉ
+            when(atelierService.getAtelierEntityByIdForUpdate(11L)).thenReturn(atelierPublic); // MODIFIÉ
             when(participantService.getById(2L)).thenReturn(participant);
             when(reservationRepository.existsByAtelierIdAndParticipantId(11L, 2L)).thenReturn(false);
             when(participantService.hasActivePenalty(2L)).thenReturn(false);
@@ -481,6 +494,15 @@ class ReservationServiceTest {
     class ConfirmTests {
 
         @Test
+        void refusesConfirmationWithoutValidatedPayment() {
+            Reservation reservation = Reservation.builder().statut(StatutReservation.EN_ATTENTE).build();
+            when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservation));
+            assertThatThrownBy(() -> reservationService.confirm(1L))
+                    .isInstanceOf(BusinessException.class).hasMessageContaining("paiement validé");
+            verify(reservationRepository, never()).save(any());
+        }
+
+        @Test
         @DisplayName("✅ doit confirmer la réservation sans incrémenter à nouveau les participants de l'atelier")
         void shouldConfirmReservation() {
             Reservation reservation = Reservation.builder()
@@ -493,6 +515,7 @@ class ReservationServiceTest {
             when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservation));
             when(reservationRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
+            reservation.setPaiement(Paiement.builder().statut(StatutPaiement.PAYE).build());
             reservationService.confirm(1L);
 
             assertThat(reservation.getStatut()).isEqualTo(StatutReservation.CONFIRMEE);

@@ -12,6 +12,7 @@ import java.util.List;
 
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
+    long countByAtelierIdAndStatutNot(Long atelierId, StatutReservation statut);
     /**
      * Verrouille la ligne avant la lecture de l'état du paiement.
      * Une requête native sur l'ID évite de verrouiller les jointures
