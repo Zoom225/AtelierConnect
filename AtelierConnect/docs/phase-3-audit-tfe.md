@@ -1,5 +1,9 @@
 # AtelierConnect — Audit de la phase 3 et preuves pour le TFE
 
+Actualisation du 1er novembre 2026 : voir le [rapport de refactoring](refactoring-final-2026-11-01.md)
+et l'[inventaire des fichiers](refactoring-files-2026-11-01.md). Les nombres et résultats
+de tests cités plus bas décrivent les versions historiques indiquées.
+
 **Branche de travail :** `phase-3/refactoring-frontend`  
 **PR de revue :** https://github.com/Zoom225/AtelierConnect/pull/2 (brouillon vers `develop`)  
 **Contrainte validée :** conserver `spring.jpa.hibernate.ddl-auto=update`, sans Flyway.

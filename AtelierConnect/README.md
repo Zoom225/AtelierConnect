@@ -1,5 +1,7 @@
 ﻿# AtelierConnect
 
+?tat du refactoring et preuves de validation : [rapport du 1er novembre 2026](docs/refactoring-final-2026-11-01.md).
+
 Application de gestion et réservation d'ateliers collaboratifs multi-centres : backend Java 21 / Spring Boot 3.5, frontend Angular 21 et base PostgreSQL. Le backend utilise le domaine Participant / Atelier / Salle / Centre et conserve temporairement les anciennes routes REST pour assurer la transition Angular.
 
 ## Prérequis
