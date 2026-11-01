@@ -9,6 +9,7 @@ import com.atelierconnect.service.SalleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -46,6 +47,7 @@ public class SalleServiceImpl implements SalleService {
     }
 
     @Override
+    @Transactional
     public Salle update(Long id, Salle salle) {
         Salle existing = getById(id);
         existing.setNom(salle.getNom());
