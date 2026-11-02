@@ -5,10 +5,12 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
+/** Salle accueillant les ateliers du centre. */
 @Entity
-@Table(name = "terrains")
+@Table(name = "salles")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,19 +21,16 @@ public class Salle extends BaseEntity {
     @Column(nullable = false)
     private String nom;
 
-    @Column(nullable = true)
+    @Column
     private Double prix;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "site_id", nullable = false)
-    @JsonBackReference("site-terrains")
-    private Centre site;
+    @JoinColumn(name = "centre_id", nullable = false)
+    @JsonBackReference("centre-salles")
+    private Centre centre;
 
-    @OneToMany(mappedBy = "terrain", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference("terrain-matches")
-    private List<Atelier> matches;
-
-    public Double getPrix() {
-        return prix;
-    }
+    @OneToMany(mappedBy = "salle", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("salle-ateliers")
+    @Builder.Default
+    private List<Atelier> ateliers = new ArrayList<>();
 }

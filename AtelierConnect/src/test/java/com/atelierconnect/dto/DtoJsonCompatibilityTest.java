@@ -1,6 +1,7 @@
 package com.atelierconnect.dto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.atelierconnect.dto.request.CreateAtelierRequest;
 import com.atelierconnect.dto.request.ReservationRequest;
@@ -16,22 +17,40 @@ import java.time.LocalTime;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DtoJsonCompatibilityTest {
-    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     @Test
     void accepteLesNouveauxNomsSansCasserLesAnciens() throws Exception {
         CreateAtelierRequest request = mapper.readValue("""
                 {"salleId": 3, "atelierDate": "2030-05-01T10:00:00", "atelierType": "PUBLIC"}
                 """, CreateAtelierRequest.class);
-        assertThat(request.terrainId()).isEqualTo(3L);
-        assertThat(request.matchDate()).isEqualTo(LocalDateTime.of(2030, 5, 1, 10, 0));
-        assertThat(request.matchType()).isEqualTo("PUBLIC");
+        assertThat(request.salleId()).isEqualTo(3L);
+        assertThat(request.atelierDate()).isEqualTo(LocalDateTime.of(2030, 5, 1, 10, 0));
+        assertThat(request.atelierType()).isEqualTo("PUBLIC");
 
         ReservationRequest reservation = mapper.readValue("""
                 {"atelierId": 4, "participantId": 5, "requesterId": 5}
                 """, ReservationRequest.class);
-        assertThat(reservation.getMatchId()).isEqualTo(4L);
-        assertThat(reservation.getMembreId()).isEqualTo(5L);
+        assertThat(reservation.getAtelierId()).isEqualTo(4L);
+        assertThat(reservation.getParticipantId()).isEqualTo(5L);
+    }
+
+    @Test
+    void exposeLeConsentementEnJsonSansSupprimerLesAnciensChamps() throws Exception {
+        LocalDateTime consentTime = LocalDateTime.of(2026, 10, 31, 11, 30);
+        AtelierDto dto = new AtelierDto(7L, 2L, "Salle A", "Centre A", 3L, "Organisateur",
+                LocalDate.of(2030, 5, 1), LocalTime.of(10, 0), LocalTime.of(12, 0),
+                TypeAtelier.PRIVE, StatutAtelier.PLANIFIE, 3, 15.0, null,
+                true, consentTime);
+
+        String json = mapper.writeValueAsString(dto);
+
+        assertThat(json).contains(
+                "\"accordOuverturePublique\":true",
+                "\"dateAccordOuverturePublique\":\"2026-10-31T11:30:00\"",
+                "\"typeMatch\":\"PRIVE\"",
+                "\"terrainId\":2");
     }
 
     @Test

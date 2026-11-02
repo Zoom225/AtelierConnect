@@ -56,11 +56,11 @@ class AtelierControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private AtelierService matchService;
+    private AtelierService atelierService;
     @MockitoBean
     private AdminAuthorizationService adminAuthorizationService;
     @MockitoBean
-    private CurrentParticipantService currentMemberService;
+    private CurrentParticipantService currentParticipantService;
     @MockitoBean
     private ReservationRepository reservationRepository;
 
@@ -70,22 +70,22 @@ class AtelierControllerTest {
     @MockitoBean
     private AdministrateurRepository administrateurRepository;
     @MockitoBean
-    private ParticipantRepository membreRepository;
+    private ParticipantRepository participantRepository;
 
 
-    private CreateAtelierRequest validCreateMatchRequest;
-    private AtelierDto matchDto;
+    private CreateAtelierRequest validCreateAtelierRequest;
+    private AtelierDto atelierDto;
 
     @BeforeEach
     void setUp() {
         LocalDateTime startTime = LocalDateTime.now().plusDays(10).withNano(0);
-        validCreateMatchRequest = new CreateAtelierRequest(1L, startTime, "PUBLIC");
+        validCreateAtelierRequest = new CreateAtelierRequest(1L, startTime, "PUBLIC");
 
-        matchDto = new AtelierDto(
+        atelierDto = new AtelierDto(
                 1L,                                        // id
                 1L,                                        // terrainId
                 "Court Central",                           // terrainNom
-                "Padel Club Lyon",                         // siteNom
+                "Centre collaboratif Lyon",                         // siteNom
                 10L,                                       // organisateurId
                 "John Doe",                                // organisateurNom
                 startTime.toLocalDate(),                   // date
@@ -101,44 +101,44 @@ class AtelierControllerTest {
 
     @Test
     @WithMockUser(username = "membre.test", roles = "LIBRE")
-    @DisplayName("POST /api/matches - Doit créer un match pour un rôle autorisé")
-    void createMatch_WithAuthorizedRole_ShouldReturnCreated() throws Exception {
-        when(matchService.createMatch(any(CreateAtelierRequest.class), anyString())).thenReturn(matchDto);
+    @DisplayName("POST /api/ateliers - Doit créer un atelier pour un rôle autorisé")
+    void createAtelier_WithAuthorizedRole_ShouldReturnCreated() throws Exception {
+        when(atelierService.createAtelier(any(CreateAtelierRequest.class), anyString())).thenReturn(atelierDto);
 
         mockMvc.perform(post("/api/matches")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validCreateMatchRequest)))
+                        .content(objectMapper.writeValueAsString(validCreateAtelierRequest)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(matchDto.id()));
+                .andExpect(jsonPath("$.id").value(atelierDto.id()));
     }
 
 
 
 
     @Test
-    @DisplayName("GET /api/matches/public - Doit retourner les matchs publics sans authentification")
-    void getPublicMatches_WithoutAuthentication_ShouldReturnOk() throws Exception {
-        when(matchService.getPublicAvailableMatches()).thenReturn(List.of(matchDto));
+    @DisplayName("GET /api/ateliers/public - Doit retourner les atelier publics sans authentification")
+    void getPublicAteliers_WithoutAuthentication_ShouldReturnOk() throws Exception {
+        when(atelierService.getPublicAvailableAteliers()).thenReturn(List.of(atelierDto));
 
         mockMvc.perform(get("/api/matches/public"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(1))
-                .andExpect(jsonPath("$[0].id").value(matchDto.id()));
+                .andExpect(jsonPath("$[0].id").value(atelierDto.id()));
         mockMvc.perform(get("/api/ateliers/public"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(matchDto.id()));
+                .andExpect(jsonPath("$[0].id").value(atelierDto.id()));
     }
 
     @Test
     @WithMockUser(roles = "MEMBER")
     void atelierPriveRefuseAuParticipantSansInvitation() throws Exception {
-        AtelierDto privateDto = new AtelierDto(matchDto.id(), matchDto.terrainId(), matchDto.terrainNom(),
-                matchDto.siteNom(), matchDto.organisateurId(), matchDto.organisateurNom(),
-                matchDto.date(), matchDto.heureDebut(), matchDto.heureFin(), TypeAtelier.PRIVE,
-                matchDto.statut(), matchDto.nbJoueursActuels(), matchDto.prixParJoueur(), null);
-        when(matchService.getMatchDtoById(1L)).thenReturn(privateDto);
-        when(currentMemberService.currentMemberId()).thenReturn(99L);
+        AtelierDto privateDto = new AtelierDto(atelierDto.id(), atelierDto.salleId(), atelierDto.salleNom(),
+                atelierDto.centreNom(), atelierDto.organisateurId(), atelierDto.organisateurNom(),
+                atelierDto.date(), atelierDto.heureDebut(), atelierDto.heureFin(), TypeAtelier.PRIVE,
+                atelierDto.statut(), atelierDto.nbParticipantsActuels(), atelierDto.prixParParticipant(), null);
+        when(atelierService.getAtelierDtoById(1L)).thenReturn(privateDto);
+        when(currentParticipantService.currentParticipantId()).thenReturn(99L);
 
         mockMvc.perform(get("/api/ateliers/1"))
                 .andExpect(status().isForbidden());
@@ -147,13 +147,13 @@ class AtelierControllerTest {
     @Test
     @WithMockUser(roles = "MEMBER")
     void atelierPriveAccessibleAuParticipantInvite() throws Exception {
-        AtelierDto privateDto = new AtelierDto(matchDto.id(), matchDto.terrainId(), matchDto.terrainNom(),
-                matchDto.siteNom(), matchDto.organisateurId(), matchDto.organisateurNom(),
-                matchDto.date(), matchDto.heureDebut(), matchDto.heureFin(), TypeAtelier.PRIVE,
-                matchDto.statut(), matchDto.nbJoueursActuels(), matchDto.prixParJoueur(), null);
-        when(matchService.getMatchDtoById(1L)).thenReturn(privateDto);
-        when(currentMemberService.currentMemberId()).thenReturn(99L);
-        when(reservationRepository.existsByMatchIdAndMembreIdAndStatutNot(1L, 99L, StatutReservation.ANNULEE))
+        AtelierDto privateDto = new AtelierDto(atelierDto.id(), atelierDto.salleId(), atelierDto.salleNom(),
+                atelierDto.centreNom(), atelierDto.organisateurId(), atelierDto.organisateurNom(),
+                atelierDto.date(), atelierDto.heureDebut(), atelierDto.heureFin(), TypeAtelier.PRIVE,
+                atelierDto.statut(), atelierDto.nbParticipantsActuels(), atelierDto.prixParParticipant(), null);
+        when(atelierService.getAtelierDtoById(1L)).thenReturn(privateDto);
+        when(currentParticipantService.currentParticipantId()).thenReturn(99L);
+        when(reservationRepository.existsByAtelierIdAndParticipantIdAndStatutNot(1L, 99L, StatutReservation.ANNULEE))
                 .thenReturn(true);
 
         mockMvc.perform(get("/api/ateliers/1"))
@@ -163,30 +163,30 @@ class AtelierControllerTest {
     @Test
     @WithMockUser(roles = "MEMBER")
     void atelierPriveRefuseApresAnnulationDeLInvitation() throws Exception {
-        AtelierDto privateDto = new AtelierDto(matchDto.id(), matchDto.terrainId(), matchDto.terrainNom(),
-                matchDto.siteNom(), matchDto.organisateurId(), matchDto.organisateurNom(),
-                matchDto.date(), matchDto.heureDebut(), matchDto.heureFin(), TypeAtelier.PRIVE,
-                matchDto.statut(), matchDto.nbJoueursActuels(), matchDto.prixParJoueur(), null);
-        when(matchService.getMatchDtoById(1L)).thenReturn(privateDto);
-        when(currentMemberService.currentMemberId()).thenReturn(99L);
+        AtelierDto privateDto = new AtelierDto(atelierDto.id(), atelierDto.salleId(), atelierDto.salleNom(),
+                atelierDto.centreNom(), atelierDto.organisateurId(), atelierDto.organisateurNom(),
+                atelierDto.date(), atelierDto.heureDebut(), atelierDto.heureFin(), TypeAtelier.PRIVE,
+                atelierDto.statut(), atelierDto.nbParticipantsActuels(), atelierDto.prixParParticipant(), null);
+        when(atelierService.getAtelierDtoById(1L)).thenReturn(privateDto);
+        when(currentParticipantService.currentParticipantId()).thenReturn(99L);
 
         mockMvc.perform(get("/api/ateliers/1"))
                 .andExpect(status().isForbidden());
 
-        verify(reservationRepository).existsByMatchIdAndMembreIdAndStatutNot(
+        verify(reservationRepository).existsByAtelierIdAndParticipantIdAndStatutNot(
                 1L, 99L, StatutReservation.ANNULEE);
     }
 
     @Test
     @WithMockUser
-    @DisplayName("GET /api/matches - Doit retourner tous les matchs pour un utilisateur authentifié")
-    void getAllMatches_WithAuthenticatedUser_ShouldReturnOk() throws Exception {
-        when(matchService.findAllMatches()).thenReturn(List.of(matchDto));
-        when(adminAuthorizationService.filterMatchDtos(any())).thenReturn(List.of(matchDto));
+    @DisplayName("GET /api/ateliers - Doit retourner tous les atelier pour un utilisateur authentifié")
+    void getAllAteliers_WithAuthenticatedUser_ShouldReturnOk() throws Exception {
+        when(atelierService.findAllAteliers()).thenReturn(List.of(atelierDto));
+        when(adminAuthorizationService.filterAtelierDtos(any())).thenReturn(List.of(atelierDto));
 
         mockMvc.perform(get("/api/matches"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(1))
-                .andExpect(jsonPath("$[0].id").value(matchDto.id()));
+                .andExpect(jsonPath("$[0].id").value(atelierDto.id()));
     }
 }

@@ -2,14 +2,16 @@ package com.atelierconnect.entity;
 
 import com.atelierconnect.entity.enums.TypeParticipant;
 import com.atelierconnect.entity.enums.TypeParticipantConverter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
+/** Participant aux ateliers collaboratifs. */
 @Entity
-@Table(name = "membres")
+@Table(name = "participants")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,28 +31,29 @@ public class Participant extends BaseEntity {
     private String email;
 
     @Column
-    private String passwordHash; // Added passwordHash field
+    @JsonIgnore
+    private String passwordHash;
 
     @Convert(converter = TypeParticipantConverter.class)
-    @Column(name = "type_membre", nullable = false)
-    private TypeParticipant typeMembre;
+    @Column(name = "type_participant", nullable = false)
+    private TypeParticipant typeParticipant;
 
     @Column(nullable = false)
     private Double solde;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "site_id")
-    private Centre site;
+    @JoinColumn(name = "centre_id")
+    private Centre centre;
 
     @OneToMany(mappedBy = "organisateur", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
-    private Set<Atelier> matchesOrganises = new HashSet<>();
+    private Set<Atelier> ateliersOrganises = new HashSet<>();
 
-    @OneToMany(mappedBy = "membre", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "participant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private Set<Reservation> reservations = new HashSet<>();
 
-    @OneToMany(mappedBy = "membre", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "participant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private Set<Penalite> penalites = new HashSet<>();
 }

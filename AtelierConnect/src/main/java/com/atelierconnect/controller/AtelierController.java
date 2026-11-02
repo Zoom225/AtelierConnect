@@ -30,12 +30,12 @@ import java.util.List;
 @RequestMapping({"/api/ateliers", "/api/matches"})
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Ateliers", description = "Gestion des ateliers collaboratifs ; /api/matches reste un alias transitoire.")
+@Tag(name = "Ateliers", description = "Gestion des ateliers collaboratifs ; /api/ateliers reste un alias transitoire.")
 public class AtelierController {
 
-    private final AtelierService matchService;
+    private final AtelierService atelierService;
     private final AdminAuthorizationService adminAuthorizationService;
-    private final CurrentParticipantService currentMemberService;
+    private final CurrentParticipantService currentParticipantService;
     private final ReservationRepository reservationRepository;
 
     @Operation(
@@ -46,18 +46,18 @@ public class AtelierController {
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @PostMapping
-    public ResponseEntity<AtelierDto> createMatch(@Valid @RequestBody CreateAtelierRequest request) {
+    public ResponseEntity<AtelierDto> createAtelier(@Valid @RequestBody CreateAtelierRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        log.info("Requête de création d'atelier reçue de l'utilisateur '{}' pour la salle ID {}", username, request.terrainId());
+        log.info("Requête de création d'atelier reçue de l'utilisateur '{}' pour la salle ID {}", username, request.salleId());
 
         if (username == null || "anonymousUser".equals(username)) {
             log.warn("Tentative de création d'atelier par un utilisateur non authentifié.");
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        AtelierDto createdMatch = matchService.createMatch(request, username);
-        return new ResponseEntity<>(createdMatch, HttpStatus.CREATED);
+        AtelierDto createdAtelier = atelierService.createAtelier(request, username);
+        return new ResponseEntity<>(createdAtelier, HttpStatus.CREATED);
     }
 
     @Operation(
@@ -67,8 +67,8 @@ public class AtelierController {
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @GetMapping
-    public ResponseEntity<List<AtelierDto>> getAllMatches() {
-        return ResponseEntity.ok(adminAuthorizationService.filterMatchDtos(matchService.findAllMatches()));
+    public ResponseEntity<List<AtelierDto>> getAllAteliers() {
+        return ResponseEntity.ok(adminAuthorizationService.filterAtelierDtos(atelierService.findAllAteliers()));
     }
 
     @Operation(
@@ -76,8 +76,8 @@ public class AtelierController {
             description = "Retourne les ateliers PUBLICS planifiés et encore disponibles. Endpoint public."
     )
     @GetMapping("/public")
-    public ResponseEntity<List<AtelierDto>> getPublicMatches() {
-        return ResponseEntity.ok(matchService.getPublicAvailableMatches());
+    public ResponseEntity<List<AtelierDto>> getPublicAteliers() {
+        return ResponseEntity.ok(atelierService.getPublicAvailableAteliers());
     }
 
     @Operation(
@@ -88,17 +88,17 @@ public class AtelierController {
     @GetMapping("/{id}")
     public ResponseEntity<AtelierDto> getById(
             @Parameter(description = "ID de l’atelier", required = true)
-            @PathVariable Long id) {
-        AtelierDto atelier = matchService.getMatchDtoById(id);
+            @PathVariable("id") Long id) {
+        AtelierDto atelier = atelierService.getAtelierDtoById(id);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         boolean admin = authentication.getAuthorities().stream()
                 .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
         if (admin) {
-            adminAuthorizationService.checkMatchAccess(id);
-        } else if (atelier.typeMatch() == TypeAtelier.PRIVE) {
-            Long participantId = currentMemberService.currentMemberId();
+            adminAuthorizationService.checkAtelierAccess(id);
+        } else if (atelier.typeAtelier() == TypeAtelier.PRIVE) {
+            Long participantId = currentParticipantService.currentParticipantId();
             if (!participantId.equals(atelier.organisateurId())
-                    && !reservationRepository.existsByMatchIdAndMembreIdAndStatutNot(
+                    && !reservationRepository.existsByAtelierIdAndParticipantIdAndStatutNot(
                             id, participantId, StatutReservation.ANNULEE)) {
                 throw new AccessDeniedException("Accès refusé à cet atelier privé.");
             }
@@ -115,9 +115,9 @@ public class AtelierController {
     @GetMapping("/organisateur/{organisateurId}")
     public ResponseEntity<List<AtelierDto>> getByOrganisateur(
             @Parameter(description = "ID de l'organisateur", required = true)
-            @PathVariable Long organisateurId) {
-        currentMemberService.requireCurrentMember(organisateurId);
-        return ResponseEntity.ok(matchService.findByOrganisateur(organisateurId));
+            @PathVariable("organisateurId") Long organisateurId) {
+        currentParticipantService.requireCurrentParticipant(organisateurId);
+        return ResponseEntity.ok(atelierService.findByOrganisateur(organisateurId));
     }
 
     @Operation(
@@ -125,12 +125,12 @@ public class AtelierController {
             description = "Retourne les ateliers d'un centre. Accessible à un administrateur autorisé pour ce centre.",
             security = @SecurityRequirement(name = "Bearer Auth")
     )
-    @GetMapping("/site/{siteId}")
-    public ResponseEntity<List<AtelierDto>> getBySite(
+    @GetMapping({"/centre/{siteId}", "/site/{siteId}"})
+    public ResponseEntity<List<AtelierDto>> getByCentre(
             @Parameter(description = "ID du centre", required = true)
-            @PathVariable Long siteId) {
-        adminAuthorizationService.checkSiteAccess(siteId);
-        return ResponseEntity.ok(matchService.findBySite(siteId));
+            @PathVariable("siteId") Long centreId) {
+        adminAuthorizationService.checkCentreAccess(centreId);
+        return ResponseEntity.ok(atelierService.findByCentre(centreId));
     }
 
     @Operation(
@@ -139,12 +139,12 @@ public class AtelierController {
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @PutMapping("/{id}")
-    public ResponseEntity<AtelierDto> updateMatch(
+    public ResponseEntity<AtelierDto> updateAtelier(
             @Parameter(description = "ID de l’atelier", required = true)
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody AtelierRequest request) {
-        currentMemberService.requireCurrentMember(matchService.getMatchEntityById(id).getOrganisateur().getId());
-        return ResponseEntity.ok(matchService.updateMatch(id, request));
+        currentParticipantService.requireCurrentParticipant(atelierService.getAtelierEntityById(id).getOrganisateur().getId());
+        return ResponseEntity.ok(atelierService.updateAtelier(id, request));
     }
 
     @Operation(
@@ -153,15 +153,15 @@ public class AtelierController {
             security = @SecurityRequirement(name = "Bearer Auth")
     )
     @PatchMapping("/{id}/cancel")
-    public ResponseEntity<Void> cancelMatch(
+    public ResponseEntity<Void> cancelAtelier(
             @Parameter(description = "ID de l’atelier", required = true)
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @RequestParam(required = false) Long requesterId) {
-        Participant currentMember = currentMemberService.currentMember();
-        if (requesterId != null && !currentMember.getId().equals(requesterId)) {
+        Participant currentParticipant = currentParticipantService.currentParticipant();
+        if (requesterId != null && !currentParticipant.getId().equals(requesterId)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-        matchService.cancelMatch(id, currentMember.getId());
+        atelierService.cancelAtelier(id, currentParticipant.getId());
         return ResponseEntity.noContent().build();
     }
 
@@ -174,9 +174,9 @@ public class AtelierController {
     @PatchMapping("/{id}/convert-public")
     public ResponseEntity<Void> convertToPublic(
             @Parameter(description = "ID de l’atelier", required = true)
-            @PathVariable Long id) {
-        adminAuthorizationService.checkMatchAccess(id); // Ligne modifiée
-        matchService.convertToPublic(id);
+            @PathVariable("id") Long id) {
+        adminAuthorizationService.checkAtelierAccess(id); // Ligne modifiée
+        atelierService.convertToPublic(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -184,8 +184,8 @@ public class AtelierController {
             description = "Enregistre l'accord explicite et daté de l'organisateur. L'ouverture effective est possible à partir de J-2.",
             security = @SecurityRequirement(name = "Bearer Auth"))
     @PatchMapping("/{id}/consent-open-public")
-    public ResponseEntity<Void> consentToPublicOpening(@PathVariable Long id) {
-        matchService.consentToPublicOpening(id, currentMemberService.currentMemberId());
+    public ResponseEntity<Void> consentToPublicOpening(@PathVariable("id") Long id) {
+        atelierService.consentToPublicOpening(id, currentParticipantService.currentParticipantId());
         return ResponseEntity.noContent().build();
     }
 }

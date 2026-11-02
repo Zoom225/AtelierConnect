@@ -54,13 +54,13 @@ class JourFermetureControllerTest {
     private JourFermetureRepository jourFermetureRepository;
 
     @MockitoBean
-    private CentreService siteService;
+    private CentreService centreService;
 
     @MockitoBean
     private AdministrateurRepository administrateurRepository;
 
     @MockitoBean
-    private ParticipantRepository membreRepository;
+    private ParticipantRepository participantRepository;
 
     @MockitoBean
     private JwtConfig jwtConfig;
@@ -68,15 +68,15 @@ class JourFermetureControllerTest {
     @MockitoBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    private Centre siteLyon;
-    private Centre siteParis;
+    private Centre centreLyon;
+    private Centre centreParis;
 
     @BeforeEach
     void setUp() {
-        siteLyon = Centre.builder().nom("Padel Club Lyon").build();
-        siteLyon.setId(1L);
-        siteParis = Centre.builder().nom("Padel Club Paris").build();
-        siteParis.setId(2L);
+        centreLyon = Centre.builder().nom("Centre collaboratif Lyon").build();
+        centreLyon.setId(1L);
+        centreParis = Centre.builder().nom("Centre collaboratif Paris").build();
+        centreParis.setId(2L);
     }
 
     @Test
@@ -108,9 +108,9 @@ class JourFermetureControllerTest {
     @Test
     @WithMockUser(username = "admin.lyon@padel.com", roles = "ADMIN")
     @DisplayName("Un admin SITE ne peut pas créer une fermeture globale")
-    void siteAdminCannotCreateGlobalClosingDay() throws Exception {
+    void centreAdminCannotCreateGlobalClosingDay() throws Exception {
         when(administrateurRepository.findByEmail("admin.lyon@padel.com"))
-                .thenReturn(Optional.of(admin(TypeAdministrateur.SITE, siteLyon)));
+                .thenReturn(Optional.of(admin(TypeAdministrateur.SITE, centreLyon)));
 
         JourFermetureRequest request = JourFermetureRequest.builder()
                 .date(LocalDate.of(2026, 12, 25))
@@ -128,11 +128,11 @@ class JourFermetureControllerTest {
 
     @Test
     @WithMockUser(username = "admin.lyon@padel.com", roles = "ADMIN")
-    @DisplayName("Un admin SITE peut créer une fermeture sur son site")
-    void siteAdminCanCreateOwnSiteClosingDay() throws Exception {
+    @DisplayName("Un admin SITE peut créer une fermeture sur son centre")
+    void centreAdminCanCreateOwnCentreClosingDay() throws Exception {
         when(administrateurRepository.findByEmail("admin.lyon@padel.com"))
-                .thenReturn(Optional.of(admin(TypeAdministrateur.SITE, siteLyon)));
-        when(siteService.getById(1L)).thenReturn(siteLyon);
+                .thenReturn(Optional.of(admin(TypeAdministrateur.SITE, centreLyon)));
+        when(centreService.getById(1L)).thenReturn(centreLyon);
         when(jourFermetureRepository.save(any(JourFermeture.class))).thenAnswer(invocation -> {
             JourFermeture jour = invocation.getArgument(0);
             jour.setId(11L);
@@ -143,7 +143,7 @@ class JourFermetureControllerTest {
                 .date(LocalDate.of(2026, 7, 14))
                 .raison("Maintenance")
                 .global(false)
-                .siteId(1L)
+                .centreId(1L)
                 .build();
 
         mockMvc.perform(post("/api/jours-fermeture")
@@ -157,9 +157,9 @@ class JourFermetureControllerTest {
     @Test
     @WithMockUser(username = "admin.lyon@padel.com", roles = "ADMIN")
     @DisplayName("Un admin SITE ne peut pas supprimer une fermeture globale")
-    void siteAdminCannotDeleteGlobalClosingDay() throws Exception {
+    void centreAdminCannotDeleteGlobalClosingDay() throws Exception {
         when(administrateurRepository.findByEmail("admin.lyon@padel.com"))
-                .thenReturn(Optional.of(admin(TypeAdministrateur.SITE, siteLyon)));
+                .thenReturn(Optional.of(admin(TypeAdministrateur.SITE, centreLyon)));
         when(jourFermetureRepository.findById(10L))
                 .thenReturn(Optional.of(JourFermeture.builder().global(true).build()));
 
@@ -170,16 +170,16 @@ class JourFermetureControllerTest {
 
     @Test
     @WithMockUser(username = "admin.lyon@padel.com", roles = "ADMIN")
-    @DisplayName("Un admin SITE ne peut pas supprimer une fermeture d'un autre site")
-    void siteAdminCannotDeleteOtherSiteClosingDay() throws Exception {
+    @DisplayName("Un admin SITE ne peut pas supprimer une fermeture d'un autre centre")
+    void centreAdminCannotDeleteOtherCentreClosingDay() throws Exception {
         when(administrateurRepository.findByEmail("admin.lyon@padel.com"))
-                .thenReturn(Optional.of(admin(TypeAdministrateur.SITE, siteLyon)));
+                .thenReturn(Optional.of(admin(TypeAdministrateur.SITE, centreLyon)));
         when(jourFermetureRepository.findById(12L))
-                .thenReturn(Optional.of(JourFermeture.builder().global(false).site(siteParis).build()));
+                .thenReturn(Optional.of(JourFermeture.builder().global(false).centre(centreParis).build()));
 
         mockMvc.perform(delete("/api/jours-fermeture/12").with(csrf()))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Un admin SITE ne peut agir que sur son propre site."));
+                .andExpect(jsonPath("$.message").value("Un admin SITE ne peut agir que sur son propre centre."));
     }
 
     @Test
@@ -196,10 +196,10 @@ class JourFermetureControllerTest {
                 .andExpect(status().isNoContent());
     }
 
-    private Administrateur admin(TypeAdministrateur type, Centre site) {
+    private Administrateur admin(TypeAdministrateur type, Centre centre) {
         return Administrateur.builder()
                 .typeAdministrateur(type)
-                .site(site)
+                .centre(centre)
                 .build();
     }
 }

@@ -6,10 +6,10 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { MembresApiService } from '../../../core/api/membres-api.service';
+import { ParticipantsApiService } from '../../../core/api/participants-api.service';
 import { MemberSessionService } from '../../../core/auth/member-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
-import { MembreResponse } from '../../../shared/models/membre.model';
+import { ParticipantResponse, categorieParticipant } from '../../../shared/models/participant.model';
 
 @Component({
   selector: 'app-member-profile-page',
@@ -45,8 +45,8 @@ import { MembreResponse } from '../../../shared/models/membre.model';
               </div>
 
               <div class="ds-data-list">
-                <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.profile.type') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="memberTypeBadgeClass(profile()!.typeMembre)">{{ profile()!.typeMembre }}</span></span></div>
-                <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.profile.site') }}</span><span class="ds-data-value">{{ profile()!.siteNom || language.t('member.home.tousSites') }}</span></div>
+                <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.profile.type') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="memberTypeBadgeClass(profile()!.categorie)">{{ categorieParticipant(profile()!) }}</span></span></div>
+                <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.profile.site') }}</span><span class="ds-data-value">{{ profile()!.centreNom || language.t('member.home.tousCentres') }}</span></div>
                 <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.profile.solde') }}</span><span class="ds-data-value">{{ profile()!.solde }} EUR</span></div>
               </div>
             </div>
@@ -69,28 +69,28 @@ import { MembreResponse } from '../../../shared/models/membre.model';
 
           <div class="mt-6">
             <div class="mb-3 flex items-center gap-2">
-              <span class="text-xl">🎾</span>
+              <span class="text-xl">🧩</span>
               <h3 class="m-0 text-lg font-bold text-slate-800">{{ language.t('member.profile.createQuick') }}</h3>
             </div>
             <div class="grid gap-3 md:grid-cols-2">
-              <a [routerLink]="['/member/matches/new']" [queryParams]="{type:'PUBLIC'}"
+              <a [routerLink]="['/member/ateliers/new']" [queryParams]="{type:'PUBLIC'}"
                  class="card-soft block rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-green-50 p-5 no-underline transition hover:-translate-y-0.5 hover:shadow-md">
                 <div class="mb-2 flex items-center gap-3">
                   <span class="text-3xl">🌍</span>
                   <div>
-                    <div class="text-xs font-bold uppercase tracking-wide text-emerald-700">{{ language.t('member.profile.publicMatch') }}</div>
+                    <div class="text-xs font-bold uppercase tracking-wide text-emerald-700">{{ language.t('member.profile.publicAtelier') }}</div>
                     <div class="text-lg font-extrabold text-emerald-900">{{ language.t('member.profile.quickPublic') }}</div>
                   </div>
                 </div>
                 <p class="m-0 text-sm text-emerald-800">{{ language.t('member.profile.quickPublicBody') }}</p>
               </a>
 
-              <a [routerLink]="['/member/matches/new']" [queryParams]="{type:'PRIVE'}"
+              <a [routerLink]="['/member/ateliers/new']" [queryParams]="{type:'PRIVE'}"
                  class="card-soft block rounded-2xl border border-violet-200 bg-gradient-to-r from-violet-50 to-purple-50 p-5 no-underline transition hover:-translate-y-0.5 hover:shadow-md">
                 <div class="mb-2 flex items-center gap-3">
                   <span class="text-3xl">🔒</span>
                   <div>
-                    <div class="text-xs font-bold uppercase tracking-wide text-violet-700">{{ language.t('member.profile.privateMatch') }}</div>
+                    <div class="text-xs font-bold uppercase tracking-wide text-violet-700">{{ language.t('member.profile.privateAtelier') }}</div>
                     <div class="text-lg font-extrabold text-violet-900">{{ language.t('member.profile.quickPrivate') }}</div>
                   </div>
                 </div>
@@ -100,7 +100,7 @@ import { MembreResponse } from '../../../shared/models/membre.model';
           </div>
 
           <div class="mt-6 grid gap-4 md:grid-cols-3">
-            <a routerLink="/member/matches" class="card-soft block rounded-2xl p-5 no-underline transition hover:-translate-y-0.5 hover:shadow-md">
+            <a routerLink="/member/ateliers" class="card-soft block rounded-2xl p-5 no-underline transition hover:-translate-y-0.5 hover:shadow-md">
               <p class="text-sm font-medium uppercase tracking-wide text-indigo-700">🔍 {{ language.t('member.profile.explore') }}</p>
               <p class="mt-2 text-xl font-semibold text-slate-900">{{ language.t('member.public.title') }}</p>
               <p class="mt-2 text-sm text-slate-600">{{ language.t('member.profile.exploreBody') }}</p>
@@ -119,7 +119,7 @@ import { MembreResponse } from '../../../shared/models/membre.model';
 
           <div class="toolbar-actions mt-6 justify-start">
             <button mat-flat-button color="primary" type="button" (click)="reload()">{{ language.t('member.profile.refresh') }}</button>
-            <a mat-stroked-button routerLink="/member/matches">{{ language.t('member.public.title') }}</a>
+            <a mat-stroked-button routerLink="/member/ateliers">{{ language.t('member.public.title') }}</a>
             <a mat-stroked-button routerLink="/member/reservations">{{ language.t('member.reservations.title') }}</a>
             <a mat-stroked-button routerLink="/member">{{ language.t('common.profile') }}</a>
             <button mat-stroked-button type="button" (click)="logout()">{{ language.t('member.profile.logout') }}</button>
@@ -130,14 +130,15 @@ import { MembreResponse } from '../../../shared/models/membre.model';
   `
 })
 export class MemberProfilePage {
-  private readonly membresApi = inject(MembresApiService);
+  private readonly participantsApi = inject(ParticipantsApiService);
   private readonly memberSession = inject(MemberSessionService);
   private readonly router = inject(Router);
   readonly language = inject(LanguageService);
+  readonly categorieParticipant = categorieParticipant;
 
   readonly loading = signal(false);
   readonly errorMessage = signal('');
-  readonly profile = signal<MembreResponse | null>(null);
+  readonly profile = signal<ParticipantResponse | null>(null);
   readonly hasPenalty = signal(false);
   readonly hasBalance = signal(false);
   readonly memberId = computed(() => this.memberSession.memberId());
@@ -157,9 +158,9 @@ export class MemberProfilePage {
     this.errorMessage.set('');
 
     forkJoin({
-      profile: this.membresApi.getCurrent(),
-      hasPenalty: this.membresApi.hasPenalty(memberId),
-      hasBalance: this.membresApi.hasBalance(memberId)
+      profile: this.participantsApi.getCurrent(),
+      hasPenalty: this.participantsApi.hasPenalty(memberId),
+      hasBalance: this.participantsApi.hasBalance(memberId)
     }).subscribe({
       next: ({ profile, hasPenalty, hasBalance }) => {
         this.profile.set(profile);
@@ -180,11 +181,11 @@ export class MemberProfilePage {
     this.router.navigateByUrl('/member');
   }
 
-  memberTypeBadgeClass(type: MembreResponse['typeMembre']): string {
-    if (type === 'GLOBAL') {
+  memberTypeBadgeClass(type: ParticipantResponse['categorie']): string {
+    if (type === 'PARTENAIRE') {
       return 'ds-badge-info';
     }
-    if (type === 'SITE') {
+    if (type === 'ABONNE') {
       return 'ds-badge-success';
     }
     return 'ds-badge-warning';

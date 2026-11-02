@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { JourFermetureRequest, JourFermetureResponse } from '../../shared/models/site-terrain.model';
+import { JourFermetureRequest, JourFermetureResponse } from '../../shared/models/centre-salle.model';
 import { apiUrl } from './api-url';
 
 @Injectable({ providedIn: 'root' })
@@ -16,8 +16,8 @@ export class JoursFermetureApiService {
     return this.http.get<JourFermetureResponse[]>(apiUrl('/jours-fermeture/global'));
   }
 
-  getBySite(siteId: number): Observable<JourFermetureResponse[]> {
-    return this.http.get<JourFermetureResponse[]>(apiUrl(`/jours-fermeture/site/${siteId}`));
+  getByCentre(centreId: number): Observable<JourFermetureResponse[]> {
+    return this.http.get<JourFermetureResponse[]>(apiUrl(`/jours-fermeture/centre/${centreId}`));
   }
 
   create(payload: JourFermetureRequest): Observable<JourFermetureResponse> {

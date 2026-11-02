@@ -28,18 +28,19 @@ public class ParticipantRequest {
     @Email(message = "Le format de l'e-mail est invalide.")
     private String email;
 
-    private TypeParticipantLegacy typeMembre;
+    @com.fasterxml.jackson.annotation.JsonAlias("typeMembre")
+    private TypeParticipantLegacy typeParticipant;
 
     private TypeParticipant categorie;
 
     @AssertTrue(message = "La catégorie du participant est obligatoire et doit correspondre au type historique s'il est fourni.")
     public boolean isCategorieValide() {
-        return categorie != null && (typeMembre == null || typeMembre == categorie.toLegacyType())
-                || categorie == null && typeMembre != null;
+        return categorie != null && (typeParticipant == null || typeParticipant == categorie.toLegacyType())
+                || categorie == null && typeParticipant != null;
     }
 
-    @JsonAlias("centreId")
-    private Long siteId;
+    @com.fasterxml.jackson.annotation.JsonAlias("siteId")
+    private Long centreId;
 
     private String password;
 }

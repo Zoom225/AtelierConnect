@@ -23,7 +23,7 @@ import java.util.List;
 public class AdminAuthorizationService {
 
     private final AdministrateurRepository administrateurRepository;
-    private final AtelierRepository matchRepository;
+    private final AtelierRepository atelierRepository;
 
     public Administrateur currentAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -41,90 +41,93 @@ public class AdminAuthorizationService {
         }
     }
 
-    public void checkSiteAccess(Long siteId) {
+    public void checkCentreAccess(Long centreId) {
         Administrateur admin = currentAdmin();
         if (admin.getTypeAdministrateur() == TypeAdministrateur.GLOBAL) {
             return;
         }
-        if (admin.getSite() == null || !admin.getSite().getId().equals(siteId)) {
-            throw new BusinessException("Un admin SITE ne peut agir que sur son propre site.");
+        if (admin.getCentre() == null || !admin.getCentre().getId().equals(centreId)) {
+            throw new BusinessException("Un admin SITE ne peut agir que sur son propre centre.");
         }
     }
 
-    public void checkTerrainAccess(Salle terrain) {
-        checkSiteAccess(terrain.getSite().getId());
+    public void checkSalleAccess(Salle salle) {
+        checkCentreAccess(salle.getCentre().getId());
     }
 
-    public void checkMatchAccess(Long matchId) {
-        Atelier match = matchRepository.findById(matchId)
-                .orElseThrow(() -> new BusinessException("Match introuvable avec l'ID : " + matchId));
-        checkSiteAccess(match.getTerrain().getSite().getId());
+    public void checkAtelierAccess(Long atelierId) {
+        Atelier atelier = atelierRepository.findById(atelierId)
+                .orElseThrow(() -> new BusinessException("Atelier introuvable avec l'ID : " + atelierId));
+        checkCentreAccess(atelier.getSalle().getCentre().getId());
     }
 
-    public void checkMembreAccess(Participant membre) {
-        checkMembreAccess(membre != null && membre.getSite() != null ? membre.getSite().getId() : null);
+    public void checkParticipantAccess(Participant participant) {
+        checkParticipantAccess(participant != null && participant.getCentre() != null ? participant.getCentre().getId() : null);
     }
 
-    public void checkMembreAccess(Long siteId) {
+    public void checkParticipantAccess(Long centreId) {
         Administrateur admin = currentAdmin();
         if (admin.getTypeAdministrateur() == TypeAdministrateur.GLOBAL) {
             return;
         }
-        if (siteId == null || admin.getSite() == null || !siteId.equals(admin.getSite().getId())) {
-            throw new BusinessException("Un admin SITE ne peut gérer que les membres de son site.");
+        if (centreId == null || admin.getCentre() == null || !centreId.equals(admin.getCentre().getId())) {
+            throw new BusinessException("Un admin SITE ne peut gérer que les participants de son centre.");
         }
     }
 
-    public boolean canAccessMembre(Participant membre) {
+    public boolean canAccessParticipant(Participant participant) {
         try {
-            checkMembreAccess(membre);
+            checkParticipantAccess(participant);
             return true;
         } catch (BusinessException ex) {
             return false;
         }
     }
 
-    public boolean canAccessMembreSite(Long siteId) {
+    public boolean canAccessParticipantCentre(Long centreId) {
         try {
-            checkMembreAccess(siteId);
+            checkParticipantAccess(centreId);
             return true;
         } catch (BusinessException ex) {
             return false;
         }
     }
 
-    public List<Participant> filterMembres(List<Participant> membres) {
+    public List<Participant> filterParticipants(List<Participant> participants) {
         Administrateur admin = currentAdmin();
         if (admin.getTypeAdministrateur() == TypeAdministrateur.GLOBAL) {
-            return membres;
+            return participants;
         }
-        Long siteId = admin.getSite() != null ? admin.getSite().getId() : null;
-        return membres.stream()
-                .filter(membre -> membre.getSite() != null && membre.getSite().getId().equals(siteId))
+        Long centreId = admin.getCentre() != null ? admin.getCentre().getId() : null;
+        return participants.stream()
+                .filter(participant -> participant.getCentre() != null && participant.getCentre().getId().equals(centreId))
                 .toList();
     }
 
-    public List<Atelier> filterMatches(List<Atelier> matches) {
+    public List<Atelier> filterAteliers(List<Atelier> ateliers) {
         Administrateur admin = currentAdmin();
         if (admin.getTypeAdministrateur() == TypeAdministrateur.GLOBAL) {
-            return matches;
+            return ateliers;
         }
-        Long siteId = admin.getSite() != null ? admin.getSite().getId() : null;
-        return matches.stream()
-                .filter(match -> match.getTerrain() != null
-                        && match.getTerrain().getSite() != null
-                        && match.getTerrain().getSite().getId().equals(siteId))
+        Long centreId = admin.getCentre() != null ? admin.getCentre().getId() : null;
+        return ateliers.stream()
+                .filter(atelier -> atelier.getSalle() != null
+                        && atelier.getSalle().getCentre() != null
+                        && atelier.getSalle().getCentre().getId().equals(centreId))
                 .toList();
     }
 
-    public List<AtelierDto> filterMatchDtos(List<AtelierDto> matches) {
+    public List<AtelierDto> filterAtelierDtos(List<AtelierDto> ateliers) {
         Administrateur admin = currentAdmin();
         if (admin.getTypeAdministrateur() == TypeAdministrateur.GLOBAL) {
-            return matches;
+            return ateliers;
         }
-        String siteNom = admin.getSite() != null ? admin.getSite().getNom() : null;
-        return matches.stream()
-                .filter(match -> match.siteNom() != null && match.siteNom().equals(siteNom))
+        Long centreId = admin.getCentre() != null ? admin.getCentre().getId() : null;
+        if (centreId == null) return List.of();
+        var allowedIds = atelierRepository.findBySalleCentreId(centreId).stream()
+                .map(Atelier::getId).collect(java.util.stream.Collectors.toSet());
+        return ateliers.stream()
+                .filter(atelier -> allowedIds.contains(atelier.id()))
                 .toList();
     }
 }

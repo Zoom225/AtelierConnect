@@ -17,8 +17,9 @@ import java.util.List;
 @Builder
 public class ReservationInviteRequest {
 
-    @NotNull(message = "L'ID du match est obligatoire")
-    private Long matchId;
+    @NotNull(message = "L'ID de l'atelier est obligatoire")
+    @com.fasterxml.jackson.annotation.JsonAlias("matchId")
+    private Long atelierId;
 
     @NotEmpty(message = "Au moins un matricule invité est obligatoire")
     private List<String> inviteeMatricules;

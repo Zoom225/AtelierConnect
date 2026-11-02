@@ -10,38 +10,40 @@ import org.springframework.stereotype.Service;
 @Service
 public class AtelierMapper {
 
-    public AtelierDto toAtelierDto(Atelier match) {
-        if (match == null) {
+    public AtelierDto toAtelierDto(Atelier atelier) {
+        if (atelier == null) {
             return null;
         }
 
-        Salle terrain = match.getTerrain();
-        Participant organisateur = match.getOrganisateur();
-        Centre site = (terrain != null) ? terrain.getSite() : null;
+        Salle salle = atelier.getSalle();
+        Participant organisateur = atelier.getOrganisateur();
+        Centre centre = (salle != null) ? salle.getCentre() : null;
 
-        Long terrainId = (terrain != null) ? terrain.getId() : null;
-        String terrainNom = (terrain != null) ? terrain.getNom() : null;
-        String siteNom = (site != null) ? site.getNom() : null;
+        Long salleId = (salle != null) ? salle.getId() : null;
+        String salleNom = (salle != null) ? salle.getNom() : null;
+        String centreNom = (centre != null) ? centre.getNom() : null;
         Long organisateurId = (organisateur != null) ? organisateur.getId() : null;
         String organisateurNom = (organisateur != null && organisateur.getPrenom() != null && organisateur.getNom() != null)
                 ? organisateur.getPrenom() + " " + organisateur.getNom()
                 : null;
 
         return new AtelierDto(
-                match.getId(),
-                terrainId,
-                terrainNom,
-                siteNom,
+                atelier.getId(),
+                salleId,
+                salleNom,
+                centreNom,
                 organisateurId,
                 organisateurNom,
-                match.getDateDebut() != null ? match.getDateDebut().toLocalDate() : null,
-                match.getDateDebut() != null ? match.getDateDebut().toLocalTime() : null,
-                match.getDateFin() != null ? match.getDateFin().toLocalTime() : null,
-                match.getTypeMatch(),
-                match.getStatut(),
-                match.getNbJoueursActuels(),
-                match.getPrixParJoueur(),
-                match.getDateConversionPublic()
+                atelier.getDateDebut() != null ? atelier.getDateDebut().toLocalDate() : null,
+                atelier.getDateDebut() != null ? atelier.getDateDebut().toLocalTime() : null,
+                atelier.getDateFin() != null ? atelier.getDateFin().toLocalTime() : null,
+                atelier.getTypeAtelier(),
+                atelier.getStatut(),
+                atelier.getNbParticipantsActuels(),
+                atelier.getPrixParParticipant(),
+                atelier.getDateConversionPublic(),
+                atelier.getAccordOuverturePublique(),
+                atelier.getDateAccordOuverturePublique()
         );
     }
 }

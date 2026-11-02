@@ -25,103 +25,103 @@ import java.util.Locale;
 public class ParticipantServiceImpl implements ParticipantService {
 
     @Value("${APP_DEMO_MEMBER_PASSWORD}")
-    private String defaultMemberPassword;
+    private String defaultParticipantPassword;
 
-    private final ParticipantRepository membreRepository;
+    private final ParticipantRepository participantRepository;
     private final PenaliteRepository penaliteRepository;
-    private final CentreService siteService;
+    private final CentreService centreService;
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public Participant create(Participant membre, Long siteId, String rawPassword) {
-        prepareForCreation(membre, siteId, rawPassword);
-        return create(membre);
+    public Participant create(Participant participant, Long centreId, String rawPassword) {
+        prepareForCreation(participant, centreId, rawPassword);
+        return create(participant);
     }
 
     @Override
-    public Participant prepareForCreation(Participant membre, Long siteId, String rawPassword) {
-        if (siteId != null) {
-            Centre site = siteService.getById(siteId);
-            membre.setSite(site);
+    public Participant prepareForCreation(Participant participant, Long centreId, String rawPassword) {
+        if (centreId != null) {
+            Centre centre = centreService.getById(centreId);
+            participant.setCentre(centre);
         }
 
-        String password = StringUtils.hasText(rawPassword) ? rawPassword : defaultMemberPassword;
-        membre.setPasswordHash(passwordEncoder.encode(password));
-        return membre;
+        String password = StringUtils.hasText(rawPassword) ? rawPassword : defaultParticipantPassword;
+        participant.setPasswordHash(passwordEncoder.encode(password));
+        return participant;
     }
 
     @Override
-    public Participant create(Participant membre) {
-        membre.setMatricule(normalizeMatricule(membre.getMatricule()));
-        validateMatricule(membre.getMatricule(), membre.getTypeMembre());
+    public Participant create(Participant participant) {
+        participant.setMatricule(normalizeMatricule(participant.getMatricule()));
+        validateMatricule(participant.getMatricule(), participant.getTypeParticipant());
 
         // Regle metier : le matricule doit etre unique.
-        if (membreRepository.existsByMatricule(membre.getMatricule())) {
-            throw new BusinessException("Le matricule existe déjà : " + membre.getMatricule());
+        if (participantRepository.existsByMatricule(participant.getMatricule())) {
+            throw new BusinessException("Le matricule existe déjà : " + participant.getMatricule());
         }
         // Regle metier : l'email doit etre unique lorsqu'il est renseigne.
-        if (membre.getEmail() != null && membreRepository.existsByEmail(membre.getEmail())) {
-            throw new BusinessException("L'email existe déjà : " + membre.getEmail());
+        if (participant.getEmail() != null && participantRepository.existsByEmail(participant.getEmail())) {
+            throw new BusinessException("L'email existe déjà : " + participant.getEmail());
         }
-        // Regle metier : un membre SITE doit etre rattache a un site.
-        if (membre.getTypeMembre() == TypeParticipant.SITE && membre.getSite() == null) {
-            throw new BusinessException("Un membre SITE doit être lié à un site.");
+        // Regle metier : un participant SITE doit etre rattache a un centre.
+        if (participant.getTypeParticipant() == TypeParticipant.ABONNE && participant.getCentre() == null) {
+            throw new BusinessException("Un participant SITE doit être lié à un centre.");
         }
 
-        membre.setSolde(0.0);
-        return membreRepository.save(membre);
+        participant.setSolde(0.0);
+        return participantRepository.save(participant);
     }
 
     @Override
     public Participant getById(Long id) {
-        return membreRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Membre introuvable avec l'ID : " + id));
+        return participantRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Participant introuvable avec l'ID : " + id));
     }
 
     @Override
     public Participant getByMatricule(String matricule) {
         String normalizedMatricule = normalizeMatricule(matricule);
-        return membreRepository.findByMatriculeIgnoreCase(normalizedMatricule)
-                .orElseThrow(() -> new ResourceNotFoundException("Membre introuvable avec le matricule : " + normalizedMatricule));
+        return participantRepository.findByMatriculeIgnoreCase(normalizedMatricule)
+                .orElseThrow(() -> new ResourceNotFoundException("Participant introuvable avec le matricule : " + normalizedMatricule));
     }
 
     @Override
     public List<Participant> getAll() {
-        return membreRepository.findAll();
+        return participantRepository.findAll();
     }
 
     @Override
-    public Participant update(Long id, Participant membre) {
+    public Participant update(Long id, Participant participant) {
         Participant existing = getById(id);
-        existing.setNom(membre.getNom());
-        existing.setPrenom(membre.getPrenom());
-        existing.setEmail(membre.getEmail());
-        return membreRepository.save(existing);
+        existing.setNom(participant.getNom());
+        existing.setPrenom(participant.getPrenom());
+        existing.setEmail(participant.getEmail());
+        return participantRepository.save(existing);
     }
 
     @Override
     public void delete(Long id) {
         Participant existing = getById(id);
-        membreRepository.delete(existing);
+        participantRepository.delete(existing);
     }
 
     @Override
-    public boolean hasActivePenalty(Long membreId) {
-        return penaliteRepository.existsByMembreIdAndDateFinAfter(membreId, LocalDate.now());
+    public boolean hasActivePenalty(Long participantId) {
+        return penaliteRepository.existsByParticipantIdAndDateFinAfter(participantId, LocalDate.now());
     }
 
     @Override
-    public boolean hasOutstandingBalance(Long membreId) {
-        Participant membre = getById(membreId);
-        return membre.getSolde() > 0.0;
+    public boolean hasOutstandingBalance(Long participantId) {
+        Participant participant = getById(participantId);
+        return participant.getSolde() > 0.0;
     }
     @Override
-    public void addPenalty(Long membreId) {
-        Participant membre = getById(membreId);
+    public void addPenalty(Long participantId) {
+        Participant participant = getById(participantId);
         Penalite penalite = Penalite.builder()
-                .membre(membre)
+                .participant(participant)
                 .dateFin(LocalDate.now().plusWeeks(1))
-                .motif("Match privé incomplet avant l'échéance")
+                .motif("Atelier privé incomplet avant l'échéance")
                 .build();
         penaliteRepository.save(penalite);
     }
@@ -129,16 +129,16 @@ public class ParticipantServiceImpl implements ParticipantService {
     @Override
     public Participant authenticate(String matricule, String password) {
         String normalizedMatricule = normalizeMatricule(matricule);
-        Participant membre = membreRepository.findByMatriculeIgnoreCase(normalizedMatricule)
+        Participant participant = participantRepository.findByMatriculeIgnoreCase(normalizedMatricule)
                 .orElseThrow(() -> new BusinessException("Identifiants invalides."));
 
         if (!StringUtils.hasText(password)
-                || !StringUtils.hasText(membre.getPasswordHash())
-                || !passwordEncoder.matches(password, membre.getPasswordHash())) {
+                || !StringUtils.hasText(participant.getPasswordHash())
+                || !passwordEncoder.matches(password, participant.getPasswordHash())) {
             throw new BusinessException("Identifiants invalides.");
         }
 
-        return membre;
+        return participant;
     }
 
     private String normalizeMatricule(String matricule) {
@@ -151,7 +151,7 @@ public class ParticipantServiceImpl implements ParticipantService {
             case ABONNE -> matricule.matches("^S\\d{5}$");
             case VISITEUR -> matricule.matches("^L\\d{5}$");
         };
-        // Regle metier : un matricule doit respecter le format du type de membre.
+        // Regle metier : un matricule doit respecter le format du type de participant.
         if (!valid) {
             throw new BusinessException("Format de matricule invalide pour le type " + type + " : " + matricule);
         }

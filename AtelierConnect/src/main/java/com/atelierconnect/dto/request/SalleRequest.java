@@ -15,7 +15,7 @@ public class SalleRequest {
     @NotBlank(message = "Le nom est obligatoire.")
     private String nom;
 
-    @NotNull(message = "L'ID du site est obligatoire.")
-    @JsonAlias("centreId")
-    private Long siteId;
+    @NotNull(message = "L'ID du centre est obligatoire.")
+    @com.fasterxml.jackson.annotation.JsonAlias("siteId")
+    private Long centreId;
 }

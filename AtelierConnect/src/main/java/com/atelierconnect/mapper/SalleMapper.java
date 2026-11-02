@@ -14,13 +14,13 @@ public class SalleMapper {
                 .build();
     }
 
-    public SalleResponse toResponse(Salle terrain) {
+    public SalleResponse toResponse(Salle salle) {
         return SalleResponse.builder()
-                .id(terrain.getId())
-                .nom(terrain.getNom())
-                .siteId(terrain.getSite() != null ? terrain.getSite().getId() : null)
-                .siteNom(terrain.getSite() != null ? terrain.getSite().getNom() : null)
-                .prix(terrain.getPrix())
+                .id(salle.getId())
+                .nom(salle.getNom())
+                .centreId(salle.getCentre() != null ? salle.getCentre().getId() : null)
+                .centreNom(salle.getCentre() != null ? salle.getCentre().getNom() : null)
+                .prix(salle.getPrix())
                 .build();
     }
 }

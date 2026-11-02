@@ -6,11 +6,6 @@ public enum TypeParticipant {
     ABONNE,
     VISITEUR;
 
-    // Alias Java transitoires pour les anciens tests et appels internes.
-    @Deprecated public static final TypeParticipant GLOBAL = PARTENAIRE;
-    @Deprecated public static final TypeParticipant SITE = ABONNE;
-    @Deprecated public static final TypeParticipant LIBRE = VISITEUR;
-
     public TypeParticipantLegacy toLegacyType() {
         return switch (this) {
             case PARTENAIRE -> TypeParticipantLegacy.GLOBAL;

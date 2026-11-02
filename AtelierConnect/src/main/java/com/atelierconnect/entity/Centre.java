@@ -8,8 +8,9 @@ import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
 
+/** Centre proposant des salles pour les ateliers. */
 @Entity
-@Table(name = "sites")
+@Table(name = "centres")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,11 +30,11 @@ public class Centre extends BaseEntity {
     @Column(nullable = false)
     private LocalTime heureFermeture;
 
-    @Column(nullable = false)
-    private Integer dureeMatchMinutes;
+    @Column(name = "duree_atelier_minutes", nullable = false)
+    private Integer dureeAtelierMinutes;
 
-    @Column(nullable = false)
-    private Integer dureeEntreMatchMinutes;
+    @Column(name = "duree_entre_atelier_minutes", nullable = false)
+    private Integer dureeEntreAtelierMinutes;
 
     @Column(nullable = false)
     private Integer anneeCivile;
@@ -41,13 +42,13 @@ public class Centre extends BaseEntity {
     @Column(name = "ouvert_visiteurs")
     private Boolean ouvertVisiteurs;
 
-    @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonManagedReference("site-terrains")
+    @OneToMany(mappedBy = "centre", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference("centre-salles")
     @Builder.Default
-    private Set<Salle> terrains = new HashSet<>();
+    private Set<Salle> salles = new HashSet<>();
 
-    @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonManagedReference("site-joursFermeture")
+    @OneToMany(mappedBy = "centre", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference("centre-joursFermeture")
     @Builder.Default
     private Set<JourFermeture> joursFermeture = new HashSet<>();
 }

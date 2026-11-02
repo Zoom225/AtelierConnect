@@ -20,5 +20,6 @@ public class JourFermetureRequest {
     @NotNull(message = "Le type de fermeture est obligatoire")
     private Boolean global;
 
-    private Long siteId;
+    @com.fasterxml.jackson.annotation.JsonAlias("siteId")
+    private Long centreId;
 }

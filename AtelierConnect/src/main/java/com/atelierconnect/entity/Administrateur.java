@@ -2,6 +2,7 @@ package com.atelierconnect.entity;
 
 
 import com.atelierconnect.entity.enums.TypeAdministrateur;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,6 +28,7 @@ public class Administrateur extends BaseEntity {
     private String email;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
@@ -34,6 +36,6 @@ public class Administrateur extends BaseEntity {
     private TypeAdministrateur typeAdministrateur;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "site_id")
-    private Centre site;
+    @JoinColumn(name = "centre_id")
+    private Centre centre;
 }

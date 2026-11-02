@@ -12,12 +12,12 @@ describe('memberGuard', () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
-        { provide: AuthApiService, useValue: { loginMembre: vi.fn() } }, // ← juste ça
+        { provide: AuthApiService, useValue: { loginParticipant: vi.fn() } }, // ← juste ça
       ],
     });
   });
 
-  it('devrait rediriger vers /member quand aucune session membre n\'existe', () => {
+  it('devrait rediriger vers /member quand aucune session participant n\'existe', () => {
     const router = TestBed.inject(Router);
 
     const result = TestBed.runInInjectionContext(() => memberGuard({} as never, {} as never));
@@ -25,7 +25,7 @@ describe('memberGuard', () => {
     expect(result).toEqual(router.parseUrl('/member'));
   });
 
-  it('devrait autoriser l\'accès quand la session membre existe', () => {
+  it('devrait autoriser l\'accès quand la session participant existe', () => {
     localStorage.setItem(
       MEMBER_SESSION_KEY,
       JSON.stringify({
@@ -35,9 +35,9 @@ describe('memberGuard', () => {
           nom: 'Doe',
           prenom: 'Jane',
           email: 'jane@example.com',
-          typeMembre: 'GLOBAL',
-          siteId: null,
-          siteNom: null,
+          categorie: 'PARTENAIRE',
+          centreId: null,
+          centreNom: null,
           solde: 0,
           token: null,
         },

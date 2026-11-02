@@ -16,13 +16,15 @@ public class ParticipantResponse {
     private String nom;
     private String prenom;
     private String email;
-    private TypeParticipantLegacy typeMembre;
+    private TypeParticipantLegacy typeParticipant;
     private TypeParticipant categorie;
-    private Long siteId;
-    private String siteNom;
+    private Long centreId;
+    private String centreNom;
     private Double solde;
     private String token;
 
-    @JsonProperty("centreId") public Long centreId() { return siteId; }
-    @JsonProperty("centreNom") public String centreNom() { return siteNom; }
+    // Wire compatibility for existing clients; business code uses canonical properties.
+    @com.fasterxml.jackson.annotation.JsonProperty("typeMembre") public TypeParticipantLegacy legacyTypeMembre() { return typeParticipant; }
+    @com.fasterxml.jackson.annotation.JsonProperty("siteId") public Long legacySiteId() { return centreId; }
+    @com.fasterxml.jackson.annotation.JsonProperty("siteNom") public String legacySiteNom() { return centreNom; }
 }

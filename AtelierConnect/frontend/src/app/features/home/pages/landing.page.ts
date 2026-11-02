@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatchesApiService } from '../../../core/api/matches-api.service';
+import { AteliersApiService } from '../../../core/api/ateliers-api.service';
 import { MemberSessionService } from '../../../core/auth/member-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 
@@ -37,17 +37,17 @@ import { LanguageService } from '../../../core/i18n/language.service';
           </div>
         </div>
 
-        <div class="court-panel" [attr.aria-label]="copy().matchPreviewLabel">
-          <div class="court-lines">
+        <div class="workshop-panel" [attr.aria-label]="copy().atelierPreviewLabel">
+          <div class="workshop-layout" aria-hidden="true">
             <span></span>
             <span></span>
           </div>
-          <div class="match-card live">
-            <p>{{ copy().matchPublic }}</p>
+          <div class="workshop-card live">
+            <p>{{ copy().atelierPublic }}</p>
             <strong>{{ count() ?? '--' }}</strong>
-            <span>{{ copy().matchAvailable }}</span>
+            <span>{{ copy().atelierAvailable }}</span>
           </div>
-          <div class="match-card">
+          <div class="workshop-card">
             <p>{{ copy().reservation }}</p>
             <strong>{{ copy().simpleReservation }}</strong>
             <span>{{ copy().reservationBody }}</span>
@@ -123,6 +123,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
     }
 
     .home-hero-copy {
+      min-width: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -147,7 +148,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
     h1 {
       margin: 0;
       color: #0f172a;
-      font-size: clamp(3rem, 8vw, 6rem);
+      font-size: clamp(2rem, 5vw, 4rem);
       line-height: 0.95;
       font-weight: 900;
       letter-spacing: 0;
@@ -168,7 +169,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
       margin-top: 2rem;
     }
 
-    .court-panel {
+    .workshop-panel {
       position: relative;
       overflow: hidden;
       min-height: 420px;
@@ -182,46 +183,25 @@ import { LanguageService } from '../../../core/i18n/language.service';
       box-shadow: 0 24px 60px rgba(4, 120, 87, 0.16);
     }
 
-    .court-lines {
+    .workshop-layout {
       position: absolute;
       inset: 42px;
-      border: 2px solid rgba(255, 255, 255, 0.72);
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: center;
+      gap: 2rem;
+      transform: rotate(-6deg);
     }
 
-    .court-lines::before,
-    .court-lines::after {
-      content: '';
-      position: absolute;
-      background: rgba(255, 255, 255, 0.72);
+    .workshop-layout span {
+      height: 160px;
+      border-radius: 12px;
+      border: 8px solid #d6a66b;
+      background: linear-gradient(120deg, #ffedd5, #e7c69d);
+      box-shadow: 0 24px 0 -12px rgba(15, 23, 42, 0.22);
     }
 
-    .court-lines::before {
-      inset: 0 auto 0 50%;
-      width: 2px;
-    }
-
-    .court-lines::after {
-      inset: 50% 0 auto;
-      height: 2px;
-    }
-
-    .court-lines span {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: rgba(255, 255, 255, 0.52);
-    }
-
-    .court-lines span:first-child {
-      left: 25%;
-    }
-
-    .court-lines span:last-child {
-      right: 25%;
-    }
-
-    .match-card {
+    .workshop-card {
       position: absolute;
       right: 1.2rem;
       bottom: 1.2rem;
@@ -233,14 +213,14 @@ import { LanguageService } from '../../../core/i18n/language.service';
       backdrop-filter: blur(12px);
     }
 
-    .match-card.live {
+    .workshop-card.live {
       top: 1.2rem;
       bottom: auto;
       left: 1.2rem;
       right: auto;
     }
 
-    .match-card p {
+    .workshop-card p {
       margin: 0 0 0.35rem;
       color: #64748b;
       font-size: 0.78rem;
@@ -248,14 +228,14 @@ import { LanguageService } from '../../../core/i18n/language.service';
       text-transform: uppercase;
     }
 
-    .match-card strong {
+    .workshop-card strong {
       display: block;
       color: #0f172a;
       font-size: 2rem;
       line-height: 1;
     }
 
-    .match-card span {
+    .workshop-card span {
       display: block;
       margin-top: 0.35rem;
       color: #475569;
@@ -314,17 +294,17 @@ import { LanguageService } from '../../../core/i18n/language.service';
     @media (max-width: 920px) {
       .home-hero,
       .feature-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
 
-      .court-panel {
+      .workshop-panel {
         min-height: 360px;
       }
     }
   `]
 })
 export class LandingPage {
-  private readonly matchesApi = inject(MatchesApiService);
+  private readonly ateliersApi = inject(AteliersApiService);
   readonly memberSession = inject(MemberSessionService);
   private readonly language = inject(LanguageService);
 
@@ -354,9 +334,9 @@ export class LandingPage {
     adminCta: this.language.t('landing.adminCta'),
     testApi: this.language.t('landing.testApi'),
     loadingApi: this.language.t('landing.loadingApi'),
-    matchPreviewLabel: this.language.t('landing.matchPreviewLabel'),
-    matchPublic: this.language.t('landing.matchPublic'),
-    matchAvailable: this.language.t('landing.matchAvailable'),
+    atelierPreviewLabel: this.language.t('landing.atelierPreviewLabel'),
+    atelierPublic: this.language.t('landing.atelierPublic'),
+    atelierAvailable: this.language.t('landing.atelierAvailable'),
     reservation: this.language.t('landing.reservation'),
     reservationBody: this.language.t('landing.reservationBody'),
     simpleReservation: this.language.t('landing.simpleReservation'),
@@ -374,9 +354,9 @@ export class LandingPage {
     this.loading.set(true);
     this.errorCode.set('');
 
-    this.matchesApi.getPublic().subscribe({
-      next: (matches) => {
-        this.count.set(matches.length);
+    this.ateliersApi.getPublic().subscribe({
+      next: (ateliers) => {
+        this.count.set(ateliers.length);
         this.loading.set(false);
       },
       error: () => {

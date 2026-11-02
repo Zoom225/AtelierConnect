@@ -13,7 +13,7 @@ describe('authTokenInterceptor', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
-        { provide: AuthApiService, useValue: { loginMembre: vi.fn() } }, // ← fix
+        { provide: AuthApiService, useValue: { loginParticipant: vi.fn() } }, // ← fix
       ],
     });
   });
@@ -26,14 +26,14 @@ describe('authTokenInterceptor', () => {
       nom: 'Admin',
       prenom: 'Root',
       role: 'GLOBAL',
-      siteId: null
+      centreId: null
     });
 
     let receivedRequest!: HttpRequest<unknown>;
 
     await firstValueFrom(
       TestBed.runInInjectionContext(() =>
-        authTokenInterceptor(new HttpRequest('GET', '/api/sites'), (req) => {
+        authTokenInterceptor(new HttpRequest('GET', '/api/centres'), (req) => {
           receivedRequest = req;
           return of(new HttpResponse({ status: 200 }));
         })
@@ -51,7 +51,7 @@ describe('authTokenInterceptor', () => {
       nom: 'Admin',
       prenom: 'Root',
       role: 'GLOBAL',
-      siteId: null
+      centreId: null
     });
 
     let receivedRequest!: HttpRequest<unknown>;
@@ -68,7 +68,7 @@ describe('authTokenInterceptor', () => {
     expect(receivedRequest?.headers.has('Authorization')).toBe(false);
   });
 
-  it('devrait utiliser le token membre quand seule la session membre existe', async () => {
+  it('devrait utiliser le token participant quand seule la session participant existe', async () => {
     const session = TestBed.inject(MemberSessionService);
     session.setMember({
       id: 1,
@@ -76,9 +76,9 @@ describe('authTokenInterceptor', () => {
       nom: 'Doe',
       prenom: 'John',
       email: 'john@example.com',
-      typeMembre: 'GLOBAL',
-      siteId: null,
-      siteNom: null,
+      categorie: 'PARTENAIRE',
+      centreId: null,
+      centreNom: null,
       solde: 0,
       token: 'member-token'
     });
@@ -87,7 +87,7 @@ describe('authTokenInterceptor', () => {
 
     await firstValueFrom(
       TestBed.runInInjectionContext(() =>
-        authTokenInterceptor(new HttpRequest('GET', '/api/reservations/membre/1'), (req) => {
+        authTokenInterceptor(new HttpRequest('GET', '/api/reservations/participant/1'), (req) => {
           receivedRequest = req;
           return of(new HttpResponse({ status: 200 }));
         })

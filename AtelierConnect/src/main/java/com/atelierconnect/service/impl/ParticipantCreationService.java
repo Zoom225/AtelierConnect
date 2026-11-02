@@ -11,11 +11,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ParticipantCreationService {
 
-    private final ParticipantService membreService;
-    private final ParticipantMapper membreMapper;
+    private final ParticipantService participantService;
+    private final ParticipantMapper participantMapper;
 
     public Participant create(ParticipantRequest request) {
-        Participant membre = membreMapper.toEntity(request);
-        return membreService.create(membre, request.getSiteId(), request.getPassword());
+        Participant participant = participantMapper.toEntity(request);
+        return participantService.create(participant, request.getCentreId(), request.getPassword());
     }
 }

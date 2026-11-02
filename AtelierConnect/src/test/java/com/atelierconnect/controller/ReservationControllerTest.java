@@ -53,7 +53,7 @@ class ReservationControllerTest {
     @MockitoBean
     private ReservationMapper reservationMapper;
     @MockitoBean
-    private CurrentParticipantService currentMemberService;
+    private CurrentParticipantService currentParticipantService;
     @MockitoBean
     private com.atelierconnect.service.AtelierService atelierService;
     @MockitoBean
@@ -64,12 +64,12 @@ class ReservationControllerTest {
     @MockitoBean
     private AdministrateurRepository administrateurRepository;
     @MockitoBean
-    private ParticipantRepository membreRepository;
+    private ParticipantRepository participantRepository;
     @MockitoBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
     private ReservationRequest reservationRequest;
     private ReservationResponse reservationResponse;
-    private Participant currentMember;
+    private Participant currentParticipant;
     private Reservation reservation;
 
     @BeforeEach
@@ -82,17 +82,17 @@ class ReservationControllerTest {
         }).when(jwtAuthenticationFilter).doFilter(any(), any(), any());
 
         reservationRequest = new ReservationRequest();
-        reservationRequest.setMatchId(1L);
-        reservationRequest.setMembreId(1L);
+        reservationRequest.setAtelierId(1L);
+        reservationRequest.setParticipantId(1L);
         reservationRequest.setRequesterId(1L);
 
         reservationResponse = new ReservationResponse();
         reservationResponse.setId(1L);
 
-        currentMember = Participant.builder().matricule("G1001").nom("Martin").prenom("Lucas").build();
-        currentMember.setId(1L);
+        currentParticipant = Participant.builder().matricule("G1001").nom("Martin").prenom("Lucas").build();
+        currentParticipant.setId(1L);
 
-        reservation = Reservation.builder().membre(currentMember).build();
+        reservation = Reservation.builder().participant(currentParticipant).build();
         reservation.setId(1L);
     }
 
@@ -102,7 +102,7 @@ class ReservationControllerTest {
     void createReservation_WithAuthenticatedUser_ShouldReturnCreated() throws Exception {
         when(reservationService.create(anyLong(), anyLong(), anyLong())).thenReturn(new Reservation());
         when(reservationMapper.toResponse(any(Reservation.class))).thenReturn(reservationResponse);
-        when(currentMemberService.currentMember()).thenReturn(currentMember);
+        when(currentParticipantService.currentParticipant()).thenReturn(currentParticipant);
 
         mockMvc.perform(post("/api/reservations")
                         .with(csrf())
@@ -130,7 +130,7 @@ class ReservationControllerTest {
 
         doNothing().when(reservationService).cancel(1L);
         when(reservationService.getById(1L)).thenReturn(reservation);
-        doNothing().when(currentMemberService).requireCurrentMember(1L);
+        doNothing().when(currentParticipantService).requireCurrentParticipant(1L);
 
         mockMvc.perform(patch("/api/reservations/1/cancel")
                         .with(csrf()))

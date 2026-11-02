@@ -11,10 +11,11 @@ import lombok.*;
 public class SalleResponse {
     private Long id;
     private String nom;
-    private Long siteId;
-    private String siteNom;
+    private Long centreId;
+    private String centreNom;
     private Double prix;
 
-    @JsonProperty("centreId") public Long centreId() { return siteId; }
-    @JsonProperty("centreNom") public String centreNom() { return siteNom; }
+    // Wire compatibility for existing clients; business code uses canonical properties.
+    @com.fasterxml.jackson.annotation.JsonProperty("siteId") public Long legacySiteId() { return centreId; }
+    @com.fasterxml.jackson.annotation.JsonProperty("siteNom") public String legacySiteNom() { return centreNom; }
 }

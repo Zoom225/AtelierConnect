@@ -13,15 +13,16 @@ import java.time.LocalDateTime;
 @Builder
 public class ReservationResponse {
     private Long id;
-    private Long matchId;
-    private LocalDateTime matchDateTime;
-    private Long membreId;
-    private String membreNom;
+    private Long atelierId;
+    private LocalDateTime atelierDateTime;
+    private Long participantId;
+    private String participantNom;
     private StatutReservation statut;
     private PaiementResponse paiement;
 
-    @JsonProperty("atelierId") public Long atelierId() { return matchId; }
-    @JsonProperty("atelierDateTime") public LocalDateTime atelierDateTime() { return matchDateTime; }
-    @JsonProperty("participantId") public Long participantId() { return membreId; }
-    @JsonProperty("participantNom") public String participantNom() { return membreNom; }
+    // Wire compatibility for existing clients; business code uses canonical properties.
+    @com.fasterxml.jackson.annotation.JsonProperty("matchId") public Long legacyMatchId() { return atelierId; }
+    @com.fasterxml.jackson.annotation.JsonProperty("matchDateTime") public LocalDateTime legacyMatchDateTime() { return atelierDateTime; }
+    @com.fasterxml.jackson.annotation.JsonProperty("membreId") public Long legacyMembreId() { return participantId; }
+    @com.fasterxml.jackson.annotation.JsonProperty("membreNom") public String legacyMembreNom() { return participantNom; }
 }

@@ -23,7 +23,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
           <p class="login-hero-sub">{{ language.t('admin.login.heroSubtitle') }}</p>
           <div class="login-hero-badges">
             <span class="login-badge login-badge-global">{{ language.t('admin.login.globalBadge') }}</span>
-            <span class="login-badge login-badge-site">{{ language.t('admin.login.siteBadge') }}</span>
+            <span class="login-badge login-badge-site">{{ language.t('admin.login.centreBadge') }}</span>
           </div>
         </div>
       </div>

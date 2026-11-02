@@ -16,62 +16,62 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("Tests de MembreMapper")
 class ParticipantMapperTest {
 
-    private ParticipantMapper membreMapper;
+    private ParticipantMapper participantMapper;
 
     @BeforeEach
     void setUp() {
-        membreMapper = new ParticipantMapper();
+        participantMapper = new ParticipantMapper();
     }
 
     @Test
-    @DisplayName("Doit mapper MembreRequest vers Membre Entity")
-    void shouldMapMembreRequestToMembreEntity() {
+    @DisplayName("Doit mapper MembreRequest vers Participant Entity")
+    void shouldMapParticipantRequestToParticipantEntity() {
         // Arrange
         ParticipantRequest request = ParticipantRequest.builder()
                 .matricule("L12345")
                 .nom("Doe")
                 .prenom("John")
                 .email("john.doe@example.com")
-                .typeMembre(TypeParticipantLegacy.LIBRE)
+                .typeParticipant(TypeParticipantLegacy.LIBRE)
                 .build();
 
         // Act
-        Participant membre = membreMapper.toEntity(request);
+        Participant participant = participantMapper.toEntity(request);
 
         // Assert
-        assertNotNull(membre);
+        assertNotNull(participant);
         assertAll("Vérification du mapping de Request vers Entity",
-                () -> assertEquals("L12345", membre.getMatricule()),
-                () -> assertEquals("Doe", membre.getNom()),
-                () -> assertEquals("John", membre.getPrenom()),
-                () -> assertEquals("john.doe@example.com", membre.getEmail()),
-                () -> assertEquals(TypeParticipant.LIBRE, membre.getTypeMembre()),
-                () -> assertNull(membre.getSite(), "Le site ne doit pas être mappé par le mapper")
+                () -> assertEquals("L12345", participant.getMatricule()),
+                () -> assertEquals("Doe", participant.getNom()),
+                () -> assertEquals("John", participant.getPrenom()),
+                () -> assertEquals("john.doe@example.com", participant.getEmail()),
+                () -> assertEquals(TypeParticipant.VISITEUR, participant.getTypeParticipant()),
+                () -> assertNull(participant.getCentre(), "Le centre ne doit pas être mappé par le mapper")
         );
     }
 
     @Test
-    @DisplayName("Doit mapper Membre Entity vers MembreResponse")
-    void shouldMapMembreEntityToMembreResponse() {
+    @DisplayName("Doit mapper Participant Entity vers MembreResponse")
+    void shouldMapParticipantEntityToParticipantResponse() {
         // Arrange
-        Centre site = new Centre();
-        site.setId(1L);
-        site.setNom("Padel Club Central");
+        Centre centre = new Centre();
+        centre.setId(1L);
+        centre.setNom("Centre collaboratif Central");
 
         // Correction : Construire l'objet, puis setter l'ID
-        Participant membre = Participant.builder()
+        Participant participant = Participant.builder()
                 .matricule("S54321")
                 .nom("Smith")
                 .prenom("Jane")
                 .email("jane.smith@example.com")
-                .typeMembre(TypeParticipant.SITE)
-                .site(site)
+                .typeParticipant(TypeParticipant.ABONNE)
+                .centre(centre)
                 .solde(25.5)
                 .build();
-        membre.setId(1L); // Simule l'ID généré par la base de données
+        participant.setId(1L); // Simule l'ID généré par la base de données
 
         // Act
-        ParticipantResponse response = membreMapper.toResponse(membre);
+        ParticipantResponse response = participantMapper.toResponse(participant);
 
         // Assert
         assertNotNull(response);
@@ -80,10 +80,10 @@ class ParticipantMapperTest {
                 () -> assertEquals("S54321", response.getMatricule()),
                 () -> assertEquals("Smith", response.getNom()),
                 () -> assertEquals("Jane", response.getPrenom()),
-                () -> assertEquals(TypeParticipantLegacy.SITE, response.getTypeMembre()),
+                () -> assertEquals(TypeParticipantLegacy.SITE, response.getTypeParticipant()),
                 () -> assertEquals(TypeParticipant.ABONNE, response.getCategorie()),
-                () -> assertEquals(1L, response.getSiteId()),
-                () -> assertEquals("Padel Club Central", response.getSiteNom()),
+                () -> assertEquals(1L, response.getCentreId()),
+                () -> assertEquals("Centre collaboratif Central", response.getCentreNom()),
                 () -> assertEquals(25.5, response.getSolde())
         );
     }
@@ -98,33 +98,33 @@ class ParticipantMapperTest {
                 .build();
 
         assertTrue(request.isCategorieValide());
-        assertEquals(TypeParticipant.LIBRE, membreMapper.toEntity(request).getTypeMembre());
-        request.setTypeMembre(TypeParticipantLegacy.SITE);
+        assertEquals(TypeParticipant.VISITEUR, participantMapper.toEntity(request).getTypeParticipant());
+        request.setTypeParticipant(TypeParticipantLegacy.SITE);
         assertFalse(request.isCategorieValide());
     }
 
     @Test
-    @DisplayName("Doit gérer un Site null lors du mapping vers MembreResponse")
-    void shouldHandleNullSiteWhenMappingToMembreResponse() {
+    @DisplayName("Doit gérer un Centre null lors du mapping vers MembreResponse")
+    void shouldHandleNullCentreWhenMappingToParticipantResponse() {
         // Arrange
         // Correction : Construire l'objet, puis setter l'ID
-        Participant membre = Participant.builder()
+        Participant participant = Participant.builder()
                 .matricule("G9876")
-                .typeMembre(TypeParticipant.GLOBAL) // Un membre GLOBAL n'a pas de site
-                .site(null)
+                .typeParticipant(TypeParticipant.PARTENAIRE) // Un participant GLOBAL n'a pas de centre
+                .centre(null)
                 .solde(0.0) // Initialiser tous les champs non-null
                 .build();
-        membre.setId(2L);
+        participant.setId(2L);
 
         // Act
-        ParticipantResponse response = membreMapper.toResponse(membre);
+        ParticipantResponse response = participantMapper.toResponse(participant);
 
         // Assert
         assertNotNull(response);
-        assertAll("Vérification du mapping avec un site null",
+        assertAll("Vérification du mapping avec un centre null",
                 () -> assertEquals(2L, response.getId()),
-                () -> assertNull(response.getSiteId()),
-                () -> assertNull(response.getSiteNom())
+                () -> assertNull(response.getCentreId()),
+                () -> assertNull(response.getCentreNom())
         );
     }
 }

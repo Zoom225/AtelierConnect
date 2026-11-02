@@ -42,3 +42,6 @@ build/
 *.p12
 *.pfx
 secrets/
+.local/
+# Generated private IntelliJ configuration; contains local environment variables.
+.run/AtelierConnect_Local.private.run.xml

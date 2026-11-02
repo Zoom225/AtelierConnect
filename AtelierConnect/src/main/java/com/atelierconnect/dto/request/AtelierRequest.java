@@ -17,8 +17,8 @@ import java.time.LocalTime;
 public class AtelierRequest {
 
     @NotNull(message = "L'identifiant de la salle est obligatoire.")
-    @JsonAlias("salleId")
-    private Long terrainId;
+    @com.fasterxml.jackson.annotation.JsonAlias("terrainId")
+    private Long salleId;
 
     @NotNull(message = "L'ID de l'organisateur est obligatoire.")
     private Long organisateurId;
@@ -31,6 +31,6 @@ public class AtelierRequest {
     private LocalTime heureDebut;
 
     @NotNull(message = "Le type d'atelier est obligatoire.")
-    @JsonAlias("typeAtelier")
-    private TypeAtelier typeMatch;
+    @com.fasterxml.jackson.annotation.JsonAlias("typeMatch")
+    private TypeAtelier typeAtelier;
 }

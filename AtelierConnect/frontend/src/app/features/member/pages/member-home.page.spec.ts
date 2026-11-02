@@ -5,19 +5,19 @@ import { of, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '../../../core/auth/auth.service';
 import { MemberSessionService } from '../../../core/auth/member-session.service';
-import { MembreResponse } from '../../../shared/models/membre.model';
+import { ParticipantResponse } from '../../../shared/models/participant.model';
 import { MemberHomePage } from './member-home.page';
 
 describe('MemberHomePage', () => {
-  const member: MembreResponse = {
+  const member: ParticipantResponse = {
     id: 1,
     matricule: 'S10001',
     nom: 'Bernard',
     prenom: 'Tom',
     email: 'tom.bernard@email.com',
-    typeMembre: 'SITE',
-    siteId: 1,
-    siteNom: 'Padel Club Lyon',
+    categorie: 'ABONNE',
+    centreId: 1,
+    centreNom: 'Centre collaboratif Lyon',
     solde: 0
   };
 
@@ -55,7 +55,7 @@ describe('MemberHomePage', () => {
     TestBed.resetTestingModule();
   });
 
-  it('redirige vers le profil si un membre est déjà connecté', () => {
+  it('redirige vers le profil si un participant est déjà connecté', () => {
     memberSessionMock.isAuthenticated.mockReturnValue(true);
     const router = TestBed.inject(Router);
     const navigateSpy = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
@@ -72,10 +72,10 @@ describe('MemberHomePage', () => {
     const component = fixture.componentInstance;
 
     component.form.controls.matricule.setValue('s10001');
-    component.form.controls.password.setValue('Membre1234!');
+    component.form.controls.password.setValue('Participant1234!');
     component.submit();
 
-    expect(authServiceMock.loginMember).toHaveBeenCalledWith({ matricule: 'S10001', password: 'Membre1234!' });
+    expect(authServiceMock.loginMember).toHaveBeenCalledWith({ matricule: 'S10001', password: 'Participant1234!' });
     expect(component.foundMember()).toEqual(member);
 
     vi.advanceTimersByTime(600);

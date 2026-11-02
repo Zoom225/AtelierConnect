@@ -1,86 +1,181 @@
-﻿# AtelierConnect
+# AtelierConnect
 
-Application de gestion et réservation d'ateliers collaboratifs multi-centres : backend Java 21 / Spring Boot 3.5, frontend Angular 21 et base PostgreSQL. Le backend utilise le domaine Participant / Atelier / Salle / Centre et conserve temporairement les anciennes routes REST pour assurer la transition Angular.
+Gestion et réservation d'ateliers collaboratifs multi-centres : **Java 21, Spring Boot 3.5, Spring Security/JWT, PostgreSQL 15 et Angular 21**.
 
-## Prérequis
+## État validé au 2 novembre 2026
 
-Java 21, Docker Desktop, Node.js compatible Angular 21 et npm. Exécuter les commandes ci-dessous depuis `AtelierConnect/` dans Windows PowerShell.
+- Entités Java et schéma PostgreSQL alignés : `ateliers`, `participants`, `centres`, `salles`.
+- Migration transactionnelle testée sur sauvegarde restaurée, avec retour arrière.
+- Démarrage Windows vérifié par JDBC et HTTP, Swagger public et API métier protégée.
+- Formulaire Angular : dates/heures passées bloquées et centres filtrés pour les visiteurs.
+- Connexion administrateur par e-mail ; mot de passe des comptes de démonstration dérivé de leur matricule et stocké en BCrypt.
+- Recette complète : **188 tests backend, 83 tests Angular et 6 tests Chromium réussis**, sans échec ni test ignoré ; persistance vérifiée après redémarrage du PostgreSQL de test.
+- Créations publique et privée vérifiées en navigateur sur base isolée ; parcours visiteur autorisé et suspension vérifiés.
 
-## Configuration locale
+Le [dossier phase 4](docs/phase-4/README.md) contient les diagrammes et la préparation du TFE.
+Le [rapport du 2 novembre](docs/validation-2026-11-02.md) décrit la dernière recette complète.
+Les [preuves du 1er novembre](docs/refactoring-final-2026-11-01.md) et la
+[recette précédente](docs/phase-4/recette-finale.md) restent disponibles comme historique.
 
-Variables requises :
+## Prérequis et configuration
 
-| Variable | Usage |
+Docker Desktop démarré, Java 21, Node.js 22 >= 22.12 ou Node.js 24, npm.
+Depuis la racine Git, le backend se trouve dans le sous-dossier `AtelierConnect`.
+
+| Variable requise | Usage |
 | --- | --- |
-| `POSTGRES_USER` | Utilisateur PostgreSQL, commun à Docker Compose et Spring Boot |
-| `POSTGRES_PASSWORD` | Mot de passe PostgreSQL, commun à Docker Compose et Spring Boot |
-| `JWT_SECRET` | Clé de signature JWT, aléatoire, au moins 32 octets |
-| `APP_DEMO_MEMBER_PASSWORD` | Mot de passe initial des membres créés par le jeu de démonstration et des membres créés sans mot de passe explicite |
-| `APP_DEMO_ADMIN_PASSWORD` | Mot de passe initial des administrateurs du jeu de démonstration |
-| `SPRING_DATASOURCE_URL` | Facultatif ; défaut `jdbc:postgresql://localhost:5441/atelierconnect_db` |
+| `POSTGRES_USER` | Rôle PostgreSQL existant |
+| `POSTGRES_PASSWORD` | Mot de passe de ce rôle |
+| `JWT_SECRET` | Clé de signature d'au moins 32 octets UTF-8 |
+| `APP_DEMO_MEMBER_PASSWORD` | Mot de passe local des participants de démonstration |
 
-Définir les variables dans chaque terminal qui lance Docker Compose ou le backend. Les commandes ci-dessous demandent les valeurs sans les afficher. Conserver les mêmes valeurs lors des redémarrages : le volume PostgreSQL conserve son mot de passe initial, et changer la clé JWT invalide les jetons existants. Garder ces valeurs dans un gestionnaire de secrets, jamais dans Git.
+`SPRING_DATASOURCE_URL` est facultatif : défaut `jdbc:postgresql://localhost:5441/atelierconnect_db`.
+`APP_DEMO_ADMIN_PASSWORD` n'est plus requis par l'initialiseur : les administrateurs de démonstration utilisent leur matricule.
+
+Le script charge les variables absentes depuis une configuration privée existante
+ou les demande sans les afficher. Il ne crée pas de nouveau fichier de secrets :
 
 ```powershell
-$env:POSTGRES_USER = 'atelierconnect'
-$secure = Read-Host 'POSTGRES_PASSWORD' -AsSecureString
-$ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-try { $env:POSTGRES_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
-$secure = Read-Host 'JWT_SECRET (au moins 32 octets)' -AsSecureString
-$ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-try { $env:JWT_SECRET = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
-$secure = Read-Host 'APP_DEMO_MEMBER_PASSWORD' -AsSecureString
-$ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-try { $env:APP_DEMO_MEMBER_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
-$secure = Read-Host 'APP_DEMO_ADMIN_PASSWORD' -AsSecureString
-$ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-try { $env:APP_DEMO_ADMIN_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
+cd .\AtelierConnect
+.\scripts\set-local-environment.ps1
 ```
 
-Pour créer une nouvelle clé JWT aléatoire, la générer localement et la stocker dans le gestionnaire de secrets avant de fermer le terminal :
+La configuration privée existante `.run/AtelierConnect_Local.private.run.xml` est
+ignorée par Git. L'ancienne option `-ConfigureIntelliJ` est désactivée.
+Dans IntelliJ, sélectionner **AtelierConnect — Local** si elle existe, ou préparer
+une configuration Run/Debug privée avec les variables requises.
+Les variables d'un terminal ne sont pas transmises à une instance IntelliJ déjà démarrée.
+
+Ne jamais publier les configurations privées, fichiers `.env`, clés, journaux ou sauvegardes.
+
+## Démarrer en local
+
+### Terminal 1 — PostgreSQL
+
+Depuis le dossier backend :
 
 ```powershell
-$bytes = New-Object byte[] 64
-$rng = [Security.Cryptography.RandomNumberGenerator]::Create()
-try { $rng.GetBytes($bytes) } finally { $rng.Dispose() }
-$env:JWT_SECRET = [Convert]::ToBase64String($bytes)
-```
-
-La clé JWT précédemment publiée dans l'historique Git doit être révoquée/remplacée partout où elle a été utilisée. Les anciens mots de passe de démonstration publiés doivent aussi être remplacés pour les comptes déjà créés ; changer les variables ne réinitialise pas les mots de passe des comptes existants. L'initialisation de démonstration ne remplace plus les identifiants personnalisés.
-
-## PostgreSQL
-
-`docker-compose.yml` crée la base `atelierconnect_db`, le conteneur `atelierconnect-db` et le volume distinct `atelierconnect-postgres-data`. Le port hôte est `5441`. Aucun ancien volume n'est supprimé.
-
-```powershell
-docker compose config --quiet
-docker compose up -d postgres
+.\scripts\set-local-environment.ps1
+docker compose up -d
 docker compose ps
 ```
 
-Pour arrêter le conteneur en conservant les données : `docker compose down`. Ne pas utiliser `down -v` si les données doivent être conservées.
+Compose démarre uniquement PostgreSQL sur le port Windows **5441** :
+conteneur `atelierconnect-db`, base `atelierconnect_db`, volume persistant conservé.
+Changer une variable Compose ne modifie pas le mot de passe d'un rôle déjà présent.
 
-## Backend
-
-`spring.jpa.hibernate.ddl-auto=update` reste actif. Depuis un terminal configuré avec les variables ci-dessus :
+Pour vérifier l'authentification réelle depuis Windows :
 
 ```powershell
-.\mvnw.cmd test
-.\mvnw.cmd clean package
-.\mvnw.cmd spring-boot:run
+.\scripts\verify-postgres-login.ps1
 ```
 
-Backend : `http://localhost:8082` ; Swagger : `http://localhost:8082/swagger-ui.html`.
+### Terminal 2 — Backend
 
-## Frontend
-
-Depuis `AtelierConnect/frontend/` :
+Depuis le dossier backend :
 
 ```powershell
+.\scripts\run-local.ps1 -Component Backend -Build
+```
+
+Le lanceur vérifie le port **8082**, PostgreSQL et JDBC, compile si nécessaire,
+démarre le JAR sans redémarrage DevTools et contrôle Swagger et l'API publique.
+Les journaux filtrés restent sous `.local/diagnostics/`. Une vérification échouée
+retourne une erreur ; après validation, le backend continue en arrière-plan.
+
+Pour les lancements suivants, `-Build` est facultatif. Ne pas lancer une seconde
+instance si IntelliJ utilise déjà 8082. Le lanceur désactive l'initialisation
+automatique des données pour préserver la base existante.
+
+Compilation seule, sans tests d'intégration sur la base applicative :
+
+```powershell
+.\mvnw.cmd -B -ntp -DskipTests clean package
+```
+
+### Terminal 3 — Frontend
+
+Depuis la racine Git :
+
+```powershell
+cd .\AtelierConnect\frontend
 npm ci
-npm test
-npm run build
 npm start
 ```
 
-Frontend : `http://localhost:4200`. Le proxy de développement redirige `/api` vers le backend sur le port `8082`.
+`npm ci` est nécessaire à la première installation ou après un changement du lockfile.
+
+| Accès | URL |
+| --- | --- |
+| Angular | http://localhost:4200 |
+| Swagger | http://localhost:8082/swagger-ui/index.html |
+| OpenAPI | http://localhost:8082/v3/api-docs |
+| API publique | http://localhost:8082/api/ateliers/public |
+
+Le proxy Angular transmet `/api` vers `localhost:8082`.
+
+## Base existante : migration avant démarrage
+
+Les anciens noms `matches`, `membres`, `sites`, `terrains` sont remplacés par
+les noms AtelierConnect. **Hibernate update ne réalise pas ce renommage.**
+
+Suivre [la procédure de migration](docs/schema-naming-migration.md) : arrêter le
+backend, sauvegarder, vérifier une restauration sur base isolée, puis appliquer
+le script `.up.sql`. Le script `.down.sql` permet le retour aux anciens noms avec
+la version du backend correspondante.
+
+La migration vérifie les empreintes de toutes les lignes, les séquences et les
+relations. `SchemaNamingGuard` refuse un ancien schéma avant qu'Hibernate puisse
+créer des tables parallèles vides. `spring.jpa.hibernate.ddl-auto=update` reste conservé.
+Voir [les mappings des entités](docs/entities-compatibility.md).
+
+## Démonstration et règles métier
+
+- Participants : connexion par matricule et mot de passe configuré localement.
+- Administrateurs : connexion par e-mail et mot de passe correspondant au matricule.
+- VISITEUR : jusqu'à 7 jours, uniquement dans les centres explicitement ouverts.
+- ABONNE : jusqu'à 15 jours dans son centre de rattachement.
+- PARTENAIRE : jusqu'à 30 jours.
+- Atelier : 120 minutes, pause de 20 minutes, capacité de 6, prix total de 90 EUR.
+- Soldes impayés, suspensions, fermetures et chevauchements restent bloquants.
+
+`DataInitializer` prépare les données de démonstration quand son initialisation
+est explicitement activée sur une base neuve. Les scripts de changement des
+identifiants et d'ouverture aux visiteurs sont des opérations explicites,
+jamais automatiques au démarrage.
+
+Documentation : [participants](docs/participant-demo-login.md),
+[administrateurs](docs/admin-demo-login.md),
+[accès visiteur et refus pour suspension](docs/demo-visitor-access.md).
+
+## Tests et compilation
+
+Depuis `AtelierConnect/frontend` :
+
+```powershell
+npm test -- --maxWorkers=2
+npm run build
+```
+
+Les tests backend utilisent une **base isolée**, jamais `atelierconnect_db`.
+Avec le conteneur de validation PostgreSQL 15 préparé, étiqueté
+`atelierconnect.validation=true` et publié sur 5549 :
+
+```powershell
+.\scripts\test-backend-isolated.ps1
+```
+
+Pour la recette complète, depuis le dossier backend, arrêter les serveurs locaux
+sur 8082 et 4200, puis exécuter :
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate-fullstack.ps1
+```
+
+Cette procédure prépare des bases dédiées, compile, exécute les tests backend et
+Angular, lance Playwright sur les vrais serveurs puis vérifie la persistance après
+redémarrage du PostgreSQL de test. Elle ne touche pas à la base applicative.
+Après une première installation, `-SkipInstall` réutilise les dépendances installées.
+
+Rapports locaux : `.local/validation/<date>/summary.json`, `target/surefire-reports/`,
+`frontend/playwright-report/`. Voir le [guide Windows/IntelliJ](docs/phase-4/installation-windows.md).

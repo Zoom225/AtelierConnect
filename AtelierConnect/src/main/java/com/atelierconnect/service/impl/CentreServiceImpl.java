@@ -13,43 +13,43 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CentreServiceImpl implements CentreService {
 
-    private final CentreRepository siteRepository;
+    private final CentreRepository centreRepository;
 
     @Override
-    public Centre create(Centre site) {
-        return siteRepository.save(site);
+    public Centre create(Centre centre) {
+        return centreRepository.save(centre);
     }
 
     @Override
     public Centre getById(Long id) {
-        return siteRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Site introuvable avec l'ID : " + id));
+        return centreRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Centre introuvable avec l'ID : " + id));
     }
 
     @Override
     public List<Centre> getAll() {
         // C'est maintenant la bonne approche car les collections sont en LAZY
         // et ne seront pas chargées, évitant ainsi l'erreur 500.
-        return siteRepository.findAll();
+        return centreRepository.findAll();
     }
 
     @Override
-    public Centre update(Long id, Centre site) {
+    public Centre update(Long id, Centre centre) {
         Centre existing = getById(id);
-        existing.setNom(site.getNom());
-        existing.setAdresse(site.getAdresse());
-        existing.setHeureOuverture(site.getHeureOuverture());
-        existing.setHeureFermeture(site.getHeureFermeture());
-        existing.setDureeMatchMinutes(site.getDureeMatchMinutes());
-        existing.setDureeEntreMatchMinutes(site.getDureeEntreMatchMinutes());
-        existing.setAnneeCivile(site.getAnneeCivile());
-        existing.setOuvertVisiteurs(site.getOuvertVisiteurs());
-        return siteRepository.save(existing);
+        existing.setNom(centre.getNom());
+        existing.setAdresse(centre.getAdresse());
+        existing.setHeureOuverture(centre.getHeureOuverture());
+        existing.setHeureFermeture(centre.getHeureFermeture());
+        existing.setDureeAtelierMinutes(centre.getDureeAtelierMinutes());
+        existing.setDureeEntreAtelierMinutes(centre.getDureeEntreAtelierMinutes());
+        existing.setAnneeCivile(centre.getAnneeCivile());
+        existing.setOuvertVisiteurs(centre.getOuvertVisiteurs());
+        return centreRepository.save(existing);
     }
 
     @Override
     public void delete(Long id) {
         Centre existing = getById(id);
-        siteRepository.delete(existing);
+        centreRepository.delete(existing);
     }
 }

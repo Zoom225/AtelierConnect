@@ -10,16 +10,16 @@ import java.util.Optional;
 
 @Repository
 public interface ParticipantRepository extends JpaRepository<Participant, Long> {
-    @EntityGraph(attributePaths = "site")
+    @EntityGraph(attributePaths = "centre")
     List<Participant> findAll();
 
-    @EntityGraph(attributePaths = "site")
+    @EntityGraph(attributePaths = "centre")
     Optional<Participant> findById(Long id);
 
-    @EntityGraph(attributePaths = "site")
+    @EntityGraph(attributePaths = "centre")
     Optional<Participant> findByMatricule(String matricule);
 
-    @EntityGraph(attributePaths = "site")
+    @EntityGraph(attributePaths = "centre")
     Optional<Participant> findByMatriculeIgnoreCase(String matricule);
 
     boolean existsByMatricule(String matricule);
