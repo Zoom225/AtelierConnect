@@ -72,6 +72,9 @@ function Stop-OwnedProcesses {
 
 try {
     Set-Location $projectRoot
+    if ($TestContainer -eq 'atelierconnect-db' -or $PostgresPort -eq 5441) {
+        throw 'Refusing to use the application PostgreSQL container or port for tests.'
+    }
     foreach ($command in @('java', 'node', 'npm.cmd', 'docker')) {
         Get-Command $command -ErrorAction Stop | Out-Null
     }
@@ -101,7 +104,9 @@ try {
     } else {
         $metadata = ($inspection | ConvertFrom-Json)[0]
         $initialDatabase = ($metadata.Config.Env | Where-Object { $_ -like 'POSTGRES_DB=*' }) -replace '^POSTGRES_DB=', ''
-        if ($initialDatabase -notmatch '^atelierconnect_.*(test|validation)' -or $metadata.Config.Image -ne 'postgres:15') {
+        $dedicated = $metadata.Config.Labels.'atelierconnect.validation' -eq 'true' -or
+            $initialDatabase -match '^atelierconnect_.*(test|validation)'
+        if (-not $dedicated -or $metadata.Config.Image -ne 'postgres:15') {
             throw 'Existing container is not a dedicated AtelierConnect PostgreSQL 15 test server.'
         }
         $env:POSTGRES_USER = ($metadata.Config.Env | Where-Object { $_ -like 'POSTGRES_USER=*' }) -replace '^POSTGRES_USER=', ''
@@ -158,6 +163,10 @@ try {
         -RedirectStandardError (Join-Path $reportDir 'backend-error.log')
     Wait-Http 'http://localhost:8082/api/ateliers/public' $backend
     Wait-Http 'http://localhost:8082/swagger-ui.html' $backend
+    # The seeded administrator uses its matricule, not a shared demo password.
+    # Keep the value in this isolated test process only; do not write it to logs.
+    $env:APP_DEMO_ADMIN_PASSWORD = Invoke-TestSql $browserDatabase "SELECT matricule FROM administrateurs WHERE email='admin@atelierconnect.example'"
+    if ([string]::IsNullOrWhiteSpace($env:APP_DEMO_ADMIN_PASSWORD)) { throw 'Seeded test administrator missing.' }
     $frontend = Start-Process (Get-Command node).Source -ArgumentList @('node_modules/@angular/cli/bin/ng.js',
         'serve', '--proxy-config', 'proxy.conf.json', '--host', '127.0.0.1', '--port', '4200') `
         -WorkingDirectory (Join-Path $projectRoot 'frontend') -WindowStyle Hidden -PassThru `

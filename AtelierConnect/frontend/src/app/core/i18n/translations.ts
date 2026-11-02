@@ -155,6 +155,8 @@ export type TranslationKey =
   | 'member.create.date'
   | 'member.create.dateHint'
   | 'member.create.time'
+  | 'member.create.futureDateTime'
+  | 'member.create.noVisitorCentre'
   | 'member.create.atelierType'
   | 'member.create.privatePlayers'
   | 'member.create.player2'
@@ -568,6 +570,8 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'member.create.date': 'Date',
     'member.create.dateHint': 'Entre',
     'member.create.time': 'Heure debut',
+    'member.create.futureDateTime': 'Choisissez une date et une heure de début dans le futur.',
+    'member.create.noVisitorCentre': "Aucun centre n'est actuellement ouvert aux visiteurs. Demandez à un administrateur d'activer cet accès dans la gestion des centres.",
     'member.create.atelierType': 'Type d’atelier',
     'member.create.privatePlayers': 'Participants à inviter (jusqu’à 5, facultatif)',
     'member.create.player2': 'Matricule participant 2',
@@ -978,6 +982,8 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'member.create.date': 'Date',
     'member.create.dateHint': 'Between',
     'member.create.time': 'Start time',
+    'member.create.futureDateTime': 'Choose a start date and time in the future.',
+    'member.create.noVisitorCentre': 'No centre currently accepts visitors. Ask an administrator to enable visitor access in centre management.',
     'member.create.atelierType': 'Workshop type',
     'member.create.privatePlayers': 'Participants to invite (up to 5, optional)',
     'member.create.player2': 'Participant ID 2',

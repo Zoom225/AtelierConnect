@@ -45,7 +45,6 @@ class DataInitializerTest {
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(dataInitializer, "demoParticipantPassword", "Membre1234!");
-        ReflectionTestUtils.setField(dataInitializer, "demoAdminPassword", "Admin1234!");
     }
 
     @Test
@@ -129,6 +128,30 @@ class DataInitializerTest {
         verify(administrateurRepository, never()).save(adminParis);
         assertThat(adminLyon.getPasswordHash()).isEqualTo("old-hash");
         assertThat(adminParis.getPasswordHash()).isEqualTo("old-hash-2");
+    }
+
+    @Test
+    void run_shouldUseMatriculeWhenDemoAdministratorHasNoPassword() {
+        Administrateur admin = Administrateur.builder()
+                .matricule("ADMIN002")
+                .email("admin.bruxelles@atelierconnect.example")
+                .typeAdministrateur(TypeAdministrateur.SITE)
+                .build();
+        Participant participant = Participant.builder().matricule("L10002").passwordHash("existing-hash").build();
+        participant.setId(50L);
+        when(centreRepository.count()).thenReturn(1L);
+        when(atelierRepository.count()).thenReturn(1L);
+        when(participantRepository.findAll()).thenReturn(List.of(participant));
+        when(participantRepository.findByMatriculeIgnoreCase("L10002")).thenReturn(Optional.of(participant));
+        when(penaliteRepository.existsByParticipantIdAndDateFinAfter(eq(50L), any(LocalDate.class))).thenReturn(true);
+        when(administrateurRepository.findByEmail(anyString())).thenAnswer(invocation ->
+                admin.getEmail().equals(invocation.getArgument(0)) ? Optional.of(admin) : Optional.empty());
+        when(passwordEncoder.encode("ADMIN002")).thenReturn("encoded-admin-matricule");
+
+        dataInitializer.run();
+
+        assertThat(admin.getPasswordHash()).isEqualTo("encoded-admin-matricule");
+        verify(administrateurRepository).save(admin);
     }
 
     @Test

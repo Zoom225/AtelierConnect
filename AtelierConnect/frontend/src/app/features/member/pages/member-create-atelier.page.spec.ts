@@ -81,6 +81,8 @@ describe('MemberCreateAtelierPage', () => {
   let activatedRouteMock: { snapshot: { queryParamMap: { get: ReturnType<typeof vi.fn> } } };
 
   beforeEach(async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 4, 10, 8, 0));
     centresApiMock = {
       getAll: vi.fn().mockReturnValue(of(centres))
     };
@@ -121,6 +123,7 @@ describe('MemberCreateAtelierPage', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
     TestBed.resetTestingModule();
   });
@@ -145,7 +148,7 @@ describe('MemberCreateAtelierPage', () => {
     expect(component.isCentreMember()).toBe(true);
     expect(component.form.controls.centreId.value).toBe(1);
     expect(component.form.controls.salleId.value).toBe(10);
-    expect(component.form.controls.date.value).toBe(component.todayDate());
+    expect(component.form.controls.date.value).toBe('2026-05-11');
     expect(sallesApiMock.getByCentre).toHaveBeenCalledWith(1);
   });
 
@@ -155,6 +158,92 @@ describe('MemberCreateAtelierPage', () => {
     const component = fixture.componentInstance;
 
     expect(component.form.controls.typeAtelier.value).toBe('PRIVE');
+  });
+
+  it('bloque un visiteur si aucun centre ne lui est ouvert sans envoyer de requête de création', () => {
+    memberSessionMock.member.mockReturnValue({ ...member, categorie: 'VISITEUR', centreId: null });
+    centresApiMock.getAll.mockReturnValue(of([
+      { ...centres[0], ouvertVisiteurs: null },
+      { ...centres[0], id: 2, ouvertVisiteurs: false }
+    ]));
+    const fixture = TestBed.createComponent(MemberCreateAtelierPage);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    component.submit();
+    expect(component.centres()).toEqual([]);
+    expect(sallesApiMock.getByCentre).not.toHaveBeenCalled();
+    expect(ateliersApiMock.create).not.toHaveBeenCalled();
+    expect(component.errorMessage()).toContain("Aucun centre n'est actuellement ouvert aux visiteurs");
+    expect(fixture.nativeElement.querySelector('button[type="submit"]').disabled).toBe(true);
+  });
+
+  it('propose au visiteur uniquement les centres explicitement ouverts', () => {
+    memberSessionMock.member.mockReturnValue({ ...member, categorie: 'VISITEUR', centreId: null });
+    const openCentre = { ...centres[0], id: 2, ouvertVisiteurs: true };
+    centresApiMock.getAll.mockReturnValue(of([
+      { ...centres[0], ouvertVisiteurs: false }, openCentre
+    ]));
+    const component = TestBed.createComponent(MemberCreateAtelierPage).componentInstance;
+    expect(component.centres()).toEqual([openCentre]);
+    expect(component.form.controls.centreId.value).toBe(2);
+    expect(sallesApiMock.getByCentre).toHaveBeenCalledWith(2);
+    expect(component.errorMessage()).toBe('');
+  });
+
+  it('conserve le centre de rattachement de l’abonné même si les visiteurs sont refusés', () => {
+    centresApiMock.getAll.mockReturnValue(of([{ ...centres[0], ouvertVisiteurs: false }]));
+    const component = TestBed.createComponent(MemberCreateAtelierPage).componentInstance;
+    expect(component.centres()).toHaveLength(1);
+    expect(component.form.controls.centreId.value).toBe(1);
+    expect(component.errorMessage()).toBe('');
+  });
+
+  it('ne masque pas les erreurs inattendues renvoyées pendant le chargement', () => {
+    centresApiMock.getAll.mockReturnValue(throwError(() => ({ error: { message: 'Une erreur inattendue est survenue' } })));
+    const component = TestBed.createComponent(MemberCreateAtelierPage).componentInstance;
+    expect(component.errorMessage()).toBe('Une erreur inattendue est survenue');
+  });
+
+  it('propose une date future même si la page est ouverte après 09:00', () => {
+    vi.setSystemTime(new Date(2026, 4, 10, 21, 0));
+    const component = TestBed.createComponent(MemberCreateAtelierPage).componentInstance;
+    expect(component.form.controls.date.value).toBe('2026-05-11');
+    expect(component.form.controls.heureDebut.value).toBe('09:00');
+    expect(component.form.hasError('pastAtelierDateTime')).toBe(false);
+  });
+
+  it('bloque une heure passée sans envoyer de POST et affiche une erreur lisible', () => {
+    vi.setSystemTime(new Date(2026, 4, 10, 15, 0));
+    const fixture = TestBed.createComponent(MemberCreateAtelierPage);
+    const component = fixture.componentInstance;
+    component.form.patchValue({ date: component.todayDate(), heureDebut: '09:00' });
+    component.submit();
+    fixture.detectChanges();
+    expect(ateliersApiMock.create).not.toHaveBeenCalled();
+    expect(component.form.hasError('pastAtelierDateTime')).toBe(true);
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain('dans le futur');
+    expect(fixture.nativeElement.querySelector('button[type="submit"]').disabled).toBe(true);
+  });
+
+  it('autorise un créneau futur le jour même', () => {
+    vi.setSystemTime(new Date(2026, 4, 10, 15, 0));
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const component = TestBed.createComponent(MemberCreateAtelierPage).componentInstance;
+    component.form.patchValue({ date: component.todayDate(), heureDebut: '16:00' });
+    component.submit();
+    expect(ateliersApiMock.create).toHaveBeenCalledWith({
+      salleId: 10, atelierDate: '2026-05-10T16:00:00', atelierType: 'PUBLIC'
+    });
+  });
+
+  it('revérifie la date si le formulaire est resté ouvert trop longtemps', () => {
+    const component = TestBed.createComponent(MemberCreateAtelierPage).componentInstance;
+    component.form.patchValue({ date: component.todayDate(), heureDebut: '09:00' });
+    expect(component.form.valid).toBe(true);
+    vi.setSystemTime(new Date(2026, 4, 10, 10, 0));
+    component.submit();
+    expect(ateliersApiMock.create).not.toHaveBeenCalled();
+    expect(component.errorMessage()).toContain('dans le futur');
   });
 
   it('bloque la soumission si la date est au delà de la dernière date autorisée', () => {

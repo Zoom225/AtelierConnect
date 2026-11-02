@@ -2,14 +2,16 @@ package com.atelierconnect.entity;
 
 import com.atelierconnect.entity.enums.TypeParticipant;
 import com.atelierconnect.entity.enums.TypeParticipantConverter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
+/** Participant aux ateliers collaboratifs. */
 @Entity
-@Table(name = "membres")
+@Table(name = "participants")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,17 +31,18 @@ public class Participant extends BaseEntity {
     private String email;
 
     @Column
-    private String passwordHash; // Added passwordHash field
+    @JsonIgnore
+    private String passwordHash;
 
     @Convert(converter = TypeParticipantConverter.class)
-    @Column(name = "type_membre", nullable = false)
+    @Column(name = "type_participant", nullable = false)
     private TypeParticipant typeParticipant;
 
     @Column(nullable = false)
     private Double solde;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "site_id")
+    @JoinColumn(name = "centre_id")
     private Centre centre;
 
     @OneToMany(mappedBy = "organisateur", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

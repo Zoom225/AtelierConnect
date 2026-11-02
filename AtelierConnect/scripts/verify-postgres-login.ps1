@@ -1,73 +1,59 @@
-[CmdletBinding()]
-param([ValidateRange(1, 5)][int]$MaxAttempts = 3)
-
-# This verifies the actual PostgreSQL role password over TCP (not a trust
-# authenticated local Unix socket). No database, role or volume is changed.
+﻿[CmdletBinding()]
+param([ValidateRange(1, 5)][int]$MaxAttempts = 3, [switch]$NonInteractive)
 $ErrorActionPreference = 'Stop'
-$container = 'atelierconnect-db'
-$db = 'atelierconnect_db'
-
-function Test-Login {
-    param([string]$Password)
+$root = Split-Path $PSScriptRoot -Parent
+$reportDir = Join-Path $root '.local/diagnostics'
+New-Item -ItemType Directory -Path $reportDir -Force | Out-Null
+foreach ($name in @('POSTGRES_USER','POSTGRES_PASSWORD','SPRING_DATASOURCE_URL')) {
+    if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($name))) { throw "Missing variable: $name" }
+}
+if ($env:SPRING_DATASOURCE_URL -notmatch '^jdbc:postgresql://(localhost|127\.0\.0\.1):5441/atelierconnect_db$') {
+    throw 'Expected the application database on localhost:5441. No database was modified.'
+}
+$ErrorActionPreference = 'Continue'
+$inspection = & docker inspect atelierconnect-db 2>$null
+$dockerCode = $LASTEXITCODE
+$ErrorActionPreference = 'Stop'
+if ($dockerCode -ne 0) { throw 'Existing PostgreSQL container unavailable.' }
+$metadata = ($inspection | ConvertFrom-Json)[0]
+if (-not $metadata.State.Running -or @($metadata.NetworkSettings.Ports.'5432/tcp'.HostPort) -notcontains '5441') {
+    throw 'The existing PostgreSQL container must be running with port 5441 published.'
+}
+# Resolve the same driver as Spring Boot, then connect from Windows.
+$classpathFile = Join-Path $reportDir 'jdbc-classpath.txt'
+$ErrorActionPreference = 'Continue'
+& (Join-Path $root 'mvnw.cmd') -B -ntp -f (Join-Path $root 'pom.xml') dependency:build-classpath '-DincludeScope=runtime' "-Dmdep.outputFile=$classpathFile" *> (Join-Path $reportDir 'jdbc-dependencies.log')
+$code = $LASTEXITCODE
+$ErrorActionPreference = 'Stop'
+if ($code -ne 0) { throw 'Cannot resolve JDBC dependencies. See .local/diagnostics/jdbc-dependencies.log.' }
+$separator = [regex]::Escape([string][IO.Path]::PathSeparator)
+$driver = @((Get-Content $classpathFile -Raw).Trim() -split $separator | Where-Object { $_ -match '[\\/]postgresql-[\d.]+\.jar$' })
+if ($driver.Count -ne 1 -or -not (Test-Path -LiteralPath $driver[0])) { throw 'Cannot identify the application PostgreSQL driver.' }
+function Test-JdbcLogin {
     $ErrorActionPreference = 'Continue'
-    # Forward password via stdin, not the command line or a tracked file.
-    # The PostgreSQL client runs inside the existing application container.
-    $result = $Password | & docker exec -i $container sh -c 'IFS= read -r PGPASSWORD; export PGPASSWORD; exec psql -h 127.0.0.1 -U "$POSTGRES_USER" -d atelierconnect_db -X -v ON_ERROR_STOP=1 -tAc "SELECT 1"' 2>$null
-    $code = $LASTEXITCODE
-    return ($code -eq 0 -and (($result | Out-String).Trim() -eq '1'))
+    & java --class-path $driver[0] (Join-Path $PSScriptRoot 'PostgresLoginProbe.java') *> (Join-Path $reportDir 'jdbc-login.log')
+    return $LASTEXITCODE -eq 0
 }
-
-if ($env:POSTGRES_USER -ne 'atelierconnect') {
-    throw "Expected POSTGRES_USER=atelierconnect for the current local Docker setup. Verify your existing database role before proceeding."
+$authenticated = Test-JdbcLogin
+if (-not $authenticated -and -not (Select-String -LiteralPath (Join-Path $reportDir 'jdbc-login.log') -Pattern 'SQLSTATE=28P01' -Quiet)) {
+    throw 'JDBC failed for a reason other than an incorrect password. Check the SQLSTATE and JDBC_REASON in .local/diagnostics/jdbc-login.log; no password was requested or changed.'
 }
-
-$running = & docker inspect $container --format '{{.State.Running}}' 2>$null
-if ($LASTEXITCODE -ne 0 -or (($running | Out-String).Trim() -ne 'true')) {
-    throw "PostgreSQL container $container is not running."
-}
-
-# Check the published host port as well as authentication within the container.
-$tcp = New-Object Net.Sockets.TcpClient
-try {
-    $pending = $tcp.BeginConnect('127.0.0.1', 5441, $null, $null)
-    if (-not $pending.AsyncWaitHandle.WaitOne(3000, $false)) {
-        throw 'Host PostgreSQL port 5441 is not reachable.'
-    }
-    $tcp.EndConnect($pending)
-} finally {
-    $tcp.Dispose()
-}
-
-if (Test-Login $env:POSTGRES_PASSWORD) {
-    Write-Host 'PostgreSQL TCP authentication OK; application database preserved.' -ForegroundColor Green
-    return
-}
-
-Write-Warning 'The current POSTGRES_PASSWORD is rejected by PostgreSQL (SQLState 28P01).'
-for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
-    $secure = Read-Host "Existing PostgreSQL role password (attempt $attempt/$MaxAttempts; hidden)" -AsSecureString
-    $pointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-    try {
-        $candidate = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($pointer)
-    } finally {
-        [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($pointer)
-    }
-    if (-not [string]::IsNullOrWhiteSpace($candidate) -and (Test-Login $candidate)) {
+if (-not $authenticated -and -not $NonInteractive) {
+    Write-Warning 'JDBC from Windows failed. Enter the EXISTING password; no password will be reset.'
+    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+        $secure = Read-Host "Existing PostgreSQL password ($attempt/$MaxAttempts)" -AsSecureString
+        $pointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+        try { $candidate = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($pointer) }
+        finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($pointer) }
         $env:POSTGRES_PASSWORD = $candidate
         $candidate = $null
-        Write-Host 'PostgreSQL TCP authentication OK. Correct password applied to this launcher process.' -ForegroundColor Green
-        return
+        if (Test-JdbcLogin) { $authenticated = $true; break }
     }
-    $candidate = $null
-    Write-Warning 'Authentication rejected; no database credentials were changed.'
 }
-
-throw @'
-PostgreSQL refused all supplied passwords; Spring Boot cannot start.
-Find the original password for the existing PostgreSQL volume.
-If the application role has sufficient privileges, the administrator can use
-  docker exec -it atelierconnect-db psql -U atelierconnect -d atelierconnect_db
-then inside psql: \password atelierconnect
-Only do so with the database owner's approval; it changes the role password.
-Never run docker compose down -v or delete/reinitialize the database.
-'@
+if (-not $authenticated) { throw 'PostgreSQL JDBC login failed from Windows. See .local/diagnostics/jdbc-login.log (SQLSTATE only). Supply the existing password; no role or data was changed.' }
+$server = & docker exec atelierconnect-db psql -X -v ON_ERROR_STOP=1 -U $env:POSTGRES_USER -d atelierconnect_db -tAc 'SELECT extract(epoch from pg_postmaster_start_time())::text'
+if ($LASTEXITCODE -ne 0) { throw 'Cannot verify container server identity.' }
+$identity = Get-Content (Join-Path $reportDir 'jdbc-login.log') | Where-Object { $_ -like 'SERVER_STARTED_AT=*' }
+if ($identity -ne ('SERVER_STARTED_AT=' + ($server | Out-String).Trim())) { throw 'JDBC server does not match the container.' }
+Write-Host '[OK] Authentification PostgreSQL depuis Windows'
+Write-Host '[OK] Connexion JDBC au conteneur existant'

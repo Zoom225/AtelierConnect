@@ -27,28 +27,27 @@ docker version
 
 ## Configuration privée
 
+Depuis le dossier backend, charger les variables dans le processus courant :
+
 ```powershell
 .\scripts\set-local-environment.ps1
 ```
 
-Le script complète les variables manquantes dans ce terminal, demande les secrets
-sans les afficher et ne les écrit dans aucun fichier. Il conserve les variables
-déjà définies. `-NonInteractive` vérifie la configuration sans poser de question.
-Ne transmettre aucune valeur secrète dans un ticket, une capture ou le dépôt.
+Le script relit une configuration privée existante ou demande les valeurs
+manquantes sans les afficher. Il ne crée pas de nouveau fichier de secrets.
+L'ancienne option `-ConfigureIntelliJ` est désactivée. Le fichier local existant
+`.run/AtelierConnect_Local.private.run.xml` est ignoré par Git et ne doit jamais
+être partagé. Les variables déjà présentes dans le terminal sont conservées.
 
-| Variable | Valeur attendue |
-| --- | --- |
-| POSTGRES_USER / POSTGRES_PASSWORD | Identifiants du volume PostgreSQL existant ; ne pas les remplacer pour faire disparaître une erreur de connexion |
-| SPRING_DATASOURCE_URL | Défaut `jdbc:postgresql://localhost:5441/atelierconnect_db` |
-| JWT_SECRET | Clé privée existante, au moins 32 octets ; changer la clé invalide les jetons signés auparavant |
-| APP_DEMO_MEMBER_PASSWORD | Mot de passe initial des nouveaux comptes de démonstration / créations sans mot de passe explicite |
-| APP_DEMO_ADMIN_PASSWORD | Mot de passe initial des administrateurs de démonstration |
+Les variables requises sont `POSTGRES_USER`, `POSTGRES_PASSWORD`, `JWT_SECRET`
+(au moins 32 octets UTF-8), `APP_DEMO_MEMBER_PASSWORD`. L'URL JDBC par défaut est
+`jdbc:postgresql://localhost:5441/atelierconnect_db`. `APP_DEMO_ADMIN_PASSWORD`
+n'est plus requis par l'initialiseur : les administrateurs de démonstration
+utilisent leur propre matricule comme mot de passe, enregistré en BCrypt.
 
-Une variable APP_DEMO différente ne réinitialise pas les mots de passe des comptes
-existants. Utiliser leur mot de passe actuel pour se connecter. Pour une toute
-première installation, créer et conserver les secrets dans un gestionnaire privé.
-Un fichier `.env` n'est pas automatiquement chargé par Spring Boot : exporter les
-variables dans le processus qui lance Java.
+Un fichier `.env` n'est pas chargé automatiquement par Spring Boot. Ne publier
+aucun secret, fichier privé ou journal. Changer une variable ne change pas le
+mot de passe d'un rôle PostgreSQL ou d'un compte déjà présent.
 
 ## Démarrage simplifié (Docker + backend + frontend)
 
@@ -120,10 +119,14 @@ Importer **le pom backend** dans IntelliJ comme projet Maven. Définir Project S
 Maven importer et Maven runner sur Java 21. Activer l'annotation processing si
 l'IDE ne reconnaît pas Lombok, puis recharger Maven.
 
-Configuration Application : classe `com.atelierconnect.AtelierConnectApplication`,
-classpath du module backend, working directory du dossier contenant `pom.xml`.
-Renseigner les six variables dans une configuration privée, non partagée dans Git.
-Les variables d'un terminal ne modifient pas une instance IntelliJ déjà démarrée.
+Sélectionner la configuration privée existante **AtelierConnect — Local** si
+elle est disponible. Sinon, préparer une configuration Run/Debug privée avec
+la classe `com.atelierconnect.AtelierConnectApplication`, Java 21, le module
+backend et les variables requises. Le répertoire de travail doit être le dossier
+contenant `pom.xml`. Le script ne génère pas de configuration contenant des secrets.
+
+Les variables d'un terminal ne modifient pas une instance IntelliJ déjà démarrée :
+c'est la cause du placeholder `JWT_SECRET` manquant dans l'ancien lancement.
 
 Le terminal IntelliJ constitue une alternative reproductible :
 
@@ -132,7 +135,7 @@ Le terminal IntelliJ constitue une alternative reproductible :
 .\mvnw.cmd spring-boot:run
 ```
 
-Le wrapper a été exécuté réellement contre une copie PostgreSQL restaurée. Utiliser
+La connexion JDBC et le démarrage ont été vérifiés sur une copie PostgreSQL restaurée. Utiliser
 Maven système si le wrapper ne peut pas télécharger sa distribution, après
 `mvn -version`. Ne pas changer Spring Boot, Java ou les ports au hasard.
 
@@ -199,3 +202,39 @@ les restaure à la sortie. Les quatre tests concurrents sont activés avec
 | CORS | Vérifier OPTIONS puis requête réelle ; la sécurité CORS est activée, JWT reste obligatoire pour écrire |
 | LazyInitializationException | Vérifier transaction et graphes JPA ; ne pas réactiver Open Session in View pour cacher l'erreur |
 | Import Angular ancien | Recharger la branche, npm ci puis tests ; ne pas masquer les conflits avec --force |
+
+## Controle reel du backend depuis Windows
+
+Pour une base existante, `run-local.ps1` desactive l'initialiseur de donnees
+(`APP_DATA_INITIALIZE=false`) et valide le schema sans le modifier
+(`SPRING_JPA_HIBERNATE_DDL_AUTO=validate`). Les comptes et donnees existants
+ne sont donc pas reinitialises au demarrage. Le controle JDBC utilise le pilote
+Maven du backend et compare le serveur joint au conteneur existant. Seul un
+echec SQLSTATE 28P01 propose de saisir le mot de passe existant.
+
+```powershell
+./scripts/run-local.ps1 -NonInteractive
+```
+
+Pour verifier un lancement dont la sortie a ete redirigee dans un journal :
+
+```powershell
+./scripts/verify-backend.ps1 -StartupLog .local/diagnostics/backend.log
+```
+
+Le controle exige `Started AtelierConnectApplication`, OpenAPI HTTP 200 avec
+un document JSON 3.x et des chemins, la redirection Swagger et sa page finale,
+les ressources JS/CSS et swagger-config HTTP 200, puis le meme PID actif.
+Il utilise curl.exe depuis Windows, sans proxy pour la boucle locale.
+
+Pour executer les tests backend uniquement, avec le conteneur de validation
+existant, identifie par son label et publie sur 5549 :
+
+```powershell
+./scripts/test-backend-isolated.ps1
+```
+
+Chaque execution cree une nouvelle base de test, active les tests concurrents
+PostgreSQL, conserve le conteneur et les volumes, puis restaure les variables
+du terminal. Aucun test ne cible atelierconnect_db. Resultats locaux :
+`.local/diagnostics/backend-tests.log` et `backend-tests-summary.json`.

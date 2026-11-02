@@ -8,8 +8,9 @@ import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
 
+/** Centre proposant des salles pour les ateliers. */
 @Entity
-@Table(name = "sites")
+@Table(name = "centres")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,10 +30,10 @@ public class Centre extends BaseEntity {
     @Column(nullable = false)
     private LocalTime heureFermeture;
 
-    @Column(name = "duree_match_minutes", nullable = false)
+    @Column(name = "duree_atelier_minutes", nullable = false)
     private Integer dureeAtelierMinutes;
 
-    @Column(name = "duree_entre_match_minutes", nullable = false)
+    @Column(name = "duree_entre_atelier_minutes", nullable = false)
     private Integer dureeEntreAtelierMinutes;
 
     @Column(nullable = false)
@@ -42,12 +43,12 @@ public class Centre extends BaseEntity {
     private Boolean ouvertVisiteurs;
 
     @OneToMany(mappedBy = "centre", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonManagedReference("site-terrains")
+    @JsonManagedReference("centre-salles")
     @Builder.Default
     private Set<Salle> salles = new HashSet<>();
 
     @OneToMany(mappedBy = "centre", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonManagedReference("site-joursFermeture")
+    @JsonManagedReference("centre-joursFermeture")
     @Builder.Default
     private Set<JourFermeture> joursFermeture = new HashSet<>();
 }

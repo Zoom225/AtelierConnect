@@ -41,6 +41,18 @@ const createMaxBookingDateValidator = (getMaxDate: () => string): ValidatorFn =>
   };
 };
 
+const futureAtelierDateTimeValidator: ValidatorFn = (form): ValidationErrors | null => {
+  const date = form.get('date')?.value;
+  const time = form.get('heureDebut')?.value;
+  if (!date || !time) {
+    return null;
+  }
+  const scheduledTime = new Date(`${date}T${time}`).getTime();
+  return !Number.isFinite(scheduledTime) || scheduledTime <= Date.now()
+    ? { pastAtelierDateTime: true }
+    : null;
+};
+
 @Component({
   selector: 'app-member-create-atelier-page',
   standalone: true,
@@ -124,7 +136,9 @@ const createMaxBookingDateValidator = (getMaxDate: () => string): ValidatorFn =>
               <p class="mt-2 text-slate-500">{{ language.t('member.create.bookingLimit') }} {{ maxBookingDate() }}</p>
             </div>
 
-            @if (errorMessage()) {
+            @if (form.hasError('pastAtelierDateTime')) {
+              <p class="status-error md:col-span-2" role="alert">{{ language.t('member.create.futureDateTime') }}</p>
+            } @else if (errorMessage()) {
               <p class="status-error md:col-span-2">{{ errorMessage() }}</p>
             } @else if (!centres().length && !loading()) {
               <p class="status-info md:col-span-2">{{ language.t('member.create.noCentre') }}</p>
@@ -191,7 +205,6 @@ export class MemberCreateAtelierPage {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   readonly language = inject(LanguageService);
-  private static readonly HIDDEN_GENERIC_ERROR = 'Une erreur inattendue est survenue';
 
   readonly loading = signal(false);
   readonly message = signal('');
@@ -243,7 +256,7 @@ export class MemberCreateAtelierPage {
     player3: new FormControl('', { nonNullable: true }),
     player4: new FormControl('', { nonNullable: true }),
     player5: new FormControl('', { nonNullable: true })
-  });
+  }, { validators: [futureAtelierDateTimeValidator] });
 
   constructor() {
     if (!this.memberSession.isAuthenticated()) {
@@ -258,9 +271,7 @@ export class MemberCreateAtelierPage {
   }
 
   private setPageError(message: string): void {
-    this.errorMessage.set(
-      message.trim() === MemberCreateAtelierPage.HIDDEN_GENERIC_ERROR ? '' : message
-    );
+    this.errorMessage.set(message);
   }
 
   private applyDefaultStartTime(): void {
@@ -281,16 +292,24 @@ export class MemberCreateAtelierPage {
     this.errorMessage.set('');
     this.centresApi.getAll().subscribe({
       next: (centres) => {
-        this.centres.set(centres);
         const member = this.member();
+        const selectableCentres = member?.categorie === 'VISITEUR'
+          ? centres.filter((centre) => centre.ouvertVisiteurs === true)
+          : centres;
+        this.centres.set(selectableCentres);
+        if (member?.categorie === 'VISITEUR' && !selectableCentres.length) {
+          this.setPageError(this.language.t('member.create.noVisitorCentre'));
+          this.loading.set(false);
+          return;
+        }
         if (member?.categorie === 'ABONNE' && member.centreId) {
           this.form.controls.centreId.setValue(member.centreId);
           this.onCentreChange(member.centreId);
           return;
         }
 
-        if (centres.length) {
-          const defaultCentreId = centres[0].id;
+        if (selectableCentres.length) {
+          const defaultCentreId = selectableCentres[0].id;
           this.form.controls.centreId.setValue(defaultCentreId);
           this.onCentreChange(defaultCentreId);
         }
@@ -336,10 +355,14 @@ export class MemberCreateAtelierPage {
   }
 
   submit(): void {
+    // A date that was valid when the page opened may have passed since then.
+    this.form.updateValueAndValidity();
     this.form.markAllAsTouched();
 
     if (this.form.invalid || this.loading()) {
-      if (this.form.controls.date.hasError('maxBookingDate')) {
+      if (this.form.hasError('pastAtelierDateTime')) {
+        this.setPageError(this.language.t('member.create.futureDateTime'));
+      } else if (this.form.controls.date.hasError('maxBookingDate')) {
         this.setPageError(this.bookingDelayErrorMessage());
       }
       return;
@@ -386,7 +409,12 @@ export class MemberCreateAtelierPage {
     const maxDate = this.maxBookingDate();
     const selectedDate = dateControl.getRawValue();
 
-    if (!selectedDate || selectedDate < minDate) {
+    if (!selectedDate) {
+      // Today's fixed 09:00 default is already in the past for most of the day.
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      dateControl.setValue(formatDateForInput(tomorrow));
+    } else if (selectedDate < minDate) {
       dateControl.setValue(minDate);
     } else if (selectedDate > maxDate) {
       dateControl.setValue(maxDate);

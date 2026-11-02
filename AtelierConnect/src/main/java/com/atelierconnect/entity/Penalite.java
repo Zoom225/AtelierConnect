@@ -15,7 +15,7 @@ import java.time.LocalDate;
 public class Penalite extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "membre_id", nullable = false)
+    @JoinColumn(name = "participant_id", nullable = false)
     private Participant participant;
 
     @Column(nullable = false)

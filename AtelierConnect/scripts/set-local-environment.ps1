@@ -1,13 +1,42 @@
 [CmdletBinding()]
-param([switch]$NonInteractive)
+param(
+    [switch]$NonInteractive,
+    [switch]$ConfigureIntelliJ
+)
 
-# Variables stay in the current PowerShell process. No secret is printed or saved.
+# The optional private IntelliJ configuration is also the PowerShell source.
+# Never print environment values or put them in a tracked file.
 $ErrorActionPreference = 'Stop'
+if ($ConfigureIntelliJ) {
+    throw 'ConfigureIntelliJ is disabled: credentials must not be saved as plaintext. Supply them through the process environment or the existing private configuration.'
+}
+$backendRoot = Split-Path $PSScriptRoot -Parent
+$privateRunFile = Join-Path $backendRoot '.run/AtelierConnect_Local.private.run.xml'
+$required = @('POSTGRES_USER', 'POSTGRES_PASSWORD', 'JWT_SECRET',
+    'APP_DEMO_MEMBER_PASSWORD')
+$allowed = $required + @('SPRING_DATASOURCE_URL', 'APP_DEMO_ADMIN_PASSWORD')
+if (Test-Path -LiteralPath $privateRunFile) {
+    [xml]$privateConfiguration = Get-Content -LiteralPath $privateRunFile -Raw -Encoding UTF8
+    foreach ($entry in $privateConfiguration.component.configuration.envs.env) {
+        if ($entry.name -in $allowed -and -not [Environment]::GetEnvironmentVariable($entry.name)) {
+            [Environment]::SetEnvironmentVariable($entry.name, $entry.value)
+        }
+    }
+}
+foreach ($name in $allowed) {
+    if (-not [Environment]::GetEnvironmentVariable($name)) {
+        foreach ($scope in @('User', 'Machine')) {
+            $saved = [Environment]::GetEnvironmentVariable($name, $scope)
+            if (-not [string]::IsNullOrWhiteSpace($saved)) {
+                [Environment]::SetEnvironmentVariable($name, $saved)
+                break
+            }
+        }
+    }
+}
 if (-not $env:SPRING_DATASOURCE_URL) {
     $env:SPRING_DATASOURCE_URL = 'jdbc:postgresql://localhost:5441/atelierconnect_db'
 }
-$required = @('POSTGRES_USER', 'POSTGRES_PASSWORD', 'JWT_SECRET',
-    'APP_DEMO_MEMBER_PASSWORD', 'APP_DEMO_ADMIN_PASSWORD')
 $missing = @($required | Where-Object { -not [Environment]::GetEnvironmentVariable($_) })
 if ($NonInteractive -and $missing.Count -gt 0) {
     throw ('Missing environment variables: ' + ($missing -join ', '))
@@ -25,7 +54,8 @@ foreach ($name in $missing) {
     [Environment]::SetEnvironmentVariable($name, $value)
     $value = $null
 }
-if ([Text.Encoding]::UTF8.GetByteCount($env:JWT_SECRET) -lt 32) {
+if ([string]::IsNullOrWhiteSpace($env:JWT_SECRET) -or
+    [Text.Encoding]::UTF8.GetByteCount($env:JWT_SECRET) -lt 32) {
     throw 'JWT_SECRET must contain at least 32 bytes, as required by the backend.'
 }
-Write-Host 'Local environment is ready in this terminal. Existing variables were preserved; no passwords were changed.'
+Write-Host 'Local environment is ready in this terminal. No existing account password was changed.'

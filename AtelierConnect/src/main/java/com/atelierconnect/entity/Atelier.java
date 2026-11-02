@@ -8,10 +8,12 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+/** Atelier collaboratif et ses reservations. */
 @Entity
-@Table(name = "matches")
+@Table(name = "ateliers")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,8 +22,8 @@ import java.util.List;
 public class Atelier extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "terrain_id", nullable = false)
-    @JsonBackReference("terrain-matches")
+    @JoinColumn(name = "salle_id", nullable = false)
+    @JsonBackReference("salle-ateliers")
     private Salle salle;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,20 +37,20 @@ public class Atelier extends BaseEntity {
     private LocalDateTime dateFin;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type_match", nullable = false)
+    @Column(name = "type_atelier", nullable = false)
     private TypeAtelier typeAtelier;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatutAtelier statut;
 
-    @Column(name = "nb_joueurs_actuels", nullable = false)
+    @Column(name = "nb_participants_actuels", nullable = false)
     private Integer nbParticipantsActuels;
 
     @Column(nullable = false)
     private Double prixTotal;
 
-    @Column(name = "prix_par_joueur", nullable = false)
+    @Column(name = "prix_par_participant", nullable = false)
     private Double prixParParticipant;
 
     private LocalDateTime dateConversionPublic;
@@ -60,9 +62,7 @@ public class Atelier extends BaseEntity {
     private LocalDateTime dateAccordOuverturePublique;
 
     @OneToMany(mappedBy = "atelier", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference("match-reservations")
-    private List<Reservation> reservations;
-
-    // L'entité est maintenant un simple POJO qui représente la table de la base de données.
-    // Toute la logique de manipulation des dates a été déplacée dans la couche service.
+    @JsonManagedReference("atelier-reservations")
+    @Builder.Default
+    private List<Reservation> reservations = new ArrayList<>();
 }

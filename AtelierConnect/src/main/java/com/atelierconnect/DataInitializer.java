@@ -28,6 +28,7 @@ import com.atelierconnect.service.AtelierRules;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -41,13 +42,12 @@ import java.util.List;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "app.data.initialize", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
     @Value("${APP_DEMO_MEMBER_PASSWORD}")
     private String demoParticipantPassword;
-    @Value("${APP_DEMO_ADMIN_PASSWORD}")
-    private String demoAdminPassword;
     private final CentreRepository centreRepository;
     private final SalleRepository salleRepository;
     private final ParticipantRepository participantRepository;
@@ -66,7 +66,7 @@ public class DataInitializer implements CommandLineRunner {
 
         if (centreRepository.count() > 0) {
             if (atelierRepository.count() == 0) {
-                log.info("DataInitializer : base de donnees deja initialisee, ajout des atelier d'exemple...");
+                log.info("DataInitializer : base de donnees deja initialisee, ajout des ateliers d'exemple...");
                 seedAteliersFromExistingData();
             }
             ensurePenalizedDemoParticipant();
@@ -78,7 +78,7 @@ public class DataInitializer implements CommandLineRunner {
 
         log.info("DataInitializer : initialisation de la base de donnees...");
 
-        Centre centreLyon = centreRepository.save(Centre.builder()
+        Centre centreBruxelles = centreRepository.save(Centre.builder()
                 .nom("Centre Créatif Bruxelles")
                 .adresse("Rue des Ateliers 12, 1000 Bruxelles")
                 .heureOuverture(LocalTime.of(8, 0))
@@ -89,7 +89,7 @@ public class DataInitializer implements CommandLineRunner {
                 .ouvertVisiteurs(true)
                 .build());
 
-        Centre centreParis = centreRepository.save(Centre.builder()
+        Centre centreNamur = centreRepository.save(Centre.builder()
                 .nom("Centre Collaboratif Namur")
                 .adresse("Rue de la Créativité 45, 5000 Namur")
                 .heureOuverture(LocalTime.of(7, 0))
@@ -101,12 +101,12 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         log.info("DataInitializer : {} centres créés", centreRepository.count());
-////-------------------Terrains--------------------//
-        Salle courtA = salleRepository.save(Salle.builder().nom("Salle Création A").centre(centreLyon).prix(AtelierRules.PRIX_TOTAL).build());
-        Salle courtB = salleRepository.save(Salle.builder().nom("Salle Formation B").centre(centreLyon).prix(AtelierRules.PRIX_TOTAL).build());
-        Salle courtC = salleRepository.save(Salle.builder().nom("Salle Collaborative C").centre(centreLyon).prix(AtelierRules.PRIX_TOTAL).build());
-        Salle court1 = salleRepository.save(Salle.builder().nom("Salle Numérique 1").centre(centreParis).prix(AtelierRules.PRIX_TOTAL).build());
-        salleRepository.save(Salle.builder().nom("Salle Numérique 2").centre(centreParis).prix(AtelierRules.PRIX_TOTAL).build());
+//-----------------------Salles--------------------//
+        Salle salleCreation = salleRepository.save(Salle.builder().nom("Salle Création A").centre(centreBruxelles).prix(AtelierRules.PRIX_TOTAL).build());
+        Salle salleFormation = salleRepository.save(Salle.builder().nom("Salle Formation B").centre(centreBruxelles).prix(AtelierRules.PRIX_TOTAL).build());
+        Salle salleCollaborative = salleRepository.save(Salle.builder().nom("Salle Collaborative C").centre(centreBruxelles).prix(AtelierRules.PRIX_TOTAL).build());
+        Salle salleNumerique = salleRepository.save(Salle.builder().nom("Salle Numérique 1").centre(centreNamur).prix(AtelierRules.PRIX_TOTAL).build());
+        salleRepository.save(Salle.builder().nom("Salle Numérique 2").centre(centreNamur).prix(AtelierRules.PRIX_TOTAL).build());
 
         log.info("DataInitializer : {} salles créées", salleRepository.count());
 //-----------------------Jours de fermeture--------------------//
@@ -128,7 +128,7 @@ public class DataInitializer implements CommandLineRunner {
                 .date(LocalDate.now().plusDays(45))
                 .raison("Maintenance planifiée du centre de Bruxelles")
                 .global(false)
-                .centre(centreLyon)
+                .centre(centreBruxelles)
                 .build());
 
         log.info("DataInitializer : jours de fermeture crees");
@@ -164,7 +164,7 @@ public class DataInitializer implements CommandLineRunner {
                 .email("tom.bernard@gmail.com")
                 .typeParticipant(TypeParticipant.ABONNE)
                 .solde(0.0)
-                .centre(centreLyon)
+                .centre(centreBruxelles)
                 .passwordHash(defaultParticipantPasswordHash)
                 .build());
 
@@ -175,7 +175,7 @@ public class DataInitializer implements CommandLineRunner {
                 .email("sarah.leroy@gmail.com")
                 .typeParticipant(TypeParticipant.ABONNE)
                 .solde(0.0)
-                .centre(centreParis)
+                .centre(centreNamur)
                 .passwordHash(defaultParticipantPasswordHash)
                 .build());
 
@@ -204,36 +204,33 @@ public class DataInitializer implements CommandLineRunner {
         log.info("DataInitializer : {} participants créés", participantRepository.count());
 
         seedActivePenalty(penalise);
-        seedAteliers(courtA, courtB, courtC, court1, lucas, emma, tom, sarah, alex);
+        seedAteliers(salleCreation, salleFormation, salleCollaborative, salleNumerique, lucas, emma, tom, sarah, alex);
 //-----------------------Administrateurs--------------------//
-        administrateurRepository.save(Administrateur.builder()
+        saveDemoAdmin(Administrateur.builder()
                 .matricule("ADMIN001")
                 .nom("Admin")
                 .prenom("Global")
                 .email("admin@atelierconnect.example")
-                .passwordHash(passwordEncoder.encode(demoAdminPassword))
                 .typeAdministrateur(TypeAdministrateur.GLOBAL)
                 .centre(null)
                 .build());
 
-        administrateurRepository.save(Administrateur.builder()
+        saveDemoAdmin(Administrateur.builder()
                 .matricule("ADMIN002")
                 .nom("Admin")
-                .prenom("Lyon")
+                .prenom("Bruxelles")
                 .email("admin.bruxelles@atelierconnect.example")
-                .passwordHash(passwordEncoder.encode(demoAdminPassword))
                 .typeAdministrateur(TypeAdministrateur.SITE)
-                .centre(centreLyon)
+                .centre(centreBruxelles)
                 .build());
 
-        administrateurRepository.save(Administrateur.builder()
+        saveDemoAdmin(Administrateur.builder()
                 .matricule("ADMIN003")
                 .nom("Admin")
-                .prenom("Paris")
+                .prenom("Namur")
                 .email("admin.namur@atelierconnect.example")
-                .passwordHash(passwordEncoder.encode(demoAdminPassword))
                 .typeAdministrateur(TypeAdministrateur.SITE)
-                .centre(centreParis)
+                .centre(centreNamur)
                 .build());
 
         log.info("DataInitializer : {} administrateurs crees", administrateurRepository.count());
@@ -256,10 +253,10 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedAteliersFromExistingData() {
-        Salle courtA = requireSeedSalle("Court A", "Salle Création A");
-        Salle courtB = requireSeedSalle("Court B", "Salle Formation B");
-        Salle courtC = requireSeedSalle("Court C", "Salle Collaborative C");
-        Salle court1 = requireSeedSalle("Court 1", "Salle Numérique 1");
+        Salle salleCreation = requireSeedSalle("Court A", "Salle Création A");
+        Salle salleFormation = requireSeedSalle("Court B", "Salle Formation B");
+        Salle salleCollaborative = requireSeedSalle("Court C", "Salle Collaborative C");
+        Salle salleNumerique = requireSeedSalle("Court 1", "Salle Numérique 1");
 
         Participant lucas = requireSeedParticipant("G1001");
         Participant emma = requireSeedParticipant("G1002");
@@ -267,7 +264,7 @@ public class DataInitializer implements CommandLineRunner {
         Participant sarah = requireSeedParticipant("S10002");
         Participant alex = requireSeedParticipant("L10001");
 
-        seedAteliers(courtA, courtB, courtC, court1, lucas, emma, tom, sarah, alex);
+        seedAteliers(salleCreation, salleFormation, salleCollaborative, salleNumerique, lucas, emma, tom, sarah, alex);
     }
 
     private Salle requireSeedSalle(String ancienNom, String nouveauNom) {
@@ -327,6 +324,11 @@ public class DataInitializer implements CommandLineRunner {
         });
     }
 
+    private void saveDemoAdmin(Administrateur admin) {
+        admin.setPasswordHash(passwordEncoder.encode(admin.getMatricule()));
+        administrateurRepository.save(admin);
+    }
+
     private void ensureDemoAdminCredentials() {
         // Maintenir les identifiants historiques des bases déjà initialisées.
         updateDemoAdminCredentials("admin@padel.com");
@@ -341,7 +343,7 @@ public class DataInitializer implements CommandLineRunner {
         administrateurRepository.findByEmail(email).ifPresent(admin -> {
             // Préserver les identifiants de connexion déjà personnalisés.
             if (!StringUtils.hasText(admin.getPasswordHash())) {
-                admin.setPasswordHash(passwordEncoder.encode(demoAdminPassword));
+                admin.setPasswordHash(passwordEncoder.encode(admin.getMatricule()));
                 administrateurRepository.save(admin);
             }
         });
@@ -360,35 +362,35 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedAteliers(
-            Salle courtA,
-            Salle courtB,
-            Salle courtC,
-            Salle court1,
+            Salle salleCreation,
+            Salle salleFormation,
+            Salle salleCollaborative,
+            Salle salleNumerique,
             Participant lucas,
             Participant emma,
             Participant tom,
             Participant sarah,
             Participant alex
     ) {
-        Atelier publicLyon = createSeedAtelier(courtA, lucas, LocalDate.now().plusDays(2).atTime(10, 0),
+        Atelier atelierPublicBruxelles = createSeedAtelier(salleCreation, lucas, LocalDate.now().plusDays(2).atTime(10, 0),
                 TypeAtelier.PUBLIC, StatutAtelier.PLANIFIE, 0);
-        createSeedReservation(publicLyon, lucas, StatutReservation.EN_ATTENTE, StatutPaiement.EN_ATTENTE);
+        createSeedReservation(atelierPublicBruxelles, lucas, StatutReservation.EN_ATTENTE, StatutPaiement.EN_ATTENTE);
 
-        Atelier privateLyon = createSeedAtelier(courtB, tom, LocalDate.now().plusDays(3).atTime(14, 0),
+        Atelier atelierPriveBruxelles = createSeedAtelier(salleFormation, tom, LocalDate.now().plusDays(3).atTime(14, 0),
                 TypeAtelier.PRIVE, StatutAtelier.PLANIFIE, 1);
-        createSeedReservation(privateLyon, tom, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
+        createSeedReservation(atelierPriveBruxelles, tom, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
 
-        Atelier publicParis = createSeedAtelier(court1, sarah, LocalDate.now().plusDays(4).atTime(18, 0),
+        Atelier atelierPublicNamur = createSeedAtelier(salleNumerique, sarah, LocalDate.now().plusDays(4).atTime(18, 0),
                 TypeAtelier.PUBLIC, StatutAtelier.PLANIFIE, 2);
-        createSeedReservation(publicParis, sarah, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
-        createSeedReservation(publicParis, emma, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
+        createSeedReservation(atelierPublicNamur, sarah, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
+        createSeedReservation(atelierPublicNamur, emma, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
 
-        Atelier completeLyon = createSeedAtelier(courtC, lucas, LocalDate.now().plusDays(5).atTime(16, 0),
+        Atelier atelierCompletBruxelles = createSeedAtelier(salleCollaborative, lucas, LocalDate.now().plusDays(5).atTime(16, 0),
                 TypeAtelier.PUBLIC, StatutAtelier.PLANIFIE, 4);
-        createSeedReservation(completeLyon, lucas, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
-        createSeedReservation(completeLyon, emma, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
-        createSeedReservation(completeLyon, tom, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
-        createSeedReservation(completeLyon, alex, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
+        createSeedReservation(atelierCompletBruxelles, lucas, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
+        createSeedReservation(atelierCompletBruxelles, emma, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
+        createSeedReservation(atelierCompletBruxelles, tom, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
+        createSeedReservation(atelierCompletBruxelles, alex, StatutReservation.CONFIRMEE, StatutPaiement.PAYE);
 
         log.info("DataInitializer : {} ateliers créés", atelierRepository.count());
     }

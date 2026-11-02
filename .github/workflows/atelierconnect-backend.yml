@@ -196,6 +196,12 @@ jobs:
           done
           curl --fail http://127.0.0.1:8082/api/ateliers/public >/dev/null
 
+          # Read the seeded administrator matricule at runtime; never hard-code credentials.
+          admin_matricule="$(docker exec '${{ job.services.postgres.id }}' psql -X -v ON_ERROR_STOP=1 -U atelier_browser -d atelierconnect_browser -tAc "SELECT matricule FROM administrateurs WHERE email='admin@atelierconnect.example'")"
+          test -n "$admin_matricule"
+          echo "::add-mask::$admin_matricule"
+          export APP_DEMO_ADMIN_PASSWORD="$admin_matricule"
+
           for i in $(seq 1 90); do
             if curl --silent --fail http://127.0.0.1:4200/ >/dev/null; then
               break

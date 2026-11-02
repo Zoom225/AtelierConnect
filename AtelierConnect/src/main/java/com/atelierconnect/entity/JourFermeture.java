@@ -24,7 +24,7 @@ public class JourFermeture extends BaseEntity {
     private Boolean global;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "site_id")
-    @JsonBackReference("site-joursFermeture")
+    @JoinColumn(name = "centre_id")
+    @JsonBackReference("centre-joursFermeture")
     private Centre centre;
 }
