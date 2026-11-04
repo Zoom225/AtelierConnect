@@ -11,299 +11,91 @@ import { LanguageService } from '../../../core/i18n/language.service';
 @Component({
   selector: 'app-landing-page',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterLink,
-    MatButtonModule,
-    MatCardModule,
-    MatProgressSpinnerModule
-  ],
-  template: `
-    <section class="home-shell">
-      <div class="home-hero">
-        <div class="home-hero-copy">
-          <p class="eyebrow">{{ copy().eyebrow }}</p>
-          <h1>{{ copy().title }}</h1>
-          <p class="lead">{{ copy().lead }}</p>
-
-          <div class="hero-actions">
-            <a mat-flat-button color="primary" routerLink="/member">
-              {{ memberSession.isAuthenticated() ? copy().memberCtaConnected : copy().memberCta }}
-            </a>
-            <a mat-stroked-button routerLink="/admin/login">{{ copy().adminCta }}</a>
-            <button mat-stroked-button type="button" (click)="checkApi()" [disabled]="loading()">
-              {{ copy().testApi }}
-            </button>
-          </div>
-        </div>
-
-        <div class="workshop-panel" [attr.aria-label]="copy().atelierPreviewLabel">
-          <div class="workshop-layout" aria-hidden="true">
-            <span></span>
-            <span></span>
-          </div>
-          <div class="workshop-card live">
-            <p>{{ copy().atelierPublic }}</p>
-            <strong>{{ count() ?? '--' }}</strong>
-            <span>{{ copy().atelierAvailable }}</span>
-          </div>
-          <div class="workshop-card">
-            <p>{{ copy().reservation }}</p>
-            <strong>{{ copy().simpleReservation }}</strong>
-            <span>{{ copy().reservationBody }}</span>
-          </div>
-        </div>
-      </div>
-
-      @if (loading() || message() || error()) {
-        <mat-card class="card-soft feedback-card">
-          <mat-card-content>
-            @if (loading()) {
-              <div class="loading-line">
-                <mat-spinner diameter="28"></mat-spinner>
-                <span>{{ copy().loadingApi }}</span>
-              </div>
-            }
-
-            @if (message()) {
-              <p class="status-success">{{ message() }}</p>
-            }
-            @if (error()) {
-              <p class="status-error">{{ error() }}</p>
-            }
-          </mat-card-content>
-        </mat-card>
-      }
-
-      <div class="feature-grid">
-        <mat-card class="feature-card">
-          <mat-card-content>
-            <span class="feature-code">01</span>
-            <h2>{{ copy().feature1Title }}</h2>
-            <p>{{ copy().feature1Body }}</p>
-          </mat-card-content>
-        </mat-card>
-        <mat-card class="feature-card">
-          <mat-card-content>
-            <span class="feature-code">02</span>
-            <h2>{{ copy().feature2Title }}</h2>
-            <p>{{ copy().feature2Body }}</p>
-          </mat-card-content>
-        </mat-card>
-        <mat-card class="feature-card">
-          <mat-card-content>
-            <span class="feature-code">03</span>
-            <h2>{{ copy().feature3Title }}</h2>
-            <p>{{ copy().feature3Body }}</p>
-          </mat-card-content>
-        </mat-card>
-        <mat-card class="feature-card">
-          <mat-card-content>
-            <span class="feature-code">04</span>
-            <h2>{{ copy().feature4Title }}</h2>
-            <p>{{ copy().feature4Body }}</p>
-          </mat-card-content>
-        </mat-card>
-      </div>
-    </section>
-  `,
-  styles: [`
-    .home-shell {
-      width: min(1180px, calc(100% - 2rem));
-      margin: 0 auto;
-      padding: 3rem 0 4rem;
-    }
-
-    .home-hero {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
-      gap: 2rem;
-      align-items: stretch;
-      min-height: 460px;
-    }
-
-    .home-hero-copy {
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: clamp(2rem, 4vw, 4rem);
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      border-radius: 8px;
-      background:
-        linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.88)),
-        radial-gradient(circle at 8% 0%, rgba(16, 185, 129, 0.18), transparent 36%);
-      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
-    }
-
-    .eyebrow {
-      margin: 0 0 0.8rem;
-      color: #047857;
-      font-size: 0.78rem;
-      font-weight: 900;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
-    h1 {
-      margin: 0;
-      color: #0f172a;
-      font-size: clamp(2rem, 5vw, 4rem);
-      line-height: 0.95;
-      font-weight: 900;
-      letter-spacing: 0;
-    }
-
-    .lead {
-      max-width: 640px;
-      margin: 1.3rem 0 0;
-      color: #475569;
-      font-size: 1.08rem;
-      line-height: 1.75;
-    }
-
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.8rem;
-      margin-top: 2rem;
-    }
-
-    .workshop-panel {
-      position: relative;
-      overflow: hidden;
-      min-height: 420px;
-      border-radius: 8px;
-      border: 1px solid rgba(4, 120, 87, 0.18);
-      background:
-        linear-gradient(90deg, rgba(255, 255, 255, 0.54) 1px, transparent 1px),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.54) 1px, transparent 1px),
-        linear-gradient(135deg, #0f766e, #22c55e 55%, #84cc16);
-      background-size: 52px 52px, 52px 52px, auto;
-      box-shadow: 0 24px 60px rgba(4, 120, 87, 0.16);
-    }
-
-    .workshop-layout {
-      position: absolute;
-      inset: 42px;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      align-items: center;
-      gap: 2rem;
-      transform: rotate(-6deg);
-    }
-
-    .workshop-layout span {
-      height: 160px;
-      border-radius: 12px;
-      border: 8px solid #d6a66b;
-      background: linear-gradient(120deg, #ffedd5, #e7c69d);
-      box-shadow: 0 24px 0 -12px rgba(15, 23, 42, 0.22);
-    }
-
-    .workshop-card {
-      position: absolute;
-      right: 1.2rem;
-      bottom: 1.2rem;
-      width: min(240px, calc(100% - 2.4rem));
-      padding: 1rem;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.92);
-      box-shadow: 0 16px 36px rgba(15, 23, 42, 0.18);
-      backdrop-filter: blur(12px);
-    }
-
-    .workshop-card.live {
-      top: 1.2rem;
-      bottom: auto;
-      left: 1.2rem;
-      right: auto;
-    }
-
-    .workshop-card p {
-      margin: 0 0 0.35rem;
-      color: #64748b;
-      font-size: 0.78rem;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-
-    .workshop-card strong {
-      display: block;
-      color: #0f172a;
-      font-size: 2rem;
-      line-height: 1;
-    }
-
-    .workshop-card span {
-      display: block;
-      margin-top: 0.35rem;
-      color: #475569;
-      font-size: 0.9rem;
-    }
-
-    .feedback-card {
-      margin-top: 1.5rem;
-    }
-
-    .loading-line {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      color: #475569;
-      font-weight: 700;
-    }
-
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
-
-    .feature-card {
-      min-height: 190px;
-      border-radius: 8px !important;
-    }
-
-    .feature-card h2 {
-      margin: 1rem 0 0.5rem;
-      color: #0f172a;
-      font-size: 1.05rem;
-      font-weight: 850;
-    }
-
-    .feature-card p {
-      margin: 0;
-      color: #64748b;
-      line-height: 1.6;
-    }
-
-    .feature-code {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 2.3rem;
-      height: 2.3rem;
-      border-radius: 8px;
-      background: #ecfdf5;
-      color: #047857;
-      font-weight: 900;
-    }
-
-    @media (max-width: 920px) {
-      .home-hero,
-      .feature-grid {
-        grid-template-columns: minmax(0, 1fr);
-      }
-
-      .workshop-panel {
-        min-height: 360px;
-      }
-    }
-  `]
+  imports: [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatProgressSpinnerModule],
+  templateUrl: './landing.page.html',
+  styleUrl: './landing.page.scss',
 })
 export class LandingPage {
+  readonly editorial = computed(() =>
+    this.language.locale() === 'fr'
+      ? {
+          eyebrow: 'Des moments à créer, des liens à tisser',
+          headline: 'Faites place à votre',
+          accent: 'créativité.',
+          introduction:
+            'Une table, des idées, de belles rencontres. Réservez votre prochain atelier et retrouvez le plaisir de faire ensemble.',
+          explore: 'Trouver mon prochain atelier',
+          discover: 'Découvrir l’expérience',
+          note: 'Les plus belles idées prennent vie ensemble.',
+          duration: 'pour déconnecter',
+          people: 'participants maximum',
+          price: 'par participant',
+          collectionLabel: 'Un peu de temps pour vous',
+          collectionTitle: 'Plus qu’un atelier, un moment à partager.',
+          collectionBody:
+            'Débutant curieux ou passionné, venez comme vous êtes. Le reste se crée ensemble.',
+          card1: 'Le plaisir du fait main',
+          card2: 'Des idées qui prennent couleur',
+          card3: 'Un espace pour se retrouver',
+          card1Body: 'Ralentir, expérimenter et donner forme à ses idées.',
+          card2Body: 'Oser essayer et laisser parler sa créativité.',
+          card3Body: 'S’installer autour d’une table et partager un vrai moment.',
+          stepsLabel: 'Simple, du début à la fin',
+          stepsTitle: 'Votre parenthèse créative, en trois temps.',
+          step1: 'Trouvez votre moment',
+          step1Body: 'Un centre, une salle et un créneau qui vous ressemblent.',
+          step2: 'Réservez votre place',
+          step2Body: 'Rejoignez un atelier public ou invitez vos proches en privé.',
+          step3: 'Vivez l’expérience',
+          step3Body: 'Retrouvez vos réservations et vos paiements au même endroit.',
+          cta: 'Et si votre prochaine belle rencontre commençait ici ?',
+          ctaBody: 'Du temps pour soi. De la place pour les autres.',
+          photoAlt:
+            'Quatre adultes créent des objets en céramique autour d’une table dans un atelier lumineux',
+          paintingAlt: 'Une séance de peinture à l’aquarelle autour d’une table',
+          studioAlt: 'Un atelier créatif lumineux avec une grande table en bois',
+          availability: 'Consulter les ateliers publics',
+          availabilityBody: 'Les disponibilités de votre communauté, en un instant.',
+        }
+      : {
+          eyebrow: 'Make something lovely. Meet someone new.',
+          headline: 'Make room for your',
+          accent: 'creativity.',
+          introduction:
+            'A shared table, fresh ideas, meaningful connections. Book your next workshop and rediscover the joy of making together.',
+          explore: 'Find my next workshop',
+          discover: 'Discover the experience',
+          note: 'The best ideas come to life together.',
+          duration: 'to switch off',
+          people: 'participants maximum',
+          price: 'per participant',
+          collectionLabel: 'A little time for yourself',
+          collectionTitle: 'More than a workshop. A moment to share.',
+          collectionBody:
+            'Curious beginner or lifelong enthusiast, come as you are. We will make the rest together.',
+          card1: 'The joy of handmade',
+          card2: 'Ideas in full colour',
+          card3: 'A space to come together',
+          card1Body: 'Slow down, experiment, and give your ideas a little shape.',
+          card2Body: 'Try something new and let your creativity wander.',
+          card3Body: 'Gather around a table and share a real moment.',
+          stepsLabel: 'Simple from start to finish',
+          stepsTitle: 'Your creative escape, in three steps.',
+          step1: 'Find your moment',
+          step1Body: 'Choose a centre, a room, and a time that suits you.',
+          step2: 'Save your place',
+          step2Body: 'Join a public workshop or invite your friends to a private one.',
+          step3: 'Enjoy the experience',
+          step3Body: 'Keep your bookings and payments together in one place.',
+          cta: 'What if your next great connection started here?',
+          ctaBody: 'A little time for you. A little room for others.',
+          photoAlt: 'Four adults making ceramics around a shared table in a sunlit creative studio',
+          paintingAlt: 'A shared watercolour painting session',
+          studioAlt: 'A light-filled creative studio with a large wooden table',
+          availability: 'Check public workshops',
+          availabilityBody: 'See what your community has to offer.',
+        },
+  );
   private readonly ateliersApi = inject(AteliersApiService);
   readonly memberSession = inject(MemberSessionService);
   private readonly language = inject(LanguageService);
@@ -347,7 +139,7 @@ export class LandingPage {
     feature3Title: this.language.t('landing.feature3.title'),
     feature3Body: this.language.t('landing.feature3.body'),
     feature4Title: this.language.t('landing.feature4.title'),
-    feature4Body: this.language.t('landing.feature4.body')
+    feature4Body: this.language.t('landing.feature4.body'),
   }));
 
   checkApi(): void {
@@ -363,7 +155,7 @@ export class LandingPage {
         this.count.set(null);
         this.errorCode.set('api');
         this.loading.set(false);
-      }
+      },
     });
   }
 }

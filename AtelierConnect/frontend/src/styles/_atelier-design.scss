@@ -1,0 +1,1006 @@
+:root {
+  --ac-paper: #f8f6ef;
+  --ac-surface: #fffdfa;
+  --ac-ink: #29483c;
+  --ac-muted: #75806e;
+  --ac-green: #244f44;
+  --ac-terra: #b86b4b;
+  --ac-line: #e2e6da;
+  --ac-radius: 18px;
+  --ac-shadow: 0 6px 24px #29483c08;
+}
+html:root {
+  --mat-sys-primary: #244f44;
+  --mat-sys-on-primary: #fff;
+  --mat-sys-primary-container: #e3ecd9;
+  --mat-sys-on-primary-container: #254538;
+  --mat-sys-secondary: #8e684c;
+  --mat-sys-surface: #fffdfa;
+  --mat-sys-surface-container-low: #f8f8f0;
+  --mat-sys-surface-container: #f0f2e7;
+  --mat-sys-on-surface: #29483c;
+  --mat-sys-on-surface-variant: #6c7868;
+  --mat-sys-outline: #cbd3c3;
+  --mat-sys-outline-variant: #e0e6d8;
+}
+body,
+body.ocean-theme {
+  background: #f8f6ef;
+  background-image: none;
+  color: #29483c;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  line-height: 1.65;
+}
+body::before {
+  display: none;
+}
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-padding-top: 105px;
+}
+img {
+  max-width: 100%;
+  display: block;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button,
+a,
+input,
+textarea,
+select {
+  touch-action: manipulation;
+}
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #bc7950;
+  outline-offset: 4px;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+body #main-content {
+  .mat-mdc-unelevated-button.mat-primary:disabled {
+    background: #dce3d4 !important;
+    color: #68765f !important;
+  }
+  padding-bottom: 45px;
+  min-height: 65vh;
+}
+body #main-content .page-shell {
+  max-width: 1240px;
+  gap: 25px;
+  padding: 38px 32px 52px;
+}
+body #main-content .title-gradient {
+  background: none;
+  color: #2d4e3c;
+  -webkit-text-fill-color: currentColor;
+}
+body #main-content h1 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -1.1px;
+  line-height: 1.2;
+}
+body #main-content .ds-section-title {
+  font-size: 34px;
+}
+body #main-content .ds-subtitle {
+  color: #77816f;
+  line-height: 1.8;
+  font-size: 13px;
+}
+body #main-content .card-soft,
+body #main-content .panel-gradient {
+  background: #fffdfa;
+  background-image: none;
+  border-color: #e2e6d9;
+}
+body #main-content .mat-mdc-card {
+  border-radius: var(--ac-radius) !important;
+  box-shadow: var(--ac-shadow) !important;
+  border: 1px solid #e0e5d7;
+  background: #fffdfa;
+}
+body #main-content .mat-mdc-card:hover {
+  transform: none;
+  box-shadow: var(--ac-shadow) !important;
+}
+body #main-content .mat-mdc-card-header {
+  padding: 22px 24px 15px;
+}
+body #main-content .mat-mdc-card-content {
+  padding: 22px 24px;
+}
+body #main-content .mat-mdc-card-header + .mat-mdc-card-content {
+  padding-top: 10px;
+}
+body #main-content .mat-mdc-card-title {
+  color: #35503e;
+  font-weight: 650;
+  font-size: 17px;
+  line-height: 1.6;
+}
+body #main-content .mat-mdc-card-subtitle {
+  color: #64715d;
+  font-size: 12px;
+}
+body #main-content .mat-mdc-card-actions {
+  padding: 15px 24px 22px !important;
+  border-top: 1px solid #edf0e5;
+}
+body #main-content .mat-mdc-unelevated-button.mat-primary {
+  background: #244f44 !important;
+  border-radius: 10px;
+  color: #fff !important;
+}
+body #main-content .mat-mdc-outlined-button {
+  border-radius: 10px;
+  border-color: #d4dccb !important;
+  color: #46634d;
+}
+body #main-content .mat-mdc-button-base {
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  letter-spacing: 0;
+  font-size: 12px;
+  min-height: 42px;
+}
+body #main-content .mat-mdc-button-base:hover {
+  transform: none;
+}
+body #main-content .mat-mdc-form-field {
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  min-width: 0;
+}
+body #main-content .mat-mdc-text-field-wrapper {
+  border-radius: 11px;
+  background: #fffffd;
+}
+body #main-content .mat-mdc-floating-label,
+body #main-content .mat-mdc-select,
+body #main-content .mat-mdc-input-element {
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+}
+body #main-content .status-error {
+  background: #fff0e9;
+  border-color: #e8b7a8;
+  color: #994d36;
+}
+body #main-content .status-success {
+  background: #edf3e7;
+  border-color: #c5d5bc;
+  color: #355f3f;
+}
+body #main-content .status-info {
+  background: #f2f4eb;
+  border: 1px solid #e0e6d7;
+  padding: 14px 18px;
+  border-radius: 12px;
+  color: #65755b;
+  font-size: 13px;
+}
+body #main-content .ds-data-row {
+  background: #f6f7ef;
+  border-radius: 9px;
+  padding: 12px 14px;
+  gap: 15px;
+}
+body #main-content .ds-data-key {
+  color: #64715d;
+  font-size: 12px;
+}
+body #main-content .ds-data-value {
+  color: #37503e;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+body #main-content .ds-badge {
+  font-size: 10px;
+  letter-spacing: 0.025em;
+  padding: 5px 10px;
+  font-weight: 650;
+}
+body #main-content .ds-badge-success {
+  background: #e5eddc;
+  color: #3b6846;
+}
+body #main-content .ds-badge-info {
+  background: #e9eeea;
+  color: #4c6d5a;
+}
+body #main-content .ds-badge-warning {
+  background: #f9eddc;
+  color: #99713c;
+}
+body #main-content .ds-badge-danger {
+  background: #f9e5de;
+  color: #9c5545;
+}
+body #main-content .ds-badge-neutral {
+  background: #edf0e7;
+  color: #6b7661;
+}
+body #main-content .toolbar-actions {
+  gap: 10px;
+}
+body #main-content .page-shell > div:first-child:has(h1) {
+  position: relative;
+  padding: 27px 30px;
+  border-radius: 17px;
+  background: #ebefdf;
+  border: 1px solid #e0e7d5;
+  isolation: isolate;
+  min-height: 128px;
+}
+body #main-content .page-shell > div:first-child:has(h1)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 32%;
+  border-radius: 0 16px 16px 0;
+  background:
+    linear-gradient(90deg, #ebefdf, transparent 65%),
+    url('/images/atelier-studio.jpg') center/cover;
+  opacity: 0.32;
+  z-index: -1;
+}
+body #main-content .page-shell > div:first-child:has(h1) h1 {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+body #main-content .page-shell > div:first-child:has(h1) p {
+  max-width: 650px;
+}
+body #main-content app-member-create-atelier-page .page-shell > div:first-child:has(h1)::after {
+  background-image:
+    linear-gradient(90deg, #ebefdf, transparent 65%), url('/images/atelier-watercolor.jpg');
+}
+body #main-content app-member-profile-page .page-shell {
+  padding-top: 35px;
+}
+body #main-content app-member-profile-page .page-shell > h1 {
+  background: #e9eedf url('/images/atelier-hero.jpg') right 35%/43% auto no-repeat;
+  padding: 32px 30px;
+  position: relative;
+  border-radius: 18px;
+  isolation: isolate;
+  overflow: hidden;
+  font-size: 36px;
+}
+body #main-content app-member-profile-page .page-shell > h1::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #e9eedf 55%, #e9eedf00);
+  z-index: -1;
+}
+body #main-content app-member-public-ateliers-page .responsive-grid-2 > mat-card {
+  overflow: hidden;
+}
+body #main-content app-member-public-ateliers-page .responsive-grid-2 > mat-card::before {
+  content: '';
+  display: block;
+  height: 140px;
+  background: url('/images/atelier-watercolor.jpg') center 50% / cover;
+}
+body
+  #main-content
+  app-member-public-ateliers-page
+  .responsive-grid-2
+  > mat-card:nth-child(3n + 2)::before {
+  background-image: url('/images/atelier-studio.jpg');
+}
+body
+  #main-content
+  app-member-public-ateliers-page
+  .responsive-grid-2
+  > mat-card:nth-child(3n)::before {
+  background-image: url('/images/atelier-hero.jpg');
+}
+body #main-content app-member-home-page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: calc(100% - 64px);
+  max-width: 1180px;
+  margin: 38px auto 10px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #fffdfa;
+  border: 1px solid #e0e5d7;
+  min-height: 670px;
+}
+body #main-content app-member-home-page .atelier-hero {
+  background:
+    linear-gradient(180deg, #173a3022, #173a30c9),
+    url('/images/atelier-hero.jpg') 55% center/cover;
+  display: flex;
+  align-items: flex-end;
+  text-align: left;
+  padding: 45px 38px;
+}
+body #main-content app-member-home-page .atelier-hero::before {
+  display: none;
+}
+body #main-content app-member-home-page .atelier-ball {
+  display: none;
+}
+body #main-content app-member-home-page .atelier-hero-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 44px;
+  line-height: 1.15;
+  font-weight: 450;
+  text-shadow: none;
+  letter-spacing: -1px;
+}
+body #main-content app-member-home-page .atelier-hero-sub {
+  font-size: 14px;
+  line-height: 1.85;
+  max-width: 350px;
+}
+body #main-content app-member-home-page .page-shell {
+  padding: 38px;
+  width: 100%;
+  gap: 0;
+}
+body #main-content app-member-home-page .atelier-login-card {
+  margin: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  text-align: left;
+}
+body #main-content app-member-home-page .atelier-login-icon {
+  font-size: 26px;
+  display: none;
+}
+body #main-content app-member-home-page .atelier-login-title {
+  font-family: 'Fraunces', Georgia, serif;
+  color: #35503d;
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.7px;
+  margin-top: 0;
+}
+body #main-content app-member-home-page .atelier-login-sub {
+  font-size: 12px;
+  color: #64715d;
+  line-height: 1.8;
+}
+body #main-content app-member-home-page .atelier-form {
+  gap: 8px;
+}
+body #main-content app-member-home-page .atelier-types-grid {
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin-bottom: 15px;
+}
+body #main-content app-member-home-page .atelier-type-badge {
+  padding: 10px 12px;
+  border: 1px solid #e3e7d9;
+  background: #f5f6ed;
+  gap: 12px;
+}
+body #main-content app-member-home-page .atelier-type-name {
+  font-size: 12px;
+  color: #476243;
+}
+body #main-content app-member-home-page .atelier-type-hint {
+  font-size: 10px;
+  color: #64715d;
+}
+body #main-content app-member-home-page .atelier-type-icon {
+  font-size: 18px;
+}
+body #main-content app-member-home-page .atelier-btn-primary {
+  background: #244f44;
+  box-shadow: none;
+  border-radius: 10px;
+  color: #fff;
+}
+body #main-content app-member-home-page .atelier-found-card {
+  background: #edf3e6;
+  border-color: #d4e0c8;
+}
+body #main-content app-admin-login-page .login-shell {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: calc(100% - 64px);
+  max-width: 1180px;
+  margin: 38px auto 10px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #fffdfa;
+  border: 1px solid #e0e5d7;
+  min-height: 630px;
+}
+body #main-content app-admin-login-page .login-hero {
+  display: flex;
+  align-items: flex-end;
+  background:
+    linear-gradient(180deg, #173a3010, #173a30d9),
+    url('/images/atelier-studio.jpg') center/cover;
+  padding: 45px 38px;
+}
+body #main-content app-admin-login-page .login-hero::before {
+  display: none;
+}
+body #main-content app-admin-login-page .login-hero-content {
+  text-align: left;
+}
+body #main-content app-admin-login-page .login-hero-icon {
+  display: none;
+}
+body #main-content app-admin-login-page .login-hero-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 450;
+  font-size: 43px;
+  line-height: 1.15;
+  letter-spacing: -1px;
+}
+body #main-content app-admin-login-page .login-hero-sub {
+  font-size: 13px;
+  line-height: 1.9;
+}
+body #main-content app-admin-login-page .login-hero-badges {
+  justify-content: flex-start;
+  gap: 10px;
+}
+body #main-content app-admin-login-page .login-badge {
+  border: 1px solid #ffffff42;
+  background: #ffffff1c;
+  color: #f4f3e4;
+  font-size: 10px;
+  padding: 7px 12px;
+  border-radius: 7px;
+}
+body #main-content app-admin-login-page .login-form-panel {
+  padding: 48px;
+  display: flex;
+  align-items: center;
+  background: transparent;
+}
+body #main-content app-admin-login-page .login-form-card {
+  max-width: none;
+  width: 100%;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+body #main-content app-admin-login-page .login-form-header {
+  text-align: left;
+}
+body #main-content app-admin-login-page .login-form-icon {
+  display: none;
+}
+body #main-content app-admin-login-page .login-form-title {
+  font:
+    500 31px 'Fraunces',
+    Georgia,
+    serif;
+  color: #35503d;
+  letter-spacing: -0.6px;
+}
+body #main-content app-admin-login-page .login-form-sub {
+  font-size: 12px;
+  color: #64715d;
+}
+body #main-content app-admin-login-page .login-btn-primary {
+  background: #244f44;
+  border-radius: 10px;
+  box-shadow: none;
+  font-size: 13px;
+  min-height: 46px;
+}
+body #main-content app-admin-login-page .login-btn-secondary {
+  color: #68805d;
+  font-size: 12px;
+}
+body #main-content .admin-shell {
+  max-width: 1240px;
+  padding: 38px 32px 45px;
+  margin: auto;
+  width: 100%;
+}
+body #main-content .admin-hero {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 33px;
+  border-radius: 19px;
+  background: #e9eedd;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid #dfe6d3;
+}
+body #main-content .admin-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 0 45%;
+  background:
+    linear-gradient(90deg, #e9eedd, transparent),
+    url('/images/atelier-studio.jpg') center/cover;
+  opacity: 0.45;
+  z-index: -1;
+}
+body #main-content .admin-hero h1 {
+  font-size: 38px;
+  color: #2e4e3c;
+  margin: 8px 0 12px;
+}
+body #main-content .admin-hero .eyebrow {
+  color: #677a59;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+body #main-content .admin-hero .hero-subtitle {
+  font-size: 13px;
+  color: #6d7e62;
+}
+body #main-content .admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-self: flex-end;
+}
+body #main-content .admin-actions a {
+  border: 1px solid #cfd9c4;
+  border-radius: 8px;
+  background: #fcfdf7;
+  color: #45603f;
+  font-size: 11px;
+  padding: 8px 12px;
+}
+body #main-content .kpi-grid {
+  gap: 18px;
+  margin-top: 24px;
+}
+body #main-content .admin-kpi {
+  background: #fffdfa;
+  border: 1px solid #e0e6d7;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: none;
+  color: #36543e;
+}
+body #main-content .admin-kpi p {
+  color: #829074;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+body #main-content .admin-kpi strong {
+  font:
+    500 38px 'Fraunces',
+    Georgia,
+    serif;
+  color: #35543e;
+  line-height: 1.4;
+  letter-spacing: -1px;
+}
+body #main-content .admin-kpi span {
+  font-size: 11px;
+  color: #64715d;
+}
+body #main-content .admin-kpi.amber strong {
+  color: #ae714a;
+}
+body #main-content .resource-grid > div,
+body #main-content .data-row {
+  background: #f6f7ee;
+  border: 1px solid #e9edde;
+  border-radius: 10px;
+}
+body #main-content .data-row span,
+body #main-content .resource-grid span {
+  font-size: 12px;
+  color: #78856d;
+}
+body #main-content .data-row strong,
+body #main-content .resource-grid strong {
+  color: #3f5c43;
+}
+body #main-content .adm-atelier-header {
+  background: #e9eedd;
+  border-bottom: 1px solid #d9e1cf;
+  color: #34523d;
+  padding-block: 30px;
+}
+body #main-content .adm-atelier-header h1 {
+  color: #34523d;
+  font-size: 36px;
+}
+body #main-content .adm-atelier-header p {
+  color: #6d7d61;
+}
+body #main-content .adm-atelier-icon {
+  background: #dce5cf;
+  color: #4f6b43;
+}
+body #main-content .adm-atelier-container {
+  max-width: 1240px;
+  padding-inline: 32px;
+}
+body #main-content table {
+  width: 100%;
+  font-size: 12px;
+  border-collapse: collapse;
+}
+body #main-content th {
+  background: #eef1e6;
+  color: #6b7c5f;
+  letter-spacing: 0.035em;
+  font-size: 10px;
+  font-weight: 650;
+  padding: 15px 16px;
+  text-align: left;
+}
+body #main-content td {
+  padding: 15px 16px;
+  border-bottom: 1px solid #e9edde;
+  color: #53664b;
+  vertical-align: middle;
+}
+body #main-content tr:hover td {
+  background: #f9faf3;
+}
+body #main-content div:has(> table) {
+  overflow-x: auto;
+}
+body #main-content .mat-mdc-tab-group {
+  --mat-tab-header-active-label-text-color: #35593e;
+  --mat-tab-header-active-indicator-color: #476f48;
+}
+body #main-content .mat-mdc-chip {
+  --mdc-chip-elevated-container-color: #ecf1e2;
+  --mdc-chip-label-text-color: #526d43;
+}
+body app-language-switcher .lang-trigger {
+  background: #f1f3e9;
+  border-color: #dce2d3;
+  border-radius: 9px;
+  box-shadow: none;
+  color: #526a47;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+}
+body app-language-switcher .lang-menu {
+  background: #fffdf7;
+  border-color: #dfe5d6;
+  border-radius: 12px;
+  box-shadow: 0 15px 35px #254b3b16;
+}
+body app-language-switcher .lang-option:focus-visible {
+  outline: 2px solid #b16f4d;
+  outline-offset: 1px;
+}
+@media (max-width: 900px) {
+  body #main-content .page-shell,
+  body #main-content .admin-shell {
+    padding: 26px 22px 38px;
+  }
+  body #main-content app-member-home-page,
+  body #main-content app-admin-login-page .login-shell {
+    width: calc(100% - 40px);
+    margin-top: 26px;
+  }
+  body #main-content app-member-home-page .page-shell {
+    padding: 28px;
+  }
+  body #main-content app-admin-login-page .login-form-panel {
+    padding: 30px;
+  }
+  body #main-content app-member-home-page .atelier-hero-title,
+  body #main-content app-admin-login-page .login-hero-title {
+    font-size: 35px;
+  }
+}
+@media (max-width: 700px) {
+  body #main-content .page-shell,
+  body #main-content .admin-shell {
+    padding: 22px 16px 32px;
+  }
+  body #main-content .page-shell > div:first-child:has(h1) {
+    padding: 23px;
+    gap: 18px;
+  }
+  body #main-content .page-shell > div:first-child:has(h1) h1 {
+    font-size: 29px;
+  }
+  body #main-content .page-shell > div:first-child:has(h1)::after {
+    width: 35%;
+    opacity: 0.2;
+  }
+  body #main-content .mat-mdc-card-header {
+    padding: 20px 18px 12px;
+  }
+  body #main-content .mat-mdc-card-content {
+    padding: 18px;
+  }
+  body #main-content .mat-mdc-card-actions {
+    padding-inline: 18px !important;
+  }
+  body #main-content .ds-data-key,
+  body #main-content .ds-data-value {
+    font-size: 11px;
+  }
+  body #main-content app-member-home-page,
+  body #main-content app-admin-login-page .login-shell {
+    grid-template-columns: 1fr;
+    width: calc(100% - 32px);
+    margin: 22px 16px;
+    min-height: 0;
+  }
+  body #main-content app-member-home-page .atelier-hero,
+  body #main-content app-admin-login-page .login-hero {
+    min-height: 240px;
+    padding: 28px;
+    background-position: center 42%;
+  }
+  body #main-content app-member-home-page .atelier-hero-title,
+  body #main-content app-admin-login-page .login-hero-title {
+    font-size: 34px;
+    max-width: 340px;
+  }
+  body #main-content app-member-home-page .atelier-hero-sub,
+  body #main-content app-admin-login-page .login-hero-sub {
+    font-size: 12px;
+    max-width: 390px;
+  }
+  body #main-content app-member-home-page .page-shell,
+  body #main-content app-admin-login-page .login-form-panel {
+    padding: 28px 22px;
+  }
+  body #main-content .admin-hero {
+    padding: 26px;
+  }
+  body #main-content .admin-hero h1 {
+    font-size: 32px;
+  }
+  body #main-content .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  body #main-content .admin-kpi {
+    padding: 18px;
+  }
+  body #main-content .admin-kpi strong {
+    font-size: 29px;
+  }
+  body #main-content .admin-kpi p {
+    font-size: 9px;
+  }
+  body #main-content .admin-kpi span {
+    font-size: 10px;
+  }
+  body #main-content .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  body #main-content .adm-atelier-header h1 {
+    font-size: 29px;
+  }
+  body #main-content .adm-atelier-container {
+    padding-inline: 16px;
+  }
+  body #main-content .toolbar-actions {
+    justify-content: flex-start;
+  }
+  body #main-content .page-shell > h1 {
+    font-size: 30px;
+  }
+  body #main-content .page-shell > div:first-child:has(h1) p {
+    font-size: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+// Management pages share the same visual language; existing event handlers stay intact.
+body #main-content {
+  :is(.adm-header, .adm-site-header, .adm-ter-header, .adm-fer-header, .adm-atelier-header) {
+    position: relative;
+    isolation: isolate;
+    max-width: 1176px;
+    width: calc(100% - 64px);
+    margin: 36px auto 0;
+    padding: 29px 30px;
+    background: #e9eedf;
+    border: 1px solid #dce4d3;
+    border-radius: 18px;
+    box-shadow: none;
+    overflow: hidden;
+    color: #35503d;
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0 0 0 65%;
+      background:
+        linear-gradient(90deg, #e9eedf, transparent),
+        url('/images/atelier-studio.jpg') center / cover;
+      opacity: 0.28;
+      z-index: -1;
+    }
+  }
+  :is(.adm-site-title, .adm-ter-title, .adm-fer-title, .adm-atelier-title, .adm-title) {
+    color: #35503d;
+    font:
+      500 33px / 1.2 'Fraunces',
+      Georgia,
+      serif;
+    letter-spacing: -0.8px;
+    margin: 0 0 7px;
+  }
+  :is(.adm-site-sub, .adm-ter-sub, .adm-fer-sub, .adm-atelier-sub, .adm-subtitle) {
+    color: #637457;
+    font-size: 12px;
+    line-height: 1.8;
+  }
+  :is(.adm-site-icon, .adm-ter-icon, .adm-fer-icon, .adm-atelier-icon, .adm-icon) {
+    display: none;
+  }
+  :is(.adm-site-back-btn, .adm-ter-back-btn, .adm-fer-back-btn, .adm-back-btn, .adm-atelier-back) {
+    background: #fafcf4;
+    color: #536e48;
+    border: 1px solid #ccd8bf;
+    border-radius: 9px;
+    font-size: 12px;
+    padding: 10px 17px;
+    text-decoration: none;
+  }
+  :is(.adm-form-card, .adm-site-form-card, .adm-ter-form-card, .adm-fer-form-card) {
+    background: #fffdfa;
+    border: 1px solid #e0e6d7;
+    border-radius: 18px;
+    box-shadow: 0 5px 22px #35503d07;
+    padding: 25px;
+  }
+  :is(.adm-form-title, .adm-site-form-title, .adm-ter-form-title, .adm-fer-form-title) {
+    font:
+      500 24px 'Fraunces',
+      Georgia,
+      serif;
+    color: #42603f;
+  }
+  :is(
+    .adm-btn-primary,
+    .adm-site-btn-primary,
+    .adm-ter-btn-primary,
+    .adm-fer-btn-primary,
+    .atelier-btn-primary
+  ) {
+    background: #244f44;
+    color: #fff;
+    box-shadow: none;
+    border: 1px solid #244f44;
+    border-radius: 10px;
+    padding: 11px 21px;
+    font-size: 12px;
+    font-weight: 650;
+  }
+  :is(.adm-btn-secondary, .adm-site-btn-secondary, .adm-ter-btn-secondary, .adm-fer-btn-secondary) {
+    background: #f3f5eb;
+    color: #576f48;
+    border: 1px solid #d8e1cc;
+    border-radius: 10px;
+    padding: 11px 19px;
+    font-size: 12px;
+  }
+  :is(.adm-member-card, .adm-site-card, .adm-ter-card, .adm-fer-card, .adm-atelier-card) {
+    background: #fffdfa;
+    border: 1px solid #e0e6d7;
+    border-radius: 17px;
+    box-shadow: 0 5px 22px #35503d07;
+    overflow: hidden;
+    &:hover {
+      transform: none;
+      box-shadow: 0 5px 22px #35503d0d;
+    }
+  }
+  :is(.adm-site-card, .adm-ter-card)::before {
+    content: '';
+    display: block;
+    height: 145px;
+    background: url('/images/atelier-studio.jpg') center 58% / cover;
+  }
+  .adm-ter-card:nth-child(even)::before {
+    background-image: url('/images/atelier-watercolor.jpg');
+  }
+  :is(.adm-site-action-edit, .adm-ter-action-edit, .adm-action-edit) {
+    background: #edf2e5;
+    border-color: #d2dec3;
+    color: #4a683e;
+    font-size: 11px;
+  }
+  :is(.adm-site-action-delete, .adm-ter-action-delete, .adm-fer-action-delete, .adm-action-delete) {
+    background: #fbefea;
+    border-color: #edd2c5;
+    color: #9b5744;
+    font-size: 11px;
+  }
+  :is(.adm-site-info-label, .adm-ter-info-label, .adm-info-label) {
+    color: #64725d;
+  }
+  :is(.adm-site-info-val, .adm-ter-info-val, .adm-info-value) {
+    color: #41603c;
+  }
+  .adm-site-info-grid > div {
+    background: #f3f5e9;
+    color: #526c43;
+  }
+  app-member-profile-page .mat-mdc-card-header {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding: 34px 28px;
+    min-height: 140px;
+    background: #e9eedf;
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0 0 0 62%;
+      background:
+        linear-gradient(90deg, #e9eedf, transparent),
+        url('/images/atelier-hero.jpg') center/cover;
+      opacity: 0.4;
+      z-index: -1;
+    }
+  }
+  app-member-profile-page .mat-mdc-card-title {
+    font:
+      500 34px 'Fraunces',
+      Georgia,
+      serif;
+    letter-spacing: -0.9px;
+  }
+  app-member-profile-page :is(.text-violet-700, .text-violet-800, .text-violet-900) {
+    color: #9b6648;
+  }
+  app-member-profile-page .card-soft:has(.text-violet-900) {
+    background: #faf2e7;
+    border-color: #e9d9c3;
+  }
+  .admin-hero {
+    box-shadow: none;
+  }
+  @media (max-width: 700px) {
+    :is(.adm-header, .adm-site-header, .adm-ter-header, .adm-fer-header, .adm-atelier-header) {
+      width: calc(100% - 32px);
+      margin-top: 22px;
+      padding: 25px 21px;
+    }
+    :is(.adm-site-title, .adm-ter-title, .adm-fer-title, .adm-atelier-title, .adm-title) {
+      font-size: 29px;
+    }
+    :is(.adm-form-card, .adm-site-form-card, .adm-ter-form-card, .adm-fer-form-card) {
+      padding: 20px;
+    }
+    app-member-profile-page .mat-mdc-card-header {
+      padding: 27px 21px;
+    }
+    app-member-profile-page .mat-mdc-card-title {
+      font-size: 29px;
+    }
+  }
+}

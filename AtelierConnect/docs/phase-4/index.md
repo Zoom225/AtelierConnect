@@ -15,7 +15,7 @@ distincts de la recette humaine et des décisions sur les séances héritées fu
 - [Matrice des règles et tests](matrice-regles-tests.md)
 - [Matrice des autorisations et vrais JWT](matrice-autorisations.md)
 - [Données historiques : inventaire et plan à approuver](historique-plan.md)
-- [Captures publiques et provenance](preuves/README.md)
+- [Captures publiques et provenance](preuves/index.md)
 
 ## Dossier de preuve
 
@@ -45,7 +45,7 @@ Les classes Java sont sous `src/main/java/com/atelierconnect`, les tests Java so
 | 5. Architecture trois couches | `SalleController.update` → `SalleServiceImpl.update` → `SalleRepository` ; DTO et mappers | `SalleWriteEndpointIntegrationTest`, compilations et démarrage réseau réel | [architecture-donnees](architecture-donnees.md) ; expliquer la frontière transactionnelle |
 | 6. Authentification et autorisation | `JwtConfig`, filtre, `SecurityConfig`, services d'identité et de périmètre | Tests JWT existants et cinq méthodes de `AuthorizationJwtIntegrationTest`, dont centres homonymes et paiements étrangers | [matrice des autorisations](matrice-autorisations.md) ; recette humaine de l'ergonomie SITE restante |
 | 7. API REST sécurisée | Contrôleurs REST, `ParticipantAccessService`, `GlobalExceptionHandler` | Tests contrôleurs ; Swagger et refus 400/403/404 testés dans Chromium | [api-securite](api-securite.md) ; décider d'une éventuelle normalisation 401/409 |
-| 8. Interface Angular | Création/réservations, administration, `LandingPage`, langue et focus clavier | 75 tests Vitest, six parcours Chromium, build production et trois captures publiques | [preuves](preuves/README.md) ; contrôle humain et lecteur d'écran à compléter |
+| 8. Interface Angular | Création/réservations, administration, `LandingPage`, langue et focus clavier | 75 tests Vitest, six parcours Chromium, build production et trois captures publiques | [preuves](preuves/index.md) ; contrôle humain et lecteur d'écran à compléter |
 | 9. Métier et erreurs | Services Atelier, Réservation, Paiement et `AtelierRules` | `AtelierBoundaryTest`, `ReservationBookingBoundaryTest`, tests de transactions et scheduler | [matrice règles/tests](matrice-regles-tests.md) ; bornes 30/15/7, pause et arbitrages documentés |
 | 10. Tests et CI/CD | `.github/workflows/atelierconnect-backend.yml`, `scripts/validate-fullstack.ps1` | Rapports Surefire, Vitest JSON, Playwright JSON/HTML ; trois jobs CI | [rapport](tests-limites.md) ; aucun déploiement continu de production configuré |
 | 11. Documentation et défense | Ce dossier, README et scripts Windows | Démonstration reproductible ; résultats datés et limites explicites | [manuel](manuel-demonstration.md), [installation](installation-windows.md) ; captures et répétition orale à compléter |

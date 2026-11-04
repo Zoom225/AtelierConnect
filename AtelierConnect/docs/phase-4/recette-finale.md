@@ -64,8 +64,8 @@ complète verte ci-dessus ; les échecs n'ont pas été convertis en tests ignor
 - [Règles métier, bornes et tests précis](matrice-regles-tests.md)
 - [Autorisations et cinq tests avec vrais JWT](matrice-autorisations.md)
 - [Inventaire et plan individuel des données historiques](historique-plan.md)
-- [Trois captures publiques et provenance](preuves/README.md)
-- [Matrice des onze thèmes EPHEC](README.md)
+- [Trois captures publiques et provenance](preuves/index.md)
+- [Matrice des onze thèmes EPHEC](index.md)
 
 Code testé : `bd7edf0` ; [CI 41302973553](https://github.com/Zoom225/AtelierConnect/actions/runs/41302973553) :
 les trois jobs backend, frontend et navigateur sont réussis, y compris l'export

@@ -9,7 +9,7 @@ on:
       - "AtelierConnect/frontend/**"
       - ".github/workflows/atelierconnect-backend.yml"
   pull_request:
-    branches: [ "develop" ]
+    branches: [ "develop", "phase-3/refactoring-frontend" ]
     paths:
       - "AtelierConnect/src/**"
       - "AtelierConnect/pom.xml"
