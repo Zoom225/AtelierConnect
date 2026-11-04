@@ -216,7 +216,7 @@ app-root {
     padding-inline: 24px;
   }
   .app-logo-tagline {
-    display: none;
+    display: block;
   }
   .nav-link,
   .nav-btn-logout {
@@ -294,7 +294,8 @@ app-root {
 }
 @media (max-width: 480px) {
   .app-logo-tagline {
-    display: none;
+    font-size: 8.5px;
+    letter-spacing: 0;
   }
   .app-logo-badge {
     width: 35px;

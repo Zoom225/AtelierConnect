@@ -37,7 +37,7 @@ class AtelierRepositoryTest {
     @DisplayName("findOverlappingMatches retourne les atelier planifiés qui chevauchent le créneau")
     void shouldFindOverlappingAteliers() {
         Salle salle = salleRepository.save(Salle.builder()
-                .nom("Court A")
+                .nom("Salle A")
                 .centre(centreRepository.save(centre()))
                 .prix(60.0)
                 .build());
@@ -58,7 +58,7 @@ class AtelierRepositoryTest {
     @DisplayName("findOverlappingMatches ignore les atelier annulés")
     void shouldIgnoreCancelledAteliers() {
         Salle salle = salleRepository.save(Salle.builder()
-                .nom("Court A")
+                .nom("Salle A")
                 .centre(centreRepository.save(centre()))
                 .prix(60.0)
                 .build());

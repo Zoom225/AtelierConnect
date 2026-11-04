@@ -164,7 +164,7 @@ export class App {
     this.language.locale() === 'fr'
       ? {
           skip: 'Aller au contenu',
-          tagline: 'Le plaisir de créer ensemble',
+          tagline: 'Réservation d’ateliers créatifs',
           menu: 'Ouvrir ou fermer le menu',
           navigation: 'Navigation principale',
           footer: 'Un lieu, des idées et le plaisir de faire ensemble.',
@@ -172,7 +172,7 @@ export class App {
         }
       : {
           skip: 'Skip to content',
-          tagline: 'The joy of creating together',
+          tagline: 'Creative workshop booking',
           menu: 'Open or close menu',
           navigation: 'Main navigation',
           footer: 'A place, a few ideas, and the joy of making together.',

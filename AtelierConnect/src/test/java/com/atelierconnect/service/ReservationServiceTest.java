@@ -68,7 +68,7 @@ class ReservationServiceTest {
         centre.setId(1L);
 
         salle = Salle.builder()
-                .nom("Court A")
+                .nom("Salle A")
                 .centre(centre)
                 .build();
         salle.setId(1L);

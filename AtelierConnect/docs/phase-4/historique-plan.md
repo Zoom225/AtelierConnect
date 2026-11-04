@@ -57,6 +57,12 @@ décision d'exploitation à approuver ; elle n'a pas été ajoutée silencieusem
 
 ## Référentiels portant encore les anciens noms
 
+**Mise à jour du 4 novembre 2026 :** le propriétaire a approuvé le renommage
+des deux centres et cinq salles ci-dessous. Il est appliqué à la base locale,
+après sauvegarde et répétition sur copie, en conservant toutes les autres données.
+Voir le [rapport de renommage](../resource-label-renaming.md). La liste ci-dessous
+reste l'inventaire historique ; les décisions sur les durées et tarifs sont distinctes.
+
 | Objet / ID | Valeur source | Renommage éventuellement proposé, à approuver |
 | --- | --- | --- |
 | Centre 1 | Padel Club Lyon | Centre Lyon |

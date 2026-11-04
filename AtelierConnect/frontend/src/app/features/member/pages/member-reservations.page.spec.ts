@@ -15,7 +15,7 @@ describe('MemberReservationsPage', () => {
     {
       id: 1,
       salleId: 1,
-      salleNom: 'Court A',
+      salleNom: 'Salle A',
       centreNom: 'Lyon',
       organisateurId: 1,
       organisateurNom: 'Tom Bernard',
@@ -31,7 +31,7 @@ describe('MemberReservationsPage', () => {
     {
       id: 2,
       salleId: 1,
-      salleNom: 'Court A',
+      salleNom: 'Salle A',
       centreNom: 'Lyon',
       organisateurId: 1,
       organisateurNom: 'Tom Bernard',
@@ -113,7 +113,7 @@ describe('MemberReservationsPage', () => {
     TestBed.resetTestingModule();
   });
 
-  it('n expose que les matchs PRIVE dans la gestion des participants', () => {
+  it('n expose que les ateliers PRIVE dans la gestion des participants', () => {
     const fixture = TestBed.createComponent(MemberReservationsPage);
     const component = fixture.componentInstance;
     fixture.detectChanges();
@@ -123,7 +123,7 @@ describe('MemberReservationsPage', () => {
     expect(component.managedAteliers()[0].id).toBe(2);
     expect(component.managedAtelierId()).toBe(2);
     expect(component.message()).toContain('Atelier privé créé');
-    expect(fixture.nativeElement.textContent).toContain('Court A');
+    expect(fixture.nativeElement.textContent).toContain('Salle A');
     expect(fixture.nativeElement.textContent).toContain('Planifie');
   });
 

@@ -12,7 +12,7 @@ import { AdminSallesPage } from './admin-salles.page';
 describe('AdminSallesPage', () => {
   const site: CentreResponse = {
     id: 1,
-    nom: 'Padel Club Lyon',
+    nom: 'Centre Créatif Lyon',
     adresse: 'Lyon',
     heureOuverture: '08:00',
     heureFermeture: '22:00',
@@ -22,8 +22,8 @@ describe('AdminSallesPage', () => {
   };
 
   const salles: SalleResponse[] = [
-    { id: 10, nom: 'Court A', centreId: 1, centreNom: 'Padel Club Lyon', prix: 60 },
-    { id: 11, nom: 'Court B', centreId: 1, centreNom: 'Padel Club Lyon', prix: 60 }
+    { id: 10, nom: 'Salle A', centreId: 1, centreNom: 'Centre Créatif Lyon', prix: 60 },
+    { id: 11, nom: 'Salle B', centreId: 1, centreNom: 'Centre Créatif Lyon', prix: 60 }
   ];
 
   let sallesApiMock: {

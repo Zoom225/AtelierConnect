@@ -40,7 +40,7 @@ class JwtAuthenticationFilterTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         when(jwtConfig.isTokenValid("admin-token")).thenReturn(true);
-        when(jwtConfig.extractSubject("admin-token")).thenReturn("admin@padel.com");
+        when(jwtConfig.extractSubject("admin-token")).thenReturn("admin@atelierconnect.example");
         when(jwtConfig.extractRole("admin-token")).thenReturn("GLOBAL");
         when(jwtConfig.extractPrincipalType("admin-token")).thenReturn("ADMIN");
 
@@ -48,7 +48,7 @@ class JwtAuthenticationFilterTest {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         assertThat(authentication).isNotNull();
-        assertThat(authentication.getName()).isEqualTo("admin@padel.com");
+        assertThat(authentication.getName()).isEqualTo("admin@atelierconnect.example");
         assertThat(authentication.getAuthorities())
                 .extracting("authority")
                 .containsExactly("ROLE_ADMIN");

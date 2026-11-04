@@ -16,7 +16,7 @@ describe('MemberPublicAteliersPage', () => {
     {
       id: 1,
       salleId: 1,
-      salleNom: 'Court A',
+      salleNom: 'Salle A',
       centreNom: 'Lyon',
       organisateurId: 1,
       organisateurNom: 'Tom Bernard',
@@ -32,7 +32,7 @@ describe('MemberPublicAteliersPage', () => {
     {
       id: 2,
       salleId: 2,
-      salleNom: 'Court B',
+      salleNom: 'Salle B',
       centreNom: 'Paris',
       organisateurId: 9,
       organisateurNom: 'Emma Dubois',
@@ -85,7 +85,7 @@ describe('MemberPublicAteliersPage', () => {
     TestBed.resetTestingModule();
   });
 
-  it('identifie correctement les matchs de l’organisateur connecté', () => {
+  it('identifie correctement les ateliers de l’organisateur connecté', () => {
     const fixture = TestBed.createComponent(MemberPublicAteliersPage);
     const component = fixture.componentInstance;
 
@@ -93,7 +93,7 @@ describe('MemberPublicAteliersPage', () => {
     expect(component.isOrganizer(ateliers[1])).toBe(false);
   });
 
-  it('affiche les matchs de l utilisateur en premier dans la liste filtree', () => {
+  it('affiche les ateliers de l utilisateur en premier dans la liste filtree', () => {
     const fixture = TestBed.createComponent(MemberPublicAteliersPage);
     const component = fixture.componentInstance;
 

@@ -38,7 +38,7 @@ class ReservationRepositoryTest {
     @DisplayName("existsByMatchIdAndMembreId détecte un participant déjà inscrit")
     void shouldFindExistingReservationForParticipantAndAtelier() {
         Centre centre = centreRepository.save(centre());
-        Salle salle = salleRepository.save(Salle.builder().nom("Court A").centre(centre).prix(60.0).build());
+        Salle salle = salleRepository.save(Salle.builder().nom("Salle A").centre(centre).prix(60.0).build());
         Participant organisateur = participantRepository.save(participant("G1001"));
         Participant participant = participantRepository.save(participant("G1002"));
         Atelier atelier = atelierRepository.save(atelier(salle, organisateur));

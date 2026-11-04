@@ -54,7 +54,7 @@ class AdminAuthorizationServiceTest {
     @Test
     @DisplayName("Un admin GLOBAL peut accéder à tous les centres")
     void globalAdminCanAccessEveryCentre() {
-        String adminEmail = "admin@padel.com";
+        String adminEmail = "admin@atelierconnect.example";
         authenticate(adminEmail);
         when(administrateurRepository.findByEmail(adminEmail))
                 .thenReturn(Optional.of(admin(adminEmail, TypeAdministrateur.GLOBAL, null)));
@@ -65,7 +65,7 @@ class AdminAuthorizationServiceTest {
     @Test
     @DisplayName("Un admin SITE peut accéder uniquement à son centre")
     void centreAdminCanAccessOwnCentreOnly() {
-        String adminEmail = "admin.lyon@padel.com";
+        String adminEmail = "admin.lyon@atelierconnect.example";
         authenticate(adminEmail);
         when(administrateurRepository.findByEmail(adminEmail))
                 .thenReturn(Optional.of(admin(adminEmail, TypeAdministrateur.SITE, centreLyon)));
@@ -79,7 +79,7 @@ class AdminAuthorizationServiceTest {
     @Test
     @DisplayName("Un admin SITE sans centre rattaché est refusé")
     void centreAdminWithoutCentreIsRejected() {
-        String adminEmail = "admin.site@padel.com";
+        String adminEmail = "admin.site@atelierconnect.example";
         authenticate(adminEmail);
         when(administrateurRepository.findByEmail(adminEmail))
                 .thenReturn(Optional.of(admin(adminEmail, TypeAdministrateur.SITE, null)));
@@ -92,10 +92,10 @@ class AdminAuthorizationServiceTest {
     @Test
     @DisplayName("Un admin SITE ne peut gérer que les participants de son centre")
     void centreAdminCanManageOnlyOwnParticipants() {
-        String adminEmail = "admin.lyon@padel.com";
+        String adminEmail = "admin.lyon@atelierconnect.example";
         authenticate(adminEmail);
         // La ligne suivante est la ligne 94 dans le fichier de test si le reste est identique.
-        // Elle doit stuber avec 'adminEmail' qui est "admin.lyon@padel.com"
+        // Elle doit stuber avec 'adminEmail' qui est "admin.lyon@atelierconnect.example"
         when(administrateurRepository.findByEmail(adminEmail))
                 .thenReturn(Optional.of(admin(adminEmail, TypeAdministrateur.SITE, centreLyon)));
 
@@ -109,7 +109,7 @@ class AdminAuthorizationServiceTest {
     @Test
     @DisplayName("Un admin SITE ne peut gérer que les salles de son centre")
     void centreAdminCanManageOnlyOwnSalles() {
-        String adminEmail = "admin.lyon@padel.com";
+        String adminEmail = "admin.lyon@atelierconnect.example";
         authenticate(adminEmail);
         when(administrateurRepository.findByEmail(adminEmail))
                 .thenReturn(Optional.of(admin(adminEmail, TypeAdministrateur.SITE, centreLyon)));

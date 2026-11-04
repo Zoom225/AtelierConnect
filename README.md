@@ -1,4 +1,4 @@
-# AtelierConnect
+# AtelierConnect — Réservation d’ateliers créatifs
 
 Gestion et réservation d'ateliers collaboratifs multi-centres : **Java 21, Spring Boot 3.5, Spring Security/JWT, PostgreSQL 15 et Angular 21**.
 
@@ -8,8 +8,9 @@ connexions de démonstration et dépannage. Le backend est sous `AtelierConnect/
 et le frontend sous `AtelierConnect/frontend/`.
 
 Dépôt : https://github.com/Zoom225/AtelierConnect
-Branche de travail : `feat/3-interface-readme-tracabilite`, basée sur `phase-3/refactoring-frontend`.
-Suivi : [issue #3 — refonte visuelle et README unique](https://github.com/Zoom225/AtelierConnect/issues/3).
+Branche de travail : `fix/5-nomenclature-espace-participant`, basée sur `feat/3-interface-readme-tracabilite`.
+Suivi courant : [issue #5 — nomenclature et espace participant](https://github.com/Zoom225/AtelierConnect/issues/5).
+Refonte et documentation initiales : [issue #3](https://github.com/Zoom225/AtelierConnect/issues/3).
 
 ## Sommaire
 
@@ -42,11 +43,26 @@ ivoire, vert forêt et terre cuite, avec trois illustrations d'ateliers créatif
 servies localement. Les pages s'adaptent aux écrans d'ordinateur et de téléphone ;
 la navigation mobile dispose d'un menu accessible au clavier.
 
+Le titre public précise l'usage : **AtelierConnect — Réservation d'ateliers créatifs**,
+avec une version anglaise. Les cartes PARTENAIRE, ABONNE et VISITEUR affichent
+uniquement les délais de réservation, sans les anciennes indications G/S/L + chiffres.
+
 La [présentation de la refonte](AtelierConnect/docs/design-2026-11-02.md) décrit les 14 pages
 contrôlées, les styles partagés et les visuels. Les règles métier et les données
 existantes sont conservées.
 
 ## Prérequis et configuration
+
+L'[audit des anciennes mentions](AtelierConnect/docs/audit-nomenclature-2026-11-04.md)
+explique les corrections de Swagger et les références historiques conservées
+pour les connexions, les sessions et les données existantes.
+
+Les centres locaux s'appellent désormais **Centre Lyon / Centre Paris**, et les
+salles **Salle A/B/C/1/2**, avec les mêmes identifiants et réservations.
+Le [rapport de renommage](AtelierConnect/docs/resource-label-renaming.md) décrit
+la migration réversible, sa répétition sur copie et les **192 tests backend**
+réussis après adaptation de l'initialiseur. Les identifiants de connexion ci-dessous
+restent inchangés.
 
 Docker Desktop démarré, Java 21, Node.js 22 >= 22.12 ou Node.js 24, npm.
 Depuis la racine Git, le backend se trouve dans le sous-dossier `AtelierConnect`.

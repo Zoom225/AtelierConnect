@@ -41,7 +41,7 @@ class ParticipantAccessServiceTest {
     @Test
     @DisplayName("Un administrateur délègue l'accès lecture au service admin")
     void adminReadAccessDelegatesToAdminAuthorization() {
-        authenticate("admin@padel.com", "ROLE_ADMIN");
+        authenticate("admin@atelierconnect.example", "ROLE_ADMIN");
         Participant participant = new Participant();
         participant.setId(12L);
 
@@ -67,7 +67,7 @@ class ParticipantAccessServiceTest {
     @Test
     @DisplayName("La création d'un participant passe par la vérification admin")
     void createAccessDelegatesToAdminAuthorization() {
-        authenticate("admin@padel.com", "ROLE_ADMIN");
+        authenticate("admin@atelierconnect.example", "ROLE_ADMIN");
 
         participantAccessService.assertCanCreate(3L);
 
@@ -78,7 +78,7 @@ class ParticipantAccessServiceTest {
     @Test
     @DisplayName("La liste des participants est filtrée par le service admin")
     void filterParticipantsDelegatesToAdminAuthorization() {
-        authenticate("admin@padel.com", "ROLE_ADMIN");
+        authenticate("admin@atelierconnect.example", "ROLE_ADMIN");
         Participant participant = new Participant();
         participant.setId(1L);
         List<Participant> participants = List.of(participant);

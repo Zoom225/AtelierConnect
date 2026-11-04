@@ -65,7 +65,7 @@ class PaiementServiceTest {
     @BeforeEach
     void setUp() {
         centre = Centre.builder().nom("Centre collaboratif Lyon").build();
-        salle = Salle.builder().nom("Court A").centre(centre).build();
+        salle = Salle.builder().nom("Salle A").centre(centre).build();
 
         organisateur = Participant.builder()
                 .matricule("G1001").nom("Martin").prenom("Lucas")

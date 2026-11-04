@@ -3,6 +3,8 @@ package com.atelierconnect;
 import com.atelierconnect.entity.Participant;
 import com.atelierconnect.entity.Centre;
 import com.atelierconnect.entity.Administrateur;
+import com.atelierconnect.entity.Salle;
+import com.atelierconnect.entity.Atelier;
 import com.atelierconnect.entity.enums.TypeParticipant;
 import com.atelierconnect.entity.enums.TypeAdministrateur;
 import com.atelierconnect.repository.*;
@@ -15,6 +17,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
 import java.util.Optional;
@@ -45,6 +49,41 @@ class DataInitializerTest {
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(dataInitializer, "demoParticipantPassword", "Membre1234!");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"canonical", "descriptive", "legacy"})
+    void run_shouldSeedExistingRoomsAcrossNamingVersions(String naming) {
+        List<String> names = switch (naming) {
+            case "canonical" -> List.of("Salle A", "Salle B", "Salle C", "Salle 1");
+            case "descriptive" -> List.of("Salle Création A", "Salle Formation B", "Salle Collaborative C", "Salle Numérique 1");
+            default -> List.of("Court A", "Court B", "Court C", "Court 1");
+        };
+        List<Salle> rooms = names.stream().map(name -> Salle.builder().nom(name).build()).toList();
+        List<Participant> participants = List.of("G1001", "G1002", "S10001", "S10002", "L10001", "L10002")
+                .stream().map(matricule -> Participant.builder().matricule(matricule)
+                        .email(matricule + "@atelierconnect.example").passwordHash("existing-hash").build()).toList();
+        for (int i = 0; i < participants.size(); i++) {
+            participants.get(i).setId((long) i + 1);
+        }
+        when(centreRepository.count()).thenReturn(1L);
+        when(atelierRepository.count()).thenReturn(0L);
+        when(salleRepository.findAll()).thenReturn(rooms);
+        when(participantRepository.findAll()).thenReturn(participants);
+        when(participantRepository.findByMatriculeIgnoreCase(anyString())).thenAnswer(invocation ->
+                participants.stream().filter(p -> p.getMatricule().equals(invocation.getArgument(0))).findFirst());
+        when(penaliteRepository.existsByParticipantIdAndDateFinAfter(any(), any(LocalDate.class))).thenReturn(true);
+        when(atelierRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(reservationRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        dataInitializer.run();
+
+        ArgumentCaptor<Atelier> ateliers = ArgumentCaptor.forClass(Atelier.class);
+        verify(atelierRepository, times(4)).save(ateliers.capture());
+        assertThat(ateliers.getAllValues()).extracting(Atelier::getSalle)
+                .containsExactly(rooms.get(0), rooms.get(1), rooms.get(3), rooms.get(2));
+        verify(salleRepository, never()).save(any());
+        verify(centreRepository, never()).save(any());
     }
 
     @Test

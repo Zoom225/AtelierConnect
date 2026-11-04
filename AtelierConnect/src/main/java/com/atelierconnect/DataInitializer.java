@@ -253,10 +253,10 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedAteliersFromExistingData() {
-        Salle salleCreation = requireSeedSalle("Court A", "Salle Création A");
-        Salle salleFormation = requireSeedSalle("Court B", "Salle Formation B");
-        Salle salleCollaborative = requireSeedSalle("Court C", "Salle Collaborative C");
-        Salle salleNumerique = requireSeedSalle("Court 1", "Salle Numérique 1");
+        Salle salleCreation = requireSeedSalle("Salle A", "Salle Création A", "Court A");
+        Salle salleFormation = requireSeedSalle("Salle B", "Salle Formation B", "Court B");
+        Salle salleCollaborative = requireSeedSalle("Salle C", "Salle Collaborative C", "Court C");
+        Salle salleNumerique = requireSeedSalle("Salle 1", "Salle Numérique 1", "Court 1");
 
         Participant lucas = requireSeedParticipant("G1001");
         Participant emma = requireSeedParticipant("G1002");
@@ -267,12 +267,18 @@ public class DataInitializer implements CommandLineRunner {
         seedAteliers(salleCreation, salleFormation, salleCollaborative, salleNumerique, lucas, emma, tom, sarah, alex);
     }
 
-    private Salle requireSeedSalle(String ancienNom, String nouveauNom) {
-        return salleRepository.findAll().stream()
-                .filter(salle -> ancienNom.equals(salle.getNom()) || nouveauNom.equals(salle.getNom()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException(
-                        "Salle de démonstration introuvable : " + ancienNom + " / " + nouveauNom));
+    private Salle requireSeedSalle(String... nomsAcceptes) {
+        List<Salle> salles = salleRepository.findAll();
+        // Privilégier le nom actuel, tout en reprenant les bases historiques.
+        for (String nom : nomsAcceptes) {
+            for (Salle salle : salles) {
+                if (nom.equals(salle.getNom())) {
+                    return salle;
+                }
+            }
+        }
+        throw new IllegalStateException("Salle de démonstration introuvable : "
+                + String.join(" / ", nomsAcceptes));
     }
 
     private Participant requireSeedParticipant(String matricule) {

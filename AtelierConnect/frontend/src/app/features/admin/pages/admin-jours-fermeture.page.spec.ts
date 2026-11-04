@@ -12,7 +12,7 @@ import { AdminJoursFermeturePage } from './admin-jours-fermeture.page';
 describe('AdminJoursFermeturePage', () => {
   const site: CentreResponse = {
     id: 1,
-    nom: 'Padel Club Lyon',
+    nom: 'Centre Créatif Lyon',
     adresse: 'Lyon',
     heureOuverture: '08:00',
     heureFermeture: '22:00',
@@ -23,7 +23,7 @@ describe('AdminJoursFermeturePage', () => {
 
   const jours: JourFermetureResponse[] = [
     { id: 1, date: '2026-08-10', raison: 'Maintenance', global: true, centreId: null, centreNom: null },
-    { id: 2, date: '2026-08-11', raison: 'Tournoi', global: false, centreId: 1, centreNom: 'Padel Club Lyon' }
+    { id: 2, date: '2026-08-11', raison: 'Maintenance atelier', global: false, centreId: 1, centreNom: 'Centre Créatif Lyon' }
   ];
 
   let joursApiMock: {

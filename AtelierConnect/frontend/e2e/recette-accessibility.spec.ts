@@ -2,7 +2,8 @@ import { expect, test } from '@playwright/test';
 
 test('accueil FR/EN et mobile : vocabulaire, langue persistante et absence de débordement', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'AtelierConnect', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'AtelierConnect — Réservation d’ateliers créatifs', exact: true })).toBeVisible();
+  await expect(page).toHaveTitle('AtelierConnect — Réservation d’ateliers créatifs');
   await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
   await expect(page.locator('body')).not.toContainText(/\b(padel|joueurs?|terrains?|courts?|matches)\b/i);
   const desktop = test.info().outputPath('accueil-fr-desktop.png');
@@ -14,7 +15,9 @@ test('accueil FR/EN et mobile : vocabulaire, langue persistante et absence de d�
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(page.getByRole('heading', { name: 'AtelierConnect', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'AtelierConnect — Creative workshop booking', exact: true })).toBeVisible();
+  await expect(page).toHaveTitle('AtelierConnect — Creative workshop booking');
+  await expect(page.locator('.app-logo-tagline')).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await expect(page.locator('body')).not.toContainText(/\b(padel|joueurs?|terrains?|courts?|matches)\b/i);
   const mobile = test.info().outputPath('accueil-en-mobile.png');

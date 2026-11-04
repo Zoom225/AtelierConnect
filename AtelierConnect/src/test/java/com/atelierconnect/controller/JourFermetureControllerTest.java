@@ -80,10 +80,10 @@ class JourFermetureControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "admin@padel.com", roles = "ADMIN")
+    @WithMockUser(username = "admin@atelierconnect.example", roles = "ADMIN")
     @DisplayName("Un admin GLOBAL peut créer une fermeture globale")
     void globalAdminCanCreateGlobalClosingDay() throws Exception {
-        when(administrateurRepository.findByEmail("admin@padel.com"))
+        when(administrateurRepository.findByEmail("admin@atelierconnect.example"))
                 .thenReturn(Optional.of(admin(TypeAdministrateur.GLOBAL, null)));
         when(jourFermetureRepository.save(any(JourFermeture.class))).thenAnswer(invocation -> {
             JourFermeture jour = invocation.getArgument(0);
@@ -106,10 +106,10 @@ class JourFermetureControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "admin.lyon@padel.com", roles = "ADMIN")
+    @WithMockUser(username = "admin.lyon@atelierconnect.example", roles = "ADMIN")
     @DisplayName("Un admin SITE ne peut pas créer une fermeture globale")
     void centreAdminCannotCreateGlobalClosingDay() throws Exception {
-        when(administrateurRepository.findByEmail("admin.lyon@padel.com"))
+        when(administrateurRepository.findByEmail("admin.lyon@atelierconnect.example"))
                 .thenReturn(Optional.of(admin(TypeAdministrateur.SITE, centreLyon)));
 
         JourFermetureRequest request = JourFermetureRequest.builder()
@@ -127,10 +127,10 @@ class JourFermetureControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "admin.lyon@padel.com", roles = "ADMIN")
+    @WithMockUser(username = "admin.lyon@atelierconnect.example", roles = "ADMIN")
     @DisplayName("Un admin SITE peut créer une fermeture sur son centre")
     void centreAdminCanCreateOwnCentreClosingDay() throws Exception {
-        when(administrateurRepository.findByEmail("admin.lyon@padel.com"))
+        when(administrateurRepository.findByEmail("admin.lyon@atelierconnect.example"))
                 .thenReturn(Optional.of(admin(TypeAdministrateur.SITE, centreLyon)));
         when(centreService.getById(1L)).thenReturn(centreLyon);
         when(jourFermetureRepository.save(any(JourFermeture.class))).thenAnswer(invocation -> {
@@ -155,10 +155,10 @@ class JourFermetureControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "admin.lyon@padel.com", roles = "ADMIN")
+    @WithMockUser(username = "admin.lyon@atelierconnect.example", roles = "ADMIN")
     @DisplayName("Un admin SITE ne peut pas supprimer une fermeture globale")
     void centreAdminCannotDeleteGlobalClosingDay() throws Exception {
-        when(administrateurRepository.findByEmail("admin.lyon@padel.com"))
+        when(administrateurRepository.findByEmail("admin.lyon@atelierconnect.example"))
                 .thenReturn(Optional.of(admin(TypeAdministrateur.SITE, centreLyon)));
         when(jourFermetureRepository.findById(10L))
                 .thenReturn(Optional.of(JourFermeture.builder().global(true).build()));
@@ -169,10 +169,10 @@ class JourFermetureControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "admin.lyon@padel.com", roles = "ADMIN")
+    @WithMockUser(username = "admin.lyon@atelierconnect.example", roles = "ADMIN")
     @DisplayName("Un admin SITE ne peut pas supprimer une fermeture d'un autre centre")
     void centreAdminCannotDeleteOtherCentreClosingDay() throws Exception {
-        when(administrateurRepository.findByEmail("admin.lyon@padel.com"))
+        when(administrateurRepository.findByEmail("admin.lyon@atelierconnect.example"))
                 .thenReturn(Optional.of(admin(TypeAdministrateur.SITE, centreLyon)));
         when(jourFermetureRepository.findById(12L))
                 .thenReturn(Optional.of(JourFermeture.builder().global(false).centre(centreParis).build()));
@@ -183,10 +183,10 @@ class JourFermetureControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "admin@padel.com", roles = "ADMIN")
+    @WithMockUser(username = "admin@atelierconnect.example", roles = "ADMIN")
     @DisplayName("Un admin GLOBAL peut supprimer une fermeture")
     void globalAdminCanDeleteClosingDay() throws Exception {
-        when(administrateurRepository.findByEmail("admin@padel.com"))
+        when(administrateurRepository.findByEmail("admin@atelierconnect.example"))
                 .thenReturn(Optional.of(admin(TypeAdministrateur.GLOBAL, null)));
         JourFermeture jour = JourFermeture.builder().global(true).build();
         when(jourFermetureRepository.findById(10L)).thenReturn(Optional.of(jour));
