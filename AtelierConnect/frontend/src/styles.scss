@@ -4,6 +4,7 @@
 // Learn more about theming and how to use it for your application's
 // custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
+@use 'sass:meta';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -16,7 +17,7 @@ html {
         primary: mat.$azure-palette,
         tertiary: mat.$blue-palette,
       ),
-      typography: Roboto,
+      typography: 'DM Sans',
       density: 0,
     )
   );
@@ -47,14 +48,13 @@ body {
     linear-gradient(120deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0) 32%),
     linear-gradient(240deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0) 30%),
     linear-gradient(180deg, #f8fafc 0%, #f1f5f9 46%, #ffffff 100%);
-  --app-pattern:
-    repeating-linear-gradient(
-      125deg,
-      rgba(15, 23, 42, 0.025) 0,
-      rgba(15, 23, 42, 0.025) 1px,
-      transparent 2px,
-      transparent 28px
-    );
+  --app-pattern: repeating-linear-gradient(
+    125deg,
+    rgba(15, 23, 42, 0.025) 0,
+    rgba(15, 23, 42, 0.025) 1px,
+    transparent 2px,
+    transparent 28px
+  );
   background-image: var(--app-bg);
 }
 
@@ -65,14 +65,13 @@ body.ocean-theme {
     radial-gradient(circle at 88% -4%, rgba(14, 165, 233, 0.28) 0%, rgba(14, 165, 233, 0) 34%),
     radial-gradient(circle at 50% 100%, rgba(59, 130, 246, 0.16) 0%, rgba(59, 130, 246, 0) 45%),
     linear-gradient(180deg, #ecfeff 0%, #dff7ff 42%, #dbeafe 100%);
-  --app-pattern:
-    repeating-linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.25) 0,
-      rgba(255, 255, 255, 0.25) 2px,
-      transparent 2px,
-      transparent 22px
-    );
+  --app-pattern: repeating-linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.25) 0,
+    rgba(255, 255, 255, 0.25) 2px,
+    transparent 2px,
+    transparent 22px
+  );
   background-image: var(--app-bg);
   color: #0f172a;
 }
@@ -257,7 +256,12 @@ body.ocean-theme .card-soft {
 }
 
 body.ocean-theme .panel-gradient {
-  background: linear-gradient(135deg, rgba(236, 254, 255, 0.92), rgba(224, 242, 254, 0.92), rgba(219, 234, 254, 0.9));
+  background: linear-gradient(
+    135deg,
+    rgba(236, 254, 255, 0.92),
+    rgba(224, 242, 254, 0.92),
+    rgba(219, 234, 254, 0.9)
+  );
   border-color: rgba(14, 165, 233, 0.3);
 }
 
@@ -279,7 +283,10 @@ body.ocean-theme .status-error {
 }
 
 .mat-mdc-button-base {
-  transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    opacity 120ms ease;
 }
 
 .mat-mdc-button-base:hover {
@@ -322,3 +329,5 @@ body.ocean-theme .status-error {
   padding-bottom: 0.25rem !important;
 }
 /* You can add global styles to this file, and also import other style files */
+@include meta.load-css('styles/atelier-design');
+@include meta.load-css('app/app');

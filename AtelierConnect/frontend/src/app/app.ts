@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, RouterModule } from '@angular/router';
@@ -10,251 +10,175 @@ import { LanguageSwitcherComponent } from './shared/components/language-switcher
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterModule, MatToolbarModule, MatButtonModule, LanguageSwitcherComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatToolbarModule,
+    MatButtonModule,
+    LanguageSwitcherComponent,
+  ],
   template: `
-<header class="app-header">
-  <div class="app-header-inner">
-    <a routerLink="/" class="app-logo">
-      <span class="app-logo-badge">A</span>
-      <span class="app-logo-text">AtelierConnect</span>
-    </a>
+    <a href="#main-content" class="skip-link">{{ designCopy().skip }}</a>
+    <header class="app-header">
+      <div class="app-header-inner">
+        <a routerLink="/" class="app-logo">
+          <span class="app-logo-badge">A</span>
+          <span class="app-logo-wordmark"
+            ><span class="app-logo-text">AtelierConnect</span
+            ><span class="app-logo-tagline">{{ designCopy().tagline }}</span></span
+          >
+        </a>
+        <button
+          type="button"
+          class="menu-toggle"
+          aria-controls="primary-nav"
+          [attr.aria-expanded]="menuOpen()"
+          [attr.aria-label]="designCopy().menu"
+          (click)="menuOpen.set(!menuOpen())"
+        >
+          <span></span><span></span><span></span>
+        </button>
+        <nav
+          id="primary-nav"
+          class="app-nav"
+          [class.is-open]="menuOpen()"
+          [attr.aria-label]="designCopy().navigation"
+          (click)="menuOpen.set(false)"
+          (keydown.escape)="menuOpen.set(false)"
+        >
+          <a
+            routerLink="/"
+            routerLinkActive="nav-active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="nav-link"
+          >
+            {{ navText().home }}
+          </a>
 
-    <nav class="app-nav">
-      <a routerLink="/" routerLinkActive="nav-active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">
-        {{ navText().home }}
-      </a>
+          @if (!adminSession.isAuthenticated()) {
+            <a routerLink="/admin/login" class="nav-link">{{ navText().admin }}</a>
+          }
 
-      @if (!adminSession.isAuthenticated()) {
-        <a routerLink="/admin/login" class="nav-link">{{ navText().admin }}</a>
-      }
+          @if (!memberSession.isAuthenticated()) {
+            <a routerLink="/member" class="nav-btn-outline">{{ navText().member }}</a>
+          }
 
-      @if (!memberSession.isAuthenticated()) {
-        <a routerLink="/member" class="nav-btn-outline">{{ navText().member }}</a>
-      }
+          @if (memberSession.isAuthenticated()) {
+            <div class="nav-divider"></div>
+            <a routerLink="/member/profile" routerLinkActive="nav-active" class="nav-link">{{
+              navText().profile
+            }}</a>
+            <a routerLink="/member/ateliers" routerLinkActive="nav-active" class="nav-link">{{
+              navText().ateliers
+            }}</a>
+            <a routerLink="/member/reservations" routerLinkActive="nav-active" class="nav-link">{{
+              navText().reservations
+            }}</a>
+            <a routerLink="/member/payments" routerLinkActive="nav-active" class="nav-link">{{
+              navText().payments
+            }}</a>
+            <div class="nav-divider"></div>
+            <a routerLink="/member/ateliers/nouveau" class="nav-btn-create">{{
+              navText().create
+            }}</a>
+            <a
+              routerLink="/member/ateliers/nouveau"
+              [queryParams]="{ type: 'PUBLIC' }"
+              class="nav-btn-green"
+              >{{ navText().public }}</a
+            >
+            <a
+              routerLink="/member/ateliers/nouveau"
+              [queryParams]="{ type: 'PRIVE' }"
+              class="nav-btn-purple"
+              >{{ navText().private }}</a
+            >
+            <div class="nav-divider"></div>
+            <button class="nav-btn-logout" type="button" (click)="logoutMember()">
+              {{ navText().logout }}
+            </button>
+          }
 
-      @if (memberSession.isAuthenticated()) {
-        <div class="nav-divider"></div>
-        <a routerLink="/member/profile" routerLinkActive="nav-active" class="nav-link">{{ navText().profile }}</a>
-        <a routerLink="/member/ateliers" routerLinkActive="nav-active" class="nav-link">{{ navText().ateliers }}</a>
-        <a routerLink="/member/reservations" routerLinkActive="nav-active" class="nav-link">{{ navText().reservations }}</a>
-        <a routerLink="/member/payments" routerLinkActive="nav-active" class="nav-link">{{ navText().payments }}</a>
-        <div class="nav-divider"></div>
-        <a routerLink="/member/ateliers/nouveau" class="nav-btn-create">{{ navText().create }}</a>
-        <a routerLink="/member/ateliers/nouveau" [queryParams]="{type:'PUBLIC'}" class="nav-btn-green">{{ navText().public }}</a>
-        <a routerLink="/member/ateliers/nouveau" [queryParams]="{type:'PRIVE'}" class="nav-btn-purple">{{ navText().private }}</a>
-        <div class="nav-divider"></div>
-        <button class="nav-btn-logout" type="button" (click)="logoutMember()">{{ navText().logout }}</button>
-      }
+          @if (adminSession.isAuthenticated()) {
+            <div class="nav-divider"></div>
+            <a
+              routerLink="/admin"
+              routerLinkActive="nav-active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="nav-link"
+              >{{ navText().dashboard }}</a
+            >
+            <a routerLink="/admin/participants" routerLinkActive="nav-active" class="nav-link">{{
+              navText().members
+            }}</a>
+            <a routerLink="/admin/ateliers" routerLinkActive="nav-active" class="nav-link">{{
+              navText().ateliers
+            }}</a>
+            <a routerLink="/admin/centres" routerLinkActive="nav-active" class="nav-link">{{
+              navText().centres
+            }}</a>
+            <a routerLink="/admin/salles" routerLinkActive="nav-active" class="nav-link">{{
+              navText().courts
+            }}</a>
+            <a routerLink="/admin/fermetures" routerLinkActive="nav-active" class="nav-link">{{
+              navText().closures
+            }}</a>
+            <div class="nav-divider"></div>
+            <button class="nav-btn-logout" type="button" (click)="logoutAdmin()">
+              {{ navText().logout }}
+            </button>
+          }
+        </nav>
 
-      @if (adminSession.isAuthenticated()) {
-        <div class="nav-divider"></div>
-        <a routerLink="/admin" routerLinkActive="nav-active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">{{ navText().dashboard }}</a>
-        <a routerLink="/admin/participants" routerLinkActive="nav-active" class="nav-link">{{ navText().members }}</a>
-        <a routerLink="/admin/ateliers" routerLinkActive="nav-active" class="nav-link">{{ navText().ateliers }}</a>
-        <a routerLink="/admin/centres" routerLinkActive="nav-active" class="nav-link">{{ navText().centres }}</a>
-        <a routerLink="/admin/salles" routerLinkActive="nav-active" class="nav-link">{{ navText().courts }}</a>
-        <a routerLink="/admin/fermetures" routerLinkActive="nav-active" class="nav-link">{{ navText().closures }}</a>
-        <div class="nav-divider"></div>
-        <button class="nav-btn-logout" type="button" (click)="logoutAdmin()">{{ navText().logout }}</button>
-      }
-    </nav>
+        <app-language-switcher class="app-lang-switcher"></app-language-switcher>
+      </div>
+    </header>
 
-    <app-language-switcher class="app-lang-switcher"></app-language-switcher>
-  </div>
-</header>
-
-<main class="app-main-shell">
-  <router-outlet></router-outlet>
-</main>
-`,
-  styles: [`
-    .app-header {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      background: rgba(255, 255, 255, 0.92);
-      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-      backdrop-filter: blur(18px);
-    }
-
-    .app-header-inner {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0.75rem 1.5rem;
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-    }
-
-    .app-logo {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      text-decoration: none;
-      margin-right: 0.75rem;
-      flex-shrink: 0;
-    }
-
-    .app-logo-badge {
-      color: #ffffff;
-      font-size: 1rem;
-      font-weight: 900;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 2rem;
-      height: 2rem;
-      background: linear-gradient(135deg, #0f766e, #16a34a);
-      border-radius: 8px;
-      box-shadow: 0 10px 22px rgba(15, 118, 110, 0.24);
-    }
-
-    .app-logo-text {
-      font-size: 1.1rem;
-      font-weight: 800;
-      color: #0f172a;
-      letter-spacing: 0;
-    }
-
-    .app-nav {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      flex: 1;
-    }
-
-    .app-lang-switcher {
-      flex-shrink: 0;
-      margin-left: auto;
-    }
-
-    .nav-link {
-      color: #475569;
-      font-size: 0.875rem;
-      font-weight: 650;
-      text-decoration: none;
-      padding: 0.48rem 0.82rem;
-      border-radius: 8px;
-      transition: background 0.15s, color 0.15s, transform 0.15s;
-      white-space: nowrap;
-    }
-
-    .nav-link:hover {
-      background: #f1f5f9;
-      color: #0f172a;
-      transform: translateY(-1px);
-    }
-
-    .nav-active {
-      background: #ecfdf5 !important;
-      color: #047857 !important;
-      font-weight: 800;
-    }
-
-    .nav-divider {
-      width: 1px;
-      height: 1.5rem;
-      background: rgba(15, 23, 42, 0.12);
-      margin: 0 0.25rem;
-      flex-shrink: 0;
-    }
-
-    .nav-btn-outline,
-    .nav-btn-green,
-    .nav-btn-create,
-    .nav-btn-purple,
-    .nav-btn-logout {
-      border-radius: 8px;
-      padding: 0.45rem 0.95rem;
-      font-size: 0.83rem;
-      font-weight: 800;
-      text-decoration: none;
-      white-space: nowrap;
-      transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
-    }
-
-    .nav-btn-outline {
-      color: #0f766e;
-      border: 1px solid rgba(15, 118, 110, 0.26);
-      background: #ffffff;
-    }
-
-    .nav-btn-outline:hover {
-      background: #ecfdf5;
-      transform: translateY(-1px);
-    }
-
-    .nav-btn-green {
-      background: #047857;
-      color: #ffffff;
-      border: none;
-      box-shadow: 0 8px 18px rgba(4, 120, 87, 0.22);
-    }
-
-    .nav-btn-create {
-      background: #0f172a;
-      color: #ffffff;
-      border: none;
-      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.18);
-    }
-
-    .nav-btn-purple {
-      background: #2563eb;
-      color: #ffffff;
-      border: none;
-      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.2);
-    }
-
-    .nav-btn-green:hover,
-    .nav-btn-create:hover,
-    .nav-btn-purple:hover {
-      transform: translateY(-1px);
-    }
-
-    .nav-btn-logout {
-      background: #fff1f2;
-      color: #be123c;
-      border: 1px solid rgba(225, 29, 72, 0.2);
-      cursor: pointer;
-    }
-
-    .nav-btn-logout:hover {
-      background: #ffe4e6;
-    }
-
-    .app-main-shell {
-      min-height: calc(100vh - 58px);
-      background: transparent;
-    }
-
-    @media (max-width: 760px) {
-      .app-header-inner {
-        padding: 0.7rem 1rem;
-      }
-
-      .app-nav {
-        width: 100%;
-      }
-
-      .app-lang-switcher {
-        width: 100%;
-        margin-left: 0;
-      }
-
-      .nav-divider {
-        display: none;
-      }
-    }
-  `]
+    <main id="main-content" class="app-main-shell" tabindex="-1">
+      <router-outlet></router-outlet>
+    </main>
+    <footer class="app-footer">
+      <div class="footer-content">
+        <a routerLink="/" class="footer-brand">AtelierConnect<span>✳</span></a>
+        <p>{{ designCopy().footer }}</p>
+        <div class="footer-links">
+          <a routerLink="/member">{{ navText().member }}</a
+          ><a routerLink="/admin/login">{{ navText().admin }}</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© {{ year }} AtelierConnect</span><span>{{ designCopy().signature }}</span>
+      </div>
+    </footer>
+  `,
+  styles: [],
 })
 export class App {
+  readonly menuOpen = signal(false);
+  readonly year = new Date().getFullYear();
   readonly adminSession = inject(AdminSessionService);
   readonly memberSession = inject(MemberSessionService);
   private readonly language = inject(LanguageService);
   private readonly router = inject(Router);
+  readonly designCopy = computed(() =>
+    this.language.locale() === 'fr'
+      ? {
+          skip: 'Aller au contenu',
+          tagline: 'Le plaisir de créer ensemble',
+          menu: 'Ouvrir ou fermer le menu',
+          navigation: 'Navigation principale',
+          footer: 'Un lieu, des idées et le plaisir de faire ensemble.',
+          signature: 'Créer des choses. Tisser des liens.',
+        }
+      : {
+          skip: 'Skip to content',
+          tagline: 'The joy of creating together',
+          menu: 'Open or close menu',
+          navigation: 'Main navigation',
+          footer: 'A place, a few ideas, and the joy of making together.',
+          signature: 'Make things. Make connections.',
+        },
+  );
   readonly navText = computed(() => ({
     home: this.language.t('nav.home'),
     admin: this.language.t('nav.admin'),
@@ -271,7 +195,7 @@ export class App {
     create: this.language.t('nav.create'),
     public: this.language.t('nav.public'),
     private: this.language.t('nav.private'),
-    logout: this.language.t('nav.logout')
+    logout: this.language.t('nav.logout'),
   }));
 
   logoutAdmin(): void {
