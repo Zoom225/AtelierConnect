@@ -73,8 +73,10 @@ reste l'inventaire historique ; les décisions sur les durées et tarifs sont di
 Ces chaînes sont des données, pas des libellés codés de l'interface. Elles sont
 conservées pour respecter l'interdiction de modifier l'historique sans validation.
 Les identifiants et relations doivent rester identiques lors d'un renommage approuvé.
-Ne pas transformer Lyon/Paris en Bruxelles/Namur : ce serait une autre modification
-fonctionnelle, non justifiée par un simple changement de vocabulaire.
+Le 5 novembre 2026, le propriétaire a explicitement demandé des noms de villes
+belges distincts : [Centre Bruxelles et Centre Namur](../belgian-centre-cities.md).
+Ce second renommage conserve les mêmes identifiants et toutes les autres données,
+y compris les adresses existantes ; il ne déplace pas les réservations.
 
 Les anciennes durées de centre et les prix de salle restent également stockés.
 Le formulaire de création affiche maintenant la règle du nouvel atelier (90 EUR)

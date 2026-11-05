@@ -57,12 +57,16 @@ L'[audit des anciennes mentions](AtelierConnect/docs/audit-nomenclature-2026-11-
 explique les corrections de Swagger et les références historiques conservées
 pour les connexions, les sessions et les données existantes.
 
-Les centres locaux s'appellent désormais **Centre Lyon / Centre Paris**, et les
+Les centres locaux s'appellent désormais **Centre Bruxelles / Centre Namur**, et les
 salles **Salle A/B/C/1/2**, avec les mêmes identifiants et réservations.
 Le [rapport de renommage](AtelierConnect/docs/resource-label-renaming.md) décrit
 la migration réversible, sa répétition sur copie et les **192 tests backend**
 réussis après adaptation de l'initialiseur. Les identifiants de connexion ci-dessous
 restent inchangés.
+
+Les [noms des villes belges](AtelierConnect/docs/belgian-centre-cities.md) ont été
+choisis le 5 novembre 2026. Les anciens e-mails administrateurs sont conservés :
+ils identifient les mêmes comptes, rattachés aux mêmes centres par leur identifiant.
 
 Docker Desktop démarré, Java 21, Node.js 22 >= 22.12 ou Node.js 24, npm.
 Depuis la racine Git, le backend se trouve dans le sous-dossier `AtelierConnect`.
@@ -193,8 +197,8 @@ administrateur de démonstration est son matricule, en majuscules.
 | Périmètre | E-mail de connexion | Mot de passe |
 | --- | --- | --- |
 | Global | `admin@padel.com` | `ADMIN001` |
-| Centre Lyon | `admin.lyon@padel.com` | `ADMIN002` |
-| Centre Paris | `admin.paris@padel.com` | `ADMIN003` |
+| Centre Bruxelles | `admin.lyon@padel.com` | `ADMIN002` |
+| Centre Namur | `admin.paris@padel.com` | `ADMIN003` |
 
 Les e-mails historiques en `padel.com` sont ceux réellement enregistrés dans la
 base. Ils ne doivent pas être remplacés par une adresse inventée en `atelierconnect`.

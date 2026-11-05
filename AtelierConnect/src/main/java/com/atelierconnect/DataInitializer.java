@@ -79,7 +79,7 @@ public class DataInitializer implements CommandLineRunner {
         log.info("DataInitializer : initialisation de la base de donnees...");
 
         Centre centreBruxelles = centreRepository.save(Centre.builder()
-                .nom("Centre Créatif Bruxelles")
+                .nom("Centre Bruxelles")
                 .adresse("Rue des Ateliers 12, 1000 Bruxelles")
                 .heureOuverture(LocalTime.of(8, 0))
                 .heureFermeture(LocalTime.of(22, 0))
@@ -90,7 +90,7 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         Centre centreNamur = centreRepository.save(Centre.builder()
-                .nom("Centre Collaboratif Namur")
+                .nom("Centre Namur")
                 .adresse("Rue de la Créativité 45, 5000 Namur")
                 .heureOuverture(LocalTime.of(7, 0))
                 .heureFermeture(LocalTime.of(23, 0))

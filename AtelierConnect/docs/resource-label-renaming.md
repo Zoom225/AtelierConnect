@@ -1,5 +1,9 @@
 # Renommage des centres et salles — 4 novembre 2026
 
+**Évolution du 5 novembre :** les centres 1 et 2 portent maintenant les noms de
+[Centre Bruxelles et Centre Namur](belgian-centre-cities.md). Les tableaux de ce
+rapport décrivent la première étape du 4 novembre ; les noms des salles restent identiques.
+
 Renommage explicitement demandé et appliqué à la base locale `atelierconnect_db`.
 Seuls les sept champs `nom` ci-dessous ont changé. Les villes, adresses, horaires,
 prix, durées, identifiants, relations, comptes et données métier sont conservés.

@@ -1,5 +1,9 @@
 # Audit de la nomenclature AtelierConnect — 4 novembre 2026
 
+**Évolution du 5 novembre :** les noms des centres sont désormais
+[Centre Bruxelles et Centre Namur](belgian-centre-cities.md), à la demande du
+propriétaire. Les données et identifiants de connexion restent conservés.
+
 La recherche couvre le code Java et Angular, les tests, les scripts, les
 configurations et la documentation. Les dépendances, builds, secrets, journaux
 et sauvegardes ne sont pas des sources à renommer. Les centres et salles de la
