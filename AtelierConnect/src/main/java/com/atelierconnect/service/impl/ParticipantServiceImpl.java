@@ -43,6 +43,7 @@ public class ParticipantServiceImpl implements ParticipantService {
     private final EntityManager entityManager;
     private final ReservationRepository reservationRepository;
     private final DetteService detteService;
+    private final DemoPenaltyService demoPenaltyService;
 
     @Override
     public Participant create(Participant participant, Long centreId, String rawPassword) {
@@ -183,7 +184,7 @@ public class ParticipantServiceImpl implements ParticipantService {
             throw new BusinessException("Identifiants invalides.");
         }
 
-        return participant;
+        return "L10002".equals(normalizedMatricule) ? demoPenaltyService.prepare(participant) : participant;
     }
 
     private String normalizeMatricule(String matricule) {

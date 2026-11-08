@@ -6,6 +6,10 @@ import com.atelierconnect.entity.enums.StatutAtelier;
 import com.atelierconnect.entity.enums.StatutReservation;
 import com.atelierconnect.entity.enums.TypeAtelier;
 import com.atelierconnect.dto.request.CreateAtelierRequest;
+import com.atelierconnect.dto.request.AtelierRequest;
+import com.atelierconnect.entity.Atelier;
+import com.atelierconnect.entity.Participant;
+import com.atelierconnect.exception.BusinessException;
 import com.atelierconnect.dto.response.AtelierDto;
 import com.atelierconnect.repository.AdministrateurRepository;
 import com.atelierconnect.repository.ParticipantRepository;
@@ -29,11 +33,15 @@ import com.atelierconnect.test.TestSecurityConfig;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -97,6 +105,42 @@ class AtelierControllerTest {
                 15.0,                                      // prixParJoueur
                 null                                       // dateConversionPublic
         );
+    }
+
+    @Test
+    @WithMockUser(username = "autre.participant", roles = "MEMBER")
+    void modificationRefuseUnAutreParticipantMemeAvecLeBonIdentifiantOrganisateur() {
+        Participant organisateur = Participant.builder().matricule("organisateur").build();
+        organisateur.setId(10L);
+        Participant autre = Participant.builder().matricule("autre.participant").build();
+        autre.setId(99L);
+        Atelier atelier = Atelier.builder().organisateur(organisateur).build();
+        when(atelierService.getAtelierEntityById(1L)).thenReturn(atelier);
+        when(participantRepository.findByMatriculeIgnoreCase("autre.participant")).thenReturn(Optional.of(autre));
+        AtelierController controleur = new AtelierController(atelierService, adminAuthorizationService,
+                new CurrentParticipantService(participantRepository), reservationRepository);
+        AtelierRequest demande = AtelierRequest.builder().organisateurId(10L).build();
+
+        assertThatThrownBy(() -> controleur.updateAtelier(1L, demande))
+                .isInstanceOf(BusinessException.class).hasMessageContaining("autre participant");
+        verify(atelierService, never()).updateAtelier(any(), any());
+    }
+
+    @Test
+    @WithMockUser(username = "organisateur", roles = "MEMBER")
+    void modificationTransmiseAuServicePourLOrganisateurConnecte() {
+        Participant organisateur = Participant.builder().matricule("organisateur").build();
+        organisateur.setId(10L);
+        Atelier atelier = Atelier.builder().organisateur(organisateur).build();
+        when(atelierService.getAtelierEntityById(1L)).thenReturn(atelier);
+        when(participantRepository.findByMatriculeIgnoreCase("organisateur")).thenReturn(Optional.of(organisateur));
+        AtelierController controleur = new AtelierController(atelierService, adminAuthorizationService,
+                new CurrentParticipantService(participantRepository), reservationRepository);
+        AtelierRequest demande = AtelierRequest.builder().organisateurId(10L).build();
+        when(atelierService.updateAtelier(1L, demande)).thenReturn(atelierDto);
+
+        assertThat(controleur.updateAtelier(1L, demande).getBody()).isEqualTo(atelierDto);
+        verify(atelierService).updateAtelier(1L, demande);
     }
 
     @Test
