@@ -25,7 +25,6 @@ import java.util.Optional;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -70,13 +69,6 @@ class DataInitializerTest {
                 .singleElement().extracting(Participant::getSolde).isEqualTo(90.0);
         assertThat(saved.getAllValues()).filteredOn(p -> !"L10002".equals(p.getMatricule()))
                 .extracting(Participant::getSolde).containsOnly(0.0);
-        ArgumentCaptor<Administrateur> admins = ArgumentCaptor.forClass(Administrateur.class);
-        verify(administrateurRepository, times(3)).save(admins.capture());
-        assertThat(admins.getAllValues()).extracting(Administrateur::getMatricule, Administrateur::getEmail)
-                .containsExactly(
-                        org.assertj.core.groups.Tuple.tuple("ADMIN001", "admin@atelierconnect.example"),
-                        org.assertj.core.groups.Tuple.tuple("ADMIN002", "admin.bruxelles@atelierconnect.example"),
-                        org.assertj.core.groups.Tuple.tuple("ADMIN003", "admin.namur@atelierconnect.example"));
     }
 
     @ParameterizedTest
@@ -193,9 +185,8 @@ class DataInitializerTest {
     }
 
     @Test
-    void run_shouldUpdateLegacyDemoAdminEmailsAndPreservePasswordHashes() {
+    void run_shouldPreserveExistingDemoAdminPasswordHashes() {
         Administrateur adminLyon = Administrateur.builder()
-                .matricule("ADMIN002")
                 .email("admin.lyon@padel.com")
                 .nom("Admin")
                 .prenom("Lyon")
@@ -205,7 +196,6 @@ class DataInitializerTest {
         adminLyon.setId(10L);
 
         Administrateur adminParis = Administrateur.builder()
-                .matricule("ADMIN003")
                 .email("admin.paris@padel.com")
                 .nom("Admin")
                 .prenom("Paris")
@@ -217,9 +207,9 @@ class DataInitializerTest {
         when(centreRepository.count()).thenReturn(1L);
         when(atelierRepository.count()).thenReturn(1L);
         when(participantRepository.findAll()).thenReturn(List.of());
-        when(administrateurRepository.findByMatricule(anyString())).thenAnswer(invocation ->
-                List.of(adminLyon, adminParis).stream()
-                        .filter(admin -> admin.getMatricule().equals(invocation.getArgument(0))).findFirst());
+        when(administrateurRepository.findByEmail("admin@padel.com")).thenReturn(Optional.empty());
+        when(administrateurRepository.findByEmail("admin.lyon@padel.com")).thenReturn(Optional.of(adminLyon));
+        when(administrateurRepository.findByEmail("admin.paris@padel.com")).thenReturn(Optional.of(adminParis));
         when(participantRepository.save(any(Participant.class))).thenAnswer(invocation -> {
             Participant saved = invocation.getArgument(0);
             saved.setId(99L);
@@ -231,10 +221,8 @@ class DataInitializerTest {
 
         dataInitializer.run();
 
-        verify(administrateurRepository).save(adminLyon);
-        verify(administrateurRepository).save(adminParis);
-        assertThat(adminLyon.getEmail()).isEqualTo("admin.bruxelles@atelierconnect.example");
-        assertThat(adminParis.getEmail()).isEqualTo("admin.namur@atelierconnect.example");
+        verify(administrateurRepository, never()).save(adminLyon);
+        verify(administrateurRepository, never()).save(adminParis);
         assertThat(adminLyon.getPasswordHash()).isEqualTo("old-hash");
         assertThat(adminParis.getPasswordHash()).isEqualTo("old-hash-2");
     }
@@ -253,75 +241,14 @@ class DataInitializerTest {
         when(participantRepository.findAll()).thenReturn(List.of(participant));
         when(participantRepository.findByMatriculeIgnoreCase("L10002")).thenReturn(Optional.of(participant));
         when(penaliteRepository.existsByParticipantId(eq(50L))).thenReturn(true);
-        when(administrateurRepository.findByMatricule(anyString())).thenAnswer(invocation ->
-                admin.getMatricule().equals(invocation.getArgument(0)) ? Optional.of(admin) : Optional.empty());
+        when(administrateurRepository.findByEmail(anyString())).thenAnswer(invocation ->
+                admin.getEmail().equals(invocation.getArgument(0)) ? Optional.of(admin) : Optional.empty());
         when(passwordEncoder.encode("ADMIN002")).thenReturn("encoded-admin-matricule");
 
         dataInitializer.run();
 
         assertThat(admin.getPasswordHash()).isEqualTo("encoded-admin-matricule");
         verify(administrateurRepository).save(admin);
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"admin@atelierconnect.example", "direction@centre.example"})
-    void run_shouldPreserveCurrentOrCustomizedAdminCredentials(String email) {
-        Administrateur admin = Administrateur.builder().matricule("ADMIN001").email(email)
-                .passwordHash("custom-hash").typeAdministrateur(TypeAdministrateur.GLOBAL).build();
-        admin.setId(1L);
-        existingDatabaseWithAdmin(admin);
-
-        dataInitializer.run();
-
-        assertThat(admin.getEmail()).isEqualTo(email);
-        assertThat(admin.getPasswordHash()).isEqualTo("custom-hash");
-        verify(administrateurRepository, never()).save(admin);
-        verifyNoInteractions(passwordEncoder);
-    }
-
-    @Test
-    void run_shouldMigrateGlobalAdminEmailOnlyOnce() {
-        Administrateur admin = Administrateur.builder().matricule("ADMIN001").email("admin@padel.com")
-                .passwordHash("existing-hash").typeAdministrateur(TypeAdministrateur.GLOBAL).build();
-        admin.setId(1L);
-        existingDatabaseWithAdmin(admin);
-
-        dataInitializer.run();
-        dataInitializer.run();
-
-        assertThat(admin.getEmail()).isEqualTo("admin@atelierconnect.example");
-        assertThat(admin.getPasswordHash()).isEqualTo("existing-hash");
-        verify(administrateurRepository, times(1)).save(admin);
-        verifyNoInteractions(passwordEncoder);
-    }
-
-    @Test
-    void run_shouldRefuseAnEmailAlreadyUsedByAnotherAdmin() {
-        Administrateur admin = Administrateur.builder().matricule("ADMIN001").email("admin@padel.com")
-                .passwordHash("existing-hash").typeAdministrateur(TypeAdministrateur.GLOBAL).build();
-        admin.setId(1L);
-        Administrateur other = Administrateur.builder().email("admin@atelierconnect.example").build();
-        other.setId(2L);
-        existingDatabaseWithAdmin(admin);
-        when(administrateurRepository.findByEmail("admin@atelierconnect.example")).thenReturn(Optional.of(other));
-
-        assertThatThrownBy(() -> dataInitializer.run()).isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("déjà utilisée");
-        assertThat(admin.getEmail()).isEqualTo("admin@padel.com");
-        assertThat(admin.getPasswordHash()).isEqualTo("existing-hash");
-        verify(administrateurRepository, never()).save(any());
-    }
-
-    private void existingDatabaseWithAdmin(Administrateur admin) {
-        Participant participant = Participant.builder().matricule("L10002").passwordHash("existing-hash").build();
-        participant.setId(50L);
-        when(centreRepository.count()).thenReturn(1L);
-        when(atelierRepository.count()).thenReturn(1L);
-        when(participantRepository.findAll()).thenReturn(List.of(participant));
-        when(participantRepository.findByMatriculeIgnoreCase("L10002")).thenReturn(Optional.of(participant));
-        when(penaliteRepository.existsByParticipantId(50L)).thenReturn(true);
-        when(administrateurRepository.findByMatricule(anyString())).thenAnswer(invocation ->
-                admin.getMatricule().equals(invocation.getArgument(0)) ? Optional.of(admin) : Optional.empty());
     }
 
     @Test

@@ -65,12 +65,12 @@ Les centres locaux s'appellent désormais **Centre Bruxelles / Centre Namur**, e
 salles **Salle A/B/C/1/2**, avec les mêmes identifiants et réservations.
 Le [rapport de renommage](AtelierConnect/docs/resource-label-renaming.md) décrit
 la migration réversible, sa répétition sur copie et les **192 tests backend**
-réussis après adaptation de l'initialiseur. Les matricules et mots de passe des
-comptes existants sont conservés ; les e-mails actuels figurent dans le tableau.
+réussis après adaptation de l'initialiseur. Les identifiants de connexion ci-dessous
+restent inchangés.
 
 Les [noms des villes belges](AtelierConnect/docs/belgian-centre-cities.md) ont été
-choisis le 5 novembre 2026. Les e-mails de démonstration sont désormais alignés
-sur AtelierConnect et sur les centres belges, avec les mêmes comptes et centres.
+choisis le 5 novembre 2026. Les anciens e-mails administrateurs sont conservés :
+ils identifient les mêmes comptes, rattachés aux mêmes centres par leur identifiant.
 
 Docker Desktop démarré, Java 21, Node.js 22 >= 22.12 ou Node.js 24, npm.
 Depuis la racine Git, le backend se trouve dans le sous-dossier `AtelierConnect`.
@@ -240,21 +240,13 @@ administrateur de démonstration est son matricule, en majuscules.
 
 | Périmètre | E-mail de connexion | Mot de passe |
 | --- | --- | --- |
-| Global | `admin@atelierconnect.example` | `ADMIN001` |
-| Centre Bruxelles | `admin.bruxelles@atelierconnect.example` | `ADMIN002` |
-| Centre Namur | `admin.namur@atelierconnect.example` | `ADMIN003` |
+| Global | `admin@padel.com` | `ADMIN001` |
+| Centre Bruxelles | `admin.lyon@padel.com` | `ADMIN002` |
+| Centre Namur | `admin.paris@padel.com` | `ADMIN003` |
 
-Ces adresses sont des identifiants de démonstration ; le domaine `.example`
-ne sert pas à recevoir des e-mails. `DataInitializer` partage une seule définition
-par compte pour la création et la mise à jour des anciennes adresses connues.
-Les adresses personnalisées et les mots de passe existants sont conservés.
-Sur une base existante dont l'initialisation est désactivée, la migration
-`scripts/migrations/20261108_align_demo_admin_emails.up.sql` applique uniquement
-ce changement d'e-mail, après sauvegarde. Elle a été vérifiée sur une copie
-restaurée, rejouée sans seconde modification, puis appliquée en local.
-Se reconnecter après ce changement pour obtenir un JWT associé au nouvel e-mail.
-Contrôle local du 8 novembre : compilation réussie, 19 tests ciblés réussis et
-les trois connexions administrateurs en HTTP 200, dont une via le proxy Angular.
+Les e-mails historiques en `padel.com` sont ceux réellement enregistrés dans la
+base. Ils ne doivent pas être remplacés par une adresse inventée en `atelierconnect`.
+Les trois connexions ont renvoyé HTTP 200.
 
 ### Participants : matricule + mot de passe
 
