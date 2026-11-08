@@ -48,21 +48,21 @@ public class AtelierServiceImpl implements AtelierService {
         Participant organisateur = participantRepository.findByMatriculeIgnoreCase(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Participant introuvable pour l'utilisateur : " + username));
 
-        // Serialize slot validation and insertion for this room, including the break.
+        // Sérialiser la validation et l'enregistrement des créneaux de cette salle, pause comprise.
         Salle salle = salleService.getByIdForUpdate(request.salleId());
 
-        // Regle metier : un participant avec un solde impaye ne peut pas creer de atelier.
+        // Règle métier : un participant avec un solde impayé ne peut pas créer d'atelier.
         if (participantService.hasOutstandingBalance(organisateur.getId())) {
             throw new BusinessException("Vous avez un solde impayé et ne pouvez pas créer d'atelier.");
         }
-        // Regle metier : un participant penalise ne peut pas creer de atelier.
+        // Règle métier : un participant suspendu ne peut pas créer d'atelier.
         if (participantService.hasActivePenalty(organisateur.getId())) {
             throw new BusinessException("Vous avez une suspension active et ne pouvez pas créer d'atelier.");
         }
 
         validateBookingDelay(organisateur, request.atelierDate().toLocalDate());
         validateCentreAccessForOrganizer(organisateur, salle);
-        //Service metier debut et fin atelier
+        // Calculer les dates de début et de fin de l'atelier.
         LocalDateTime dateDebut = request.atelierDate();
         if (dateDebut.isBefore(LocalDateTime.now())) {
             throw new BusinessException("Un atelier ne peut pas être créé dans le passé.");
@@ -72,7 +72,7 @@ public class AtelierServiceImpl implements AtelierService {
         validateCentreNotClosed(salle, dateDebut.toLocalDate());
         validateCentreOpeningHours(salle, dateDebut.toLocalTime(), dateFin.toLocalTime());
 
-        // Regle metier : une salle ne peut pas avoir deux atelier sur le meme creneau horaire.
+        // Règle métier : une salle ne peut pas accueillir deux ateliers sur le même créneau horaire.
         if (!isSlotAvailable(salle, dateDebut, dateFin)) {
             throw new BusinessException("Ce créneau est déjà réservé pour la salle : " + salle.getId());
         }
@@ -89,7 +89,7 @@ public class AtelierServiceImpl implements AtelierService {
         atelier.setPrixParParticipant(AtelierRules.PRIX_PARTICIPANT);
 
         Atelier savedAtelier = atelierRepository.save(atelier);
-        // Regle metier : l'organisateur commence avec une reservation en attente et un paiement associe.
+        // Règle métier : l'organisateur commence avec une réservation en attente et un paiement associé.
         createPendingReservationForOrganizer(savedAtelier, organisateur);
         log.info("Atelier créé avec succès (ID: {}) par l'utilisateur {}", savedAtelier.getId(), username);
 
@@ -138,7 +138,7 @@ public class AtelierServiceImpl implements AtelierService {
     public Atelier getAtelierEntityByIdForUpdate(Long id) {
         Atelier atelier = atelierRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Atelier introuvable avec l'identifiant : " + id));
-        // A scheduler or controller may have loaded the entity before a concurrent commit.
+        // Un planificateur ou un contrôleur a pu charger l'entité avant la validation d'une transaction concurrente.
         entityManager.refresh(atelier);
         return atelier;
     }
@@ -153,11 +153,11 @@ public class AtelierServiceImpl implements AtelierService {
     public AtelierDto updateAtelier(Long atelierId, AtelierRequest request) {
         Atelier atelier = getAtelierEntityByIdForUpdate(atelierId);
 
-        // Regle metier : un atelier annule ne peut plus etre modifie.
+        // Règle métier : un atelier annulé ne peut plus être modifié.
         if (atelier.getStatut() == StatutAtelier.ANNULE) {
             throw new BusinessException("Impossible de modifier un atelier annulé.");
         }
-        // Regle metier : seul l'organisateur peut modifier son atelier.
+        // Règle métier : seul l'organisateur peut modifier son atelier.
         if (!atelier.getOrganisateur().getId().equals(request.getOrganisateurId())) {
             throw new BusinessException("Seul l'organisateur peut modifier cet atelier.");
         }
@@ -177,7 +177,7 @@ public class AtelierServiceImpl implements AtelierService {
         validateCentreNotClosed(salle, dateDebut.toLocalDate());
         validateCentreOpeningHours(salle, dateDebut.toLocalTime(), dateFin.toLocalTime());
 
-        // Regle metier : la modification ne doit pas creer de chevauchement de creneau.
+        // Règle métier : la modification ne doit pas créer de chevauchement de créneaux.
         if (!isSlotAvailableExcluding(salle, dateDebut, dateFin, atelierId)) {
             throw new BusinessException("Ce créneau est déjà réservé pour la salle : " + salle.getId());
         }
@@ -195,11 +195,11 @@ public class AtelierServiceImpl implements AtelierService {
     public void cancelAtelier(Long atelierId, Long requesterId) {
         Atelier atelier = getAtelierEntityByIdForUpdate(atelierId);
 
-        // Regle metier : un atelier deja annule ne peut pas etre annule une seconde fois.
+        // Règle métier : un atelier déjà annulé ne peut pas être annulé une seconde fois.
         if (atelier.getStatut() == StatutAtelier.ANNULE) {
             throw new BusinessException("Cet atelier est déjà annulé.");
         }
-        // Regle metier : seul l'organisateur peut annuler son atelier.
+        // Règle métier : seul l'organisateur peut annuler son atelier.
         if (!atelier.getOrganisateur().getId().equals(requesterId)) {
             throw new BusinessException("Seul l'organisateur peut annuler cet atelier.");
         }
@@ -228,7 +228,7 @@ public class AtelierServiceImpl implements AtelierService {
                         && (m.getNbParticipantsActuels() == null
                                 || m.getNbParticipantsActuels() < AtelierRules.CAPACITE))
                 .toList();
-        // Le scheduler applique la même validation métier que l'API.
+        // Le planificateur applique la même validation métier que l'API.
         if (!expiredAteliers.isEmpty()) {
             expiredAteliers.forEach(m -> convertToPublic(m.getId()));
             log.info("Scheduler : {} atelier(s) privé(s) ouvert(s) au public", expiredAteliers.size());
@@ -255,7 +255,7 @@ public class AtelierServiceImpl implements AtelierService {
     public void convertToPublic(Long atelierId) {
         Atelier atelier = getAtelierEntityByIdForUpdate(atelierId);
         requireBeforeDebtCharge(atelierId);
-        // Regle metier : un atelier deja public ne peut pas etre converti en public.
+        // Règle métier : un atelier déjà public ne peut pas être converti en public.
         if (atelier.getTypeAtelier() == TypeAtelier.PUBLIC) {
             throw new BusinessException("Cet atelier est déjà public.");
         }
@@ -312,8 +312,8 @@ public class AtelierServiceImpl implements AtelierService {
     }
 
     private void incrementParticipantsForAtelier(Atelier atelier, boolean save) {
-        // Regle metier : un atelier collaboratif doit contenir au maximum 6 participants.
-        // Des que les 6 places sont occupees, l'atelier devient complet.
+        // Règle métier : un atelier collaboratif peut accueillir au maximum 6 participants.
+        // Dès que les 6 places sont occupées, l'atelier devient complet.
         if (atelier.getNbParticipantsActuels() >= AtelierRules.CAPACITE) {
             throw new BusinessException("Cet atelier est déjà complet.");
         }
@@ -331,7 +331,7 @@ public class AtelierServiceImpl implements AtelierService {
     public void decrementParticipants(Long atelierId) {
         // Le paiement et l'annulation ajustent le compteur sous le même verrou d'atelier.
         Atelier atelier = getAtelierEntityByIdForUpdate(atelierId);
-        // Regle metier : impossible de retirer un participant d'un atelier vide.
+        // Règle métier : impossible de retirer un participant d'un atelier vide.
         if (atelier.getNbParticipantsActuels() <= 0) {
             throw new BusinessException("Cet atelier ne comporte aucun participant confirmé.");
         }
@@ -341,7 +341,7 @@ public class AtelierServiceImpl implements AtelierService {
         }
         atelierRepository.save(atelier);
     }
-    //la règle des 20 minutes entre deux atelier
+    // Respecter la pause de 20 minutes entre deux ateliers.
     private boolean isSlotAvailable(Salle salle, LocalDateTime start, LocalDateTime end) {
         int breakMinutes = AtelierRules.PAUSE_MINUTES;
         List<Atelier> existingAteliers = atelierRepository.findOverlappingAteliers(
@@ -368,30 +368,30 @@ public class AtelierServiceImpl implements AtelierService {
         long daysUntilAtelier = ChronoUnit.DAYS.between(LocalDate.now(), atelierDate);
         int maxDaysAhead = AtelierRules.delaiReservation(participant.getTypeParticipant());
 
-        // Regle metier : la date de l'atelier ne peut pas etre dans le passe.
+        // Règle métier : la date de l'atelier ne peut pas être dans le passé.
         if (daysUntilAtelier < 0) {
             throw new BusinessException("La date de l'atelier est déjà passée.");
         }
-        // Regle metier : le delai de reservation depend du type de participant.
+        // Règle métier : le délai de réservation dépend du type de participant.
         if (daysUntilAtelier > maxDaysAhead) {
             throw new BusinessException("Le participant " + participant.getTypeParticipant()
                     + " ne peut pas réserver plus de " + maxDaysAhead + " jours à l'avance.");
         }
     }
-    //methode fermeture globaux de centre
+    // Vérifier les fermetures générales et celles propres au centre.
     private void validateCentreNotClosed(Salle salle, LocalDate date) {
         boolean closedGlobally = jourFermetureRepository.existsByDateAndGlobalTrue(date);
         boolean closedForCentre = jourFermetureRepository.existsByDateAndCentreId(date, salle.getCentre().getId());
-        // Regle metier : aucun atelier ne peut etre cree sur un centre ferme .jour fermeture globaux.
+        // Règle métier : aucun atelier ne peut être créé dans un centre fermé.
         if (closedGlobally || closedForCentre) {
             throw new BusinessException("Le centre est fermé à la date : " + date);
         }
     }
-        //methode les horaires d'ouverture propre pour un centre
+    // Vérifier les horaires d'ouverture propres au centre.
     private void validateCentreOpeningHours(Salle salle, LocalTime heureDebut, LocalTime heureFin) {
         LocalTime openingTime = salle.getCentre().getHeureOuverture();
         LocalTime closingTime = salle.getCentre().getHeureFermeture();
-        // Regle metier : l'atelier doit respecter les horaires d'ouverture du centre.
+        // Règle métier : l'atelier doit respecter les horaires d'ouverture du centre.
         if (heureDebut.isBefore(openingTime) || heureFin.isAfter(closingTime)
                 || (openingTime.isBefore(closingTime) && heureFin.isBefore(heureDebut))) {
             throw new BusinessException("L'atelier est en dehors des horaires d'ouverture du centre (" + openingTime + " - " + closingTime + ").");
@@ -400,7 +400,7 @@ public class AtelierServiceImpl implements AtelierService {
 
     private void validateCentreAccessForOrganizer(Participant organisateur, Salle salle) {
         if (organisateur.getTypeParticipant() == TypeParticipant.ABONNE) {
-            // Regle metier : un participant SITE ne peut creer un atelier que sur son propre centre.
+            // Règle métier : un abonné ne peut créer un atelier que dans son centre de rattachement.
             if (organisateur.getCentre() == null || !organisateur.getCentre().getId().equals(salle.getCentre().getId())) {
                 throw new BusinessException("Un abonné ne peut créer un atelier que dans son centre de rattachement.");
             }

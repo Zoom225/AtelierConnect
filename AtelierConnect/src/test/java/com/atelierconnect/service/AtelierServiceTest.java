@@ -119,6 +119,22 @@ class AtelierServiceTest {
     }
 
     @Test
+    void modificationRefuseUnAutreOrganisateurSansEnregistrer() {
+        Atelier existant = new Atelier();
+        existant.setOrganisateur(organisateur);
+        existant.setStatut(StatutAtelier.PLANIFIE);
+        when(atelierRepository.findByIdForUpdate(21L)).thenReturn(Optional.of(existant));
+        AtelierRequest demande = AtelierRequest.builder().organisateurId(99L).build();
+
+        BusinessException erreur = assertThrows(BusinessException.class,
+                () -> atelierService.updateAtelier(21L, demande));
+
+        assertEquals("Seul l'organisateur peut modifier cet atelier.", erreur.getMessage());
+        verify(atelierRepository, never()).save(any());
+        verifyNoInteractions(salleService);
+    }
+
+    @Test
     void modificationRefuseUnDelaiDepassantLaCategorie() {
         Atelier existant = new Atelier();
         existant.setId(21L);

@@ -8,8 +8,9 @@ connexions de démonstration et dépannage. Le backend est sous `AtelierConnect/
 et le frontend sous `AtelierConnect/frontend/`.
 
 Dépôt : https://github.com/Zoom225/AtelierConnect
-Branche de travail : `fix/5-nomenclature-espace-participant`, basée sur `feat/3-interface-readme-tracabilite`.
-Suivi courant : [issue #5 — nomenclature et espace participant](https://github.com/Zoom225/AtelierConnect/issues/5).
+Branche de travail : `fix/6-demonstration-automatique`, basée sur `fix/5-nomenclature-espace-participant`.
+Suivi courant : [issue #6 — démonstration automatique et guide de démarrage](https://github.com/Zoom225/AtelierConnect/issues/6).
+Nomenclature et espace participant : [issue #5](https://github.com/Zoom225/AtelierConnect/issues/5), sur la branche basée sur `feat/3-interface-readme-tracabilite`.
 Refonte et documentation initiales : [issue #3](https://github.com/Zoom225/AtelierConnect/issues/3).
 
 ## Sommaire
@@ -99,21 +100,61 @@ Ne jamais publier les configurations privées, fichiers `.env`, clés, journaux 
 
 ## Démarrer en local
 
-Ouvrir **Docker Desktop**, puis trois terminaux **PowerShell**. Dans **chacun**,
-se placer à la racine Git, le dossier contenant ce README :
+Ouvrir **Docker Desktop**, puis trois terminaux **PowerShell**.
+Suivre les étapes dans l'ordre et attendre le résultat indiqué avant de passer
+à la suivante. Chaque bloc inclut le chemin du projet pour faciliter le copier-coller.
+
+| Étape | Terminal | Action | Résultat attendu |
+| --- | --- | --- | --- |
+| 1 | Terminal 1 | Démarrer PostgreSQL | Conteneur `atelierconnect-db` **healthy**, port **5441**. |
+| 2 | Terminal 2 | Compiler et démarrer le backend | **`Backend verified`**, port **8082**. |
+| 3 | Terminal 3 | Compiler et démarrer le frontend | Application disponible sur **http://localhost:4200**. |
+
+### 1. Terminal 1 — Docker / PostgreSQL
+
+Copier et exécuter les commandes suivantes **une par une**. Si une commande
+échoue, corriger l'erreur avant d'exécuter la suivante.
 
 ```powershell
 cd C:\Users\user\IdeaProjects\AtelierConnect
+.\AtelierConnect\scripts\set-local-environment.ps1
+docker compose -f .\AtelierConnect\docker-compose.yml up -d
+docker compose -f .\AtelierConnect\docker-compose.yml ps
 ```
 
-Exécuter les étapes dans l'ordre. Dans la ligne Docker, exécuter les trois
-commandes séparément. Attendre le résultat indiqué avant de passer à la suite.
+Attendre que `atelierconnect-db` affiche **healthy**. Si l'état est encore
+`starting`, relancer seulement :
 
-| Étape | Terminal | Commandes PowerShell depuis la racine Git | Résultat attendu |
-| --- | --- | --- | --- |
-| 1. Démarrer Docker / PostgreSQL | Terminal 1 | `.\AtelierConnect\scripts\set-local-environment.ps1`<br>`docker compose -f .\AtelierConnect\docker-compose.yml up -d`<br>`docker compose -f .\AtelierConnect\docker-compose.yml ps` | Conteneur `atelierconnect-db` en état **healthy**, base `atelierconnect_db`, port **5441**. Si l'état est encore `starting`, relancer seulement la commande `ps`. |
-| 2. Compiler et démarrer le backend | Terminal 2 | `.\AtelierConnect\scripts\run-local.ps1 -Component Backend -Build -Restart` | Compilation Maven réussie, puis **`Backend verified`**. Backend sur **8082**, API publique et Swagger accessibles. |
-| 3. Compiler et démarrer le frontend | Terminal 3 | `.\AtelierConnect\scripts\run-local.ps1 -Component Frontend -Build` | Compilation Angular réussie, puis serveur disponible sur **http://localhost:4200**. Laisser ce terminal ouvert. |
+```powershell
+docker compose -f .\AtelierConnect\docker-compose.yml ps
+```
+
+### 2. Terminal 2 — Backend
+
+Copier ce bloc dans le **deuxième terminal** :
+
+```powershell
+cd C:\Users\user\IdeaProjects\AtelierConnect
+.\AtelierConnect\scripts\run-local.ps1 -Component Backend -Build -Restart
+```
+
+Attendre la compilation Maven réussie, puis **`Backend verified`**.
+Le backend, l'API publique et Swagger sont alors accessibles sur le port **8082**.
+
+### 3. Terminal 3 — Frontend
+
+Si Angular tourne déjà, l'arrêter avec **Ctrl+C** dans son terminal.
+Copier ensuite ce bloc dans le **troisième terminal** :
+
+```powershell
+cd C:\Users\user\IdeaProjects\AtelierConnect
+.\AtelierConnect\scripts\run-local.ps1 -Component Frontend -Build
+```
+
+Attendre la compilation Angular réussie et l'adresse **http://localhost:4200**,
+puis ouvrir cette adresse dans le navigateur. **Laisser ce terminal ouvert.**
+
+### Fonctionnement des lanceurs
 
 La première commande charge les variables privées requises ou les demande sans
 afficher les secrets. Docker utilise PostgreSQL 15 ; aucune compilation Docker
@@ -127,7 +168,6 @@ Les journaux locaux sont dans `AtelierConnect/.local/diagnostics/`.
 
 Le lanceur frontend réutilise les dépendances installées et lance `npm ci`
 uniquement si nécessaire. Le proxy transmet `/api` au backend sur **8082**.
-Si Angular tourne déjà, l'arrêter avec **Ctrl+C** dans son terminal avant l'étape 3.
 En cas d'installation incomplète, suivre la
 [réparation frontend](#réparer-les-dépendances-frontend).
 
@@ -248,20 +288,36 @@ ici pour reconnaître le compte. Le mot de passe commun de démonstration est
 | Tom Bernard | ABONNE | `S10001` | `tom.bernard@gmail.com` | `P1234!` |
 | Sarah Leroy | ABONNE | `S10002` | `sarah.leroy@gmail.com` | `P1234!` |
 | Alex Petit | VISITEUR | `L10001` | `alex.petit@gmail.com` | `P1234!` |
-| Demo Penalise | VISITEUR avec dette de démonstration | `L10002` | `demo.penalise@gmail.com` | `P1234!` |
+| Demo Penalise | VISITEUR avec dette et suspension réactivées à chaque connexion | `L10002` | `demo.penalise@gmail.com` | `P1234!` |
 
-Les six connexions ont renvoyé HTTP 200. Le compte `L10002` peut se connecter,
-avec un **solde impayé de démonstration de 90 EUR**, visible dans son profil.
+Les six connexions ont renvoyé HTTP 200 lors de la recette précédente.
+Le compte `L10002` dispose désormais d'un **scénario de démonstration automatique** :
+à chaque connexion réussie avec son matricule et son mot de passe, son solde est
+remonté à **90 EUR** et sa suspension de démonstration est renouvelée jusqu'à
+**la date de connexion + 7 jours incluse**. Un solde déjà supérieur à 90 EUR est conservé.
 Ce cas illustre six places impayées à 15 EUR ; la dette reste distincte de la suspension.
-Sur la base locale contrôlée le 8 novembre, son ancienne suspension a expiré
-le 7 novembre. Sa dette de 90 EUR continue de bloquer création et participation
-jusqu'à règlement. Une suspension expirée n'est pas renouvelée au redémarrage.
-Le montant n'est initialisé qu'à la création du compte : un solde existant,
-y compris zéro après règlement, est conservé aux redémarrages.
-Pour une base déjà utilisée, `scripts/demo/set-visible-demo-debt.sql` est une
-opération explicite de démonstration : elle passe uniquement le solde zéro de
-`L10002` à 90 EUR et conserve tout autre montant. Le journal empêche de recréer
-cette dette après règlement. Ce script n'est jamais lancé automatiquement.
+
+Pour la démonstration : se connecter avec `L10002`, consulter le solde et la
+suspension, puis régler la dette dans **Mes paiements**. Le solde passe à zéro,
+mais la suspension reste active. Se déconnecter puis se reconnecter remet
+automatiquement la dette à 90 EUR : aucune manipulation SQL n'est nécessaire.
+Les connexions répétées ne cumulent pas les 90 EUR ni les suspensions de démonstration.
+L'historique des règlements est conservé et chaque complément de dette est journalisé.
+
+Ce comportement est activé par défaut pour le seul compte VISITEUR `L10002`
+avec l'e-mail `demo.penalise@gmail.com`. Pour le désactiver, définir
+`APP_DEMO_RESET_PENALTY_ON_LOGIN=false` avant de démarrer le backend.
+Dans ce cas, le solde réglé reste à zéro et la suspension expire normalement.
+Un redémarrage seul ne réactive pas le scénario : il faut une nouvelle connexion.
+L'ancien script `scripts/demo/set-visible-demo-debt.sql` reste une opération
+manuelle distincte, jamais lancée automatiquement.
+
+Validation de cette évolution : **52 tests ciblés** d'authentification,
+de démonstration et d'initialisation, puis **22 tests** de service et de contrôleur
+d'ateliers réussis, dont trois contrôles ciblant l'autorisation de modification.
+Compilation Maven et redémarrage local réussis ; deux connexions API de `L10002`
+ont confirmé un solde de 90 EUR, une suspension active et l'absence de cumul.
+
 Une suspension active bloque la création d'ateliers publics et privés.
 La date de fin est incluse : une suspension qui se termine aujourd'hui reste
 active jusqu'à la fin de cette journée. Le profil et les formulaires affichent

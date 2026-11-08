@@ -8,6 +8,7 @@ import com.atelierconnect.exception.ResourceNotFoundException;
 import com.atelierconnect.repository.ParticipantRepository;
 import com.atelierconnect.repository.PenaliteRepository;
 import com.atelierconnect.service.impl.ParticipantServiceImpl;
+import com.atelierconnect.service.impl.DemoPenaltyService;
 import com.atelierconnect.service.CentreService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -43,6 +44,9 @@ class ParticipantServiceTest {
 
     @Mock // Added PasswordEncoder mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private DemoPenaltyService demoPenaltyService;
 
     @InjectMocks
     private ParticipantServiceImpl participantService;
@@ -332,6 +336,25 @@ class ParticipantServiceTest {
     @Nested
     @DisplayName("authenticate()")
     class AuthenticateTests {
+
+        @Test
+        void shouldPrepareDemoOnlyAfterSuccessfulLogin() {
+            participantLibre.setMatricule("L10002");
+            when(participantRepository.findByMatriculeIgnoreCase("L10002")).thenReturn(Optional.of(participantLibre));
+            when(passwordEncoder.matches("valid", participantLibre.getPasswordHash())).thenReturn(true);
+            when(demoPenaltyService.prepare(participantLibre)).thenReturn(participantLibre);
+            assertThat(participantService.authenticate(" l10002 ", "valid")).isSameAs(participantLibre);
+            verify(demoPenaltyService).prepare(participantLibre);
+        }
+
+        @Test
+        void shouldNotResetDemoOnFailedLogin() {
+            participantLibre.setMatricule("L10002");
+            when(participantRepository.findByMatriculeIgnoreCase("L10002")).thenReturn(Optional.of(participantLibre));
+            assertThatThrownBy(() -> participantService.authenticate("L10002", "wrong"))
+                    .isInstanceOf(BusinessException.class);
+            verifyNoInteractions(demoPenaltyService);
+        }
 
         @Test
         @DisplayName("✅ doit retourner le participant quand les identifiants sont valides")
