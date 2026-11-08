@@ -99,55 +99,37 @@ Ne jamais publier les configurations privées, fichiers `.env`, clés, journaux 
 
 ## Démarrer en local
 
-Ouvrir **Docker Desktop**, puis trois terminaux **PowerShell**. Copier chaque
-bloc dans le terminal indiqué. Les chemins correspondent à ton poste.
-
-### Terminal 1 — Docker / PostgreSQL
+Ouvrir **Docker Desktop**, puis trois terminaux **PowerShell**. Dans **chacun**,
+se placer à la racine Git, le dossier contenant ce README :
 
 ```powershell
-cd C:\Users\user\IdeaProjects\AtelierConnect\AtelierConnect
-.\scripts\set-local-environment.ps1
-docker compose up -d
+cd C:\Users\user\IdeaProjects\AtelierConnect
 ```
 
-Docker utilise l'image officielle PostgreSQL 15, sans compilation locale.
-Base : `atelierconnect_db`, conteneur : `atelierconnect-db`, port : **5441**.
-Les variables sont chargées depuis la configuration privée existante ou demandées
-sans affichage des secrets. Les données et le volume Docker sont conservés.
+Exécuter les étapes dans l'ordre. Dans la ligne Docker, exécuter les trois
+commandes séparément. Attendre le résultat indiqué avant de passer à la suite.
 
-### Terminal 2 — Compiler et démarrer le backend
+| Étape | Terminal | Commandes PowerShell depuis la racine Git | Résultat attendu |
+| --- | --- | --- | --- |
+| 1. Démarrer Docker / PostgreSQL | Terminal 1 | `.\AtelierConnect\scripts\set-local-environment.ps1`<br>`docker compose -f .\AtelierConnect\docker-compose.yml up -d`<br>`docker compose -f .\AtelierConnect\docker-compose.yml ps` | Conteneur `atelierconnect-db` en état **healthy**, base `atelierconnect_db`, port **5441**. Si l'état est encore `starting`, relancer seulement la commande `ps`. |
+| 2. Compiler et démarrer le backend | Terminal 2 | `.\AtelierConnect\scripts\run-local.ps1 -Component Backend -Build -Restart` | Compilation Maven réussie, puis **`Backend verified`**. Backend sur **8082**, API publique et Swagger accessibles. |
+| 3. Compiler et démarrer le frontend | Terminal 3 | `.\AtelierConnect\scripts\run-local.ps1 -Component Frontend -Build` | Compilation Angular réussie, puis serveur disponible sur **http://localhost:4200**. Laisser ce terminal ouvert. |
 
-```powershell
-cd C:\Users\user\IdeaProjects\AtelierConnect\AtelierConnect
-.\scripts\run-local.ps1 -Component Backend -Build -Restart
-```
+La première commande charge les variables privées requises ou les demande sans
+afficher les secrets. Docker utilise PostgreSQL 15 ; aucune compilation Docker
+n'est nécessaire pour ce service. Le volume et les données existants sont conservés.
 
-Attendre **`Backend verified`**. Le lanceur charge les variables, vérifie
-PostgreSQL, compile avec Maven sans tests sur la base applicative, puis démarre
-le backend sur **8082** et contrôle Swagger et l'API publique.
+Le lanceur backend recharge ses variables dans son propre terminal, vérifie la
+connexion JDBC, compile sans tests sur la base applicative et vérifie les réponses
+HTTP. `-Restart` redémarre uniquement l'instance Java de ce projet si elle occupe
+déjà 8082. Il conserve `APP_DATA_INITIALIZE=false` et `ddl-auto=update`.
+Les journaux locaux sont dans `AtelierConnect/.local/diagnostics/`.
 
-`-Restart` permet de recompiler et redémarrer l'instance AtelierConnect déjà
-active. Seul le processus Java identifié comme appartenant à ce projet peut
-être arrêté ; un autre programme sur 8082 est refusé. Le lanceur conserve les
-comptes et données (`APP_DATA_INITIALIZE=false`, `ddl-auto=update`). Les journaux
-locaux restent dans `AtelierConnect/.local/diagnostics/`.
-
-### Terminal 3 — Compiler et démarrer le frontend
-
-Les dépendances ont été installées. Exécuter les commandes une par une et
-attendre le succès de la compilation avant de démarrer :
-
-```powershell
-cd C:\Users\user\IdeaProjects\AtelierConnect\AtelierConnect\frontend
-npm run build
-npm start
-```
-
-Laisser ce terminal ouvert, puis ouvrir **http://localhost:4200**.
-Le proxy transmet `/api` au backend sur **8082**.
-Arrêter l'ancienne instance Angular avec **Ctrl+C** avant de relancer.
-En cas de dépendances absentes ou incomplètes, utiliser uniquement la procédure
-[de réparation frontend](#réparer-les-dépendances-frontend) ci-dessous.
+Le lanceur frontend réutilise les dépendances installées et lance `npm ci`
+uniquement si nécessaire. Le proxy transmet `/api` au backend sur **8082**.
+Si Angular tourne déjà, l'arrêter avec **Ctrl+C** dans son terminal avant l'étape 3.
+En cas d'installation incomplète, suivre la
+[réparation frontend](#réparer-les-dépendances-frontend).
 
 ### Compiler le backend seulement
 
@@ -161,8 +143,13 @@ JAR : `AtelierConnect/target/atelierconnect-backend-0.0.1-SNAPSHOT.jar`.
 
 ### Compiler le frontend seulement
 
-Dans le dossier `AtelierConnect/frontend`, exécuter uniquement `npm run build`
-du terminal 3, sans `npm start`.
+Depuis la racine Git, avec les dépendances frontend déjà installées :
+
+```powershell
+npm.cmd --prefix .\AtelierConnect\frontend run build
+```
+
+Cette commande compile sans démarrer le serveur Angular.
 Résultat : `AtelierConnect/frontend/dist/frontend/`.
 `npm ci` n'est pas nécessaire à chaque compilation.
 
