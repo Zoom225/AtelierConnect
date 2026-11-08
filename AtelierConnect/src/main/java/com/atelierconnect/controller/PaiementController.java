@@ -4,6 +4,10 @@ import com.atelierconnect.dto.response.PaiementResponse;
 import com.atelierconnect.mapper.PaiementMapper;
 import com.atelierconnect.service.PaiementService;
 import com.atelierconnect.service.impl.CurrentParticipantService;
+import com.atelierconnect.service.impl.DetteService;
+import com.atelierconnect.dto.request.ReglerDetteRequest;
+import com.atelierconnect.dto.response.DetteResponse;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -29,6 +33,20 @@ public class PaiementController {
     private final PaiementService paiementService;
     private final PaiementMapper paiementMapper;
     private final CurrentParticipantService currentParticipantService;
+    private final DetteService detteService;
+
+    @GetMapping("/dette")
+    @Operation(summary = "Consulter sa dette et ses mouvements", security = @SecurityRequirement(name = "Bearer Auth"))
+    public ResponseEntity<DetteResponse> dette() {
+        return ResponseEntity.ok(detteService.get(currentParticipantService.currentParticipantId()));
+    }
+
+    @PostMapping("/dette/pay")
+    @Operation(summary = "Régler sa dette sans réservation", description = "Règle le solde attendu une seule fois par clé de demande. La suspension reste applicable.",
+            security = @SecurityRequirement(name = "Bearer Auth"))
+    public ResponseEntity<DetteResponse> reglerDette(@Valid @RequestBody ReglerDetteRequest request) {
+        return ResponseEntity.ok(detteService.pay(currentParticipantService.currentParticipantId(), request));
+    }
 
     @Operation(
             summary = "Payer une réservation pour un participant donné",

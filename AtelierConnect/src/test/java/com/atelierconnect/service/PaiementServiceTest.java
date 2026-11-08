@@ -9,6 +9,9 @@ import com.atelierconnect.repository.ParticipantRepository;
 import com.atelierconnect.repository.PaiementRepository;
 import com.atelierconnect.repository.ReservationRepository;
 import com.atelierconnect.service.impl.PaiementServiceImpl;
+import com.atelierconnect.service.impl.DetteService;
+import com.atelierconnect.service.impl.UnpaidReservationProcessor;
+import java.math.BigDecimal;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -53,6 +56,10 @@ class PaiementServiceTest {
 
     @InjectMocks
     private PaiementServiceImpl paiementService;
+    @Mock private DetteService detteService;
+    @Mock private ParticipantService participantService;
+    @Mock private UnpaidReservationProcessor unpaidProcessor;
+    @InjectMocks private UnpaidReservationProcessor processor;
 
     private Centre centre;
     private Salle salle;
@@ -64,6 +71,7 @@ class PaiementServiceTest {
 
     @BeforeEach
     void setUp() {
+        lenient().when(detteService.settleWithReservation(any(), any())).thenReturn(BigDecimal.ZERO);
         centre = Centre.builder().nom("Centre collaboratif Lyon").build();
         salle = Salle.builder().nom("Salle A").centre(centre).build();
 
@@ -149,14 +157,13 @@ class PaiementServiceTest {
             participant.setSolde(15.0);
             when(reservationService.getById(1L)).thenReturn(reservation);
             when(atelierRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(atelier));
-            when(participantRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(detteService.settleWithReservation(2L, 1L)).thenReturn(BigDecimal.valueOf(15));
             when(paiementRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
             Paiement result = paiementService.pay(1L, 2L);
 
             assertThat(result.getMontant()).isEqualTo(30.0);
-            assertThat(participant.getSolde()).isEqualTo(0.0);
-            verify(participantRepository).save(participant);
+            verify(detteService).settleWithReservation(2L, 1L);
         }
 
         @Test
@@ -261,29 +268,27 @@ class PaiementServiceTest {
             LocalDateTime tomorrowStart = LocalDate.now().plusDays(1).atStartOfDay();
             atelier.setDateDebut(tomorrowStart);
 
-            when(paiementRepository.findByStatut(StatutPaiement.EN_ATTENTE)).thenReturn(List.of(paiement));
-            when(participantRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(paiementRepository.findById(1L)).thenReturn(Optional.of(paiement));
+            when(atelierRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(atelier));
 
-            paiementService.checkUnpaidBeforeAtelier();
+            processor.process(1L);
 
             verify(reservationService).cancel(reservation.getId());
-            assertThat(organisateur.getSolde()).isEqualTo(15.0);
-            verify(participantRepository).save(organisateur);
+            verify(detteService).chargeUnpaidPublicReservation(atelier, reservation.getId());
         }
 
         @Test
         @DisplayName("ne pénalise pas un paiement confirmé juste avant le verrou")
         void shouldSkipPenaltyWhenPaymentWasJustConfirmed() {
             atelier.setDateDebut(LocalDate.now().plusDays(1).atStartOfDay());
-            when(paiementRepository.findByStatut(StatutPaiement.EN_ATTENTE))
-                    .thenReturn(List.of(paiement));
+            when(paiementRepository.findById(1L)).thenReturn(Optional.of(paiement));
             doAnswer(invocation -> {
                 paiement.setStatut(StatutPaiement.PAYE);
                 reservation.setStatut(StatutReservation.CONFIRMEE);
                 return null;
             }).when(entityManager).refresh(paiement);
 
-            paiementService.checkUnpaidBeforeAtelier();
+            processor.process(1L);
 
             verify(reservationRepository).lockReservationById(reservation.getId());
             verify(reservationService, never()).cancel(any());
@@ -296,9 +301,10 @@ class PaiementServiceTest {
             // Correction : S'assurer que la date de l'atelier n'est pas demain
             atelier.setDateDebut(LocalDate.now().plusDays(5).atStartOfDay());
 
-            when(paiementRepository.findByStatut(StatutPaiement.EN_ATTENTE)).thenReturn(List.of(paiement));
+            when(paiementRepository.findById(1L)).thenReturn(Optional.of(paiement));
+            when(atelierRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(atelier));
 
-            paiementService.checkUnpaidBeforeAtelier();
+            processor.process(1L);
 
             verify(reservationService, never()).cancel(any());
             verify(participantRepository, never()).save(any());

@@ -101,7 +101,7 @@ export type TranslationKey =
   | 'admin.members.title'
   | 'admin.members.subtitle'
   | 'admin.members.matricule'
-  | 'admin.members.matriculeHint'
+  | 'admin.members.bookingHint'
   | 'admin.members.type'
   | 'admin.members.typeGlobal'
   | 'admin.members.typeCentre'
@@ -268,6 +268,15 @@ export type TranslationKey =
   | 'member.profile.type'
   | 'member.profile.site'
   | 'member.profile.solde'
+  | 'member.profile.debtAmount'
+  | 'member.profile.debtHint'
+  | 'member.payments.debtTitle'
+  | 'member.payments.debtRule'
+  | 'member.payments.debtPay'
+  | 'member.payments.debtPaying'
+  | 'member.payments.debtZero'
+  | 'member.payments.debtHistory'
+  | 'member.payments.debtSuccess'
   | 'member.profile.penaltyActive'
   | 'member.profile.balancePending'
   | 'member.profile.yes'
@@ -376,6 +385,8 @@ export type TranslationKey =
   | 'member.create.createError'
   | 'member.create.outstandingBalance'
   | 'member.create.activePenalty'
+  | 'member.create.checkingPenalty'
+  | 'member.create.penaltyCheckError'
   | 'member.create.slotTaken'
   | 'member.create.centreClosed'
   | 'member.create.outOfHours'
@@ -516,7 +527,7 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'admin.members.title': 'Gestion des participants',
     'admin.members.subtitle': 'Création, modification et gestion des participants aux ateliers',
     'admin.members.matricule': 'Matricule',
-    'admin.members.matriculeHint': 'PARTENAIRE : G + 4 chiffres · ABONNÉ : S + 5 chiffres · VISITEUR : L + 5 chiffres',
+    'admin.members.bookingHint': 'Réservation : PARTENAIRE jusqu’à 30 jours · ABONNÉ jusqu’à 15 jours dans son centre · VISITEUR jusqu’à 7 jours',
     'admin.members.type': 'Catégorie de participant',
     'admin.members.typeGlobal': 'PARTENAIRE — jusqu’à 30 jours',
     'admin.members.typeCentre': 'ABONNÉ — jusqu’à 15 jours dans son centre',
@@ -655,8 +666,8 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'member.payments.title': 'Mes paiements',
     'member.payments.subtitle': 'Historique des paiements et remboursements',
     'member.payments.reservations': 'Mes reservations',
-    'member.payments.total': 'Total paiements',
-    'member.payments.paid': 'Total paye',
+    'member.payments.total': 'Paiements de réservation',
+    'member.payments.paid': 'Payé sur les réservations',
     'member.payments.pending': 'En attente',
     'member.payments.refunded': 'Rembourses',
     'member.payments.none': 'Aucun paiement trouve',
@@ -686,7 +697,16 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'member.profile.matricule': 'Matricule',
     'member.profile.type': 'Type',
     'member.profile.site': 'Centre',
-    'member.profile.solde': 'Solde',
+    'member.profile.solde': 'Solde impayé',
+    'member.profile.debtAmount': 'Dette à régler : {amount}',
+    'member.profile.debtHint': 'Réglez ce solde depuis Mes paiements. Pour créer ou rejoindre un atelier, votre dette doit être soldée et votre suspension terminée.',
+    'member.payments.debtTitle': 'Mon solde impayé',
+    'member.payments.debtRule': 'Le règlement est possible sans réservation. Il ne raccourcit pas une suspension : la dette doit être soldée et la suspension terminée pour créer ou rejoindre un atelier.',
+    'member.payments.debtPay': 'Régler ma dette :',
+    'member.payments.debtPaying': 'Règlement en cours :',
+    'member.payments.debtZero': 'Aucune dette à régler.',
+    'member.payments.debtHistory': 'Historique des dettes et règlements',
+    'member.payments.debtSuccess': 'Règlement enregistré. Le solde affiché est à jour ; une éventuelle suspension reste applicable.',
     'member.profile.penaltyActive': 'Penalite active',
     'member.profile.balancePending': 'Solde en attente',
     'member.profile.yes': 'Oui',
@@ -790,7 +810,9 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'member.create.invalidType': 'Type de atelier invalide.',
     'member.create.createError': 'Creation du atelier impossible.',
     'member.create.outstandingBalance': 'Vous avez un solde impaye. Reglez vos dettes avant de creer un atelier.',
-    'member.create.activePenalty': 'Vous avez une penalite active. Attendez avant de creer un atelier.',
+    'member.create.activePenalty': 'Votre compte fait l’objet d’une suspension active. La création d’ateliers publics et privés est bloquée jusqu’à la fin de cette suspension, date de fin incluse.',
+    'member.create.checkingPenalty': 'Vérification de votre droit de créer un atelier…',
+    'member.create.penaltyCheckError': 'Impossible de vérifier votre suspension. La création est momentanément bloquée. Réessayez dans un instant.',
     'member.create.slotTaken': 'Ce creneau est deja reserve. Choisissez un autre horaire.',
     'member.create.centreClosed': 'Le centre est ferme a cette date.',
     'member.create.outOfHours': "Cet horaire est en dehors des heures d'ouverture du site.",
@@ -928,7 +950,7 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'admin.members.title': 'Participant management',
     'admin.members.subtitle': 'Create, edit and manage workshop participants',
     'admin.members.matricule': 'Participant ID',
-    'admin.members.matriculeHint': 'PARTNER: G + 4 digits · SUBSCRIBER: S + 5 digits · VISITOR: L + 5 digits',
+    'admin.members.bookingHint': 'Booking: PARTNER up to 30 days · SUBSCRIBER up to 15 days at their center · VISITOR up to 7 days',
     'admin.members.type': 'Participant category',
     'admin.members.typeGlobal': 'PARTNER — book up to 30 days ahead',
     'admin.members.typeCentre': 'SUBSCRIBER — book up to 15 days at your center',
@@ -1067,8 +1089,8 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'member.payments.title': 'My payments',
     'member.payments.subtitle': 'Payment and refund history',
     'member.payments.reservations': 'My reservations',
-    'member.payments.total': 'Total payments',
-    'member.payments.paid': 'Total paid',
+    'member.payments.total': 'Reservation payments',
+    'member.payments.paid': 'Paid through reservations',
     'member.payments.pending': 'Pending',
     'member.payments.refunded': 'Refunded',
     'member.payments.none': 'No payment found',
@@ -1098,7 +1120,16 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'member.profile.matricule': 'Participant ID',
     'member.profile.type': 'Type',
     'member.profile.site': 'Center',
-    'member.profile.solde': 'Balance',
+    'member.profile.solde': 'Outstanding balance',
+    'member.profile.debtAmount': 'Outstanding debt: {amount}',
+    'member.profile.debtHint': 'Settle this balance in My payments. Creating or joining a workshop requires both a cleared balance and an ended suspension.',
+    'member.payments.debtTitle': 'My outstanding balance',
+    'member.payments.debtRule': 'You can settle this balance without a reservation. Payment does not shorten a suspension: both conditions must be cleared to create or join a workshop.',
+    'member.payments.debtPay': 'Settle my debt:',
+    'member.payments.debtPaying': 'Settling balance:',
+    'member.payments.debtZero': 'No outstanding debt.',
+    'member.payments.debtHistory': 'Debt and settlement history',
+    'member.payments.debtSuccess': 'Settlement recorded. The displayed balance is up to date; any active suspension still applies.',
     'member.profile.penaltyActive': 'Active penalty',
     'member.profile.balancePending': 'Pending balance',
     'member.profile.yes': 'Yes',
@@ -1202,7 +1233,9 @@ export const TRANSLATIONS: Record<Locale, Partial<Record<TranslationKey, string>
     'member.create.invalidType': 'Invalid workshop type.',
     'member.create.createError': 'Unable to create workshop.',
     'member.create.outstandingBalance': 'You have an outstanding balance. Settle your debts before creating a workshop.',
-    'member.create.activePenalty': 'You have an active penalty. Wait before creating a workshop.',
+    'member.create.activePenalty': 'Your account has an active suspension. Creating public and private workshops is blocked until the suspension ends, including its final day.',
+    'member.create.checkingPenalty': 'Checking whether you can create a workshop…',
+    'member.create.penaltyCheckError': 'Unable to check your suspension status. Creation is temporarily blocked. Please try again shortly.',
     'member.create.slotTaken': 'This slot is already booked. Pick another time.',
     'member.create.centreClosed': 'The center is closed on this date.',
     'member.create.outOfHours': "This time is outside the site's opening hours.",

@@ -35,6 +35,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = PaiementController.class)
 @DisplayName("Tests de PaiementController")
 class PaiementControllerTest {
+    @MockitoBean
+    private com.atelierconnect.service.impl.DetteService detteService;
 
     @Autowired
     private MockMvc mockMvc;

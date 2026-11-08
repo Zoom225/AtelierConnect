@@ -42,6 +42,7 @@ class DataInitializerTest {
     @Mock private PaiementRepository paiementRepository;
     @Mock private PenaliteRepository penaliteRepository;
     @Mock private PasswordEncoder passwordEncoder;
+    @Mock private MouvementDetteRepository mouvementDetteRepository;
 
     @InjectMocks
     private DataInitializer dataInitializer;
@@ -49,6 +50,63 @@ class DataInitializerTest {
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(dataInitializer, "demoParticipantPassword", "Membre1234!");
+    }
+
+    @Test
+    void run_shouldCreateOnlyThePenalizedDemoParticipantWithSixUnpaidShares() {
+        when(passwordEncoder.encode(anyString())).thenReturn("demo-hash");
+        when(centreRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(salleRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(participantRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(atelierRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(reservationRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        dataInitializer.run();
+
+        ArgumentCaptor<Participant> saved = ArgumentCaptor.forClass(Participant.class);
+        verify(participantRepository, times(6)).save(saved.capture());
+        assertThat(saved.getAllValues()).filteredOn(p -> "L10002".equals(p.getMatricule()))
+                .singleElement().extracting(Participant::getSolde).isEqualTo(90.0);
+        assertThat(saved.getAllValues()).filteredOn(p -> !"L10002".equals(p.getMatricule()))
+                .extracting(Participant::getSolde).containsOnly(0.0);
+    }
+
+    @ParameterizedTest
+    @ValueSource(doubles = {0.0, 15.0, 42.0, 90.0})
+    void run_shouldNeverRecreateOrOverwriteAnExistingDemoDebt(double existingBalance) {
+        Participant participant = Participant.builder().matricule("L10002")
+                .email("demo.penalise@gmail.com").passwordHash("existing-hash")
+                .typeParticipant(TypeParticipant.VISITEUR).solde(existingBalance).build();
+        participant.setId(23L);
+        when(centreRepository.count()).thenReturn(1L);
+        when(atelierRepository.count()).thenReturn(1L);
+        when(participantRepository.findAll()).thenReturn(List.of(participant));
+        when(participantRepository.findByMatriculeIgnoreCase("L10002")).thenReturn(Optional.of(participant));
+        when(penaliteRepository.existsByParticipantId(eq(23L))).thenReturn(true);
+
+        dataInitializer.run();
+        dataInitializer.run();
+
+        assertThat(participant.getSolde()).isEqualTo(existingBalance);
+        verify(participantRepository, never()).save(any());
+    }
+
+    @Test
+    void run_shouldNotRenewAnExpiredDemonstrationSuspension() {
+        Participant participant = Participant.builder().matricule("L10002").solde(0.0)
+                .email("demo.penalise@gmail.com").passwordHash("existing-hash")
+                .typeParticipant(TypeParticipant.VISITEUR).build();
+        participant.setId(99L);
+        when(centreRepository.count()).thenReturn(1L);
+        when(atelierRepository.count()).thenReturn(1L);
+        when(participantRepository.findAll()).thenReturn(List.of(participant));
+        when(participantRepository.findByMatriculeIgnoreCase("L10002")).thenReturn(Optional.of(participant));
+        // L'historique existe, mais la recherche de pénalité active retournerait false.
+        when(penaliteRepository.existsByParticipantId(99L)).thenReturn(true);
+        dataInitializer.run();
+        dataInitializer.run();
+        verify(penaliteRepository, never()).save(any());
+        verify(participantRepository, never()).save(any());
     }
 
     @ParameterizedTest
@@ -72,7 +130,7 @@ class DataInitializerTest {
         when(participantRepository.findAll()).thenReturn(participants);
         when(participantRepository.findByMatriculeIgnoreCase(anyString())).thenAnswer(invocation ->
                 participants.stream().filter(p -> p.getMatricule().equals(invocation.getArgument(0))).findFirst());
-        when(penaliteRepository.existsByParticipantIdAndDateFinAfter(any(), any(LocalDate.class))).thenReturn(true);
+        when(penaliteRepository.existsByParticipantId(any())).thenReturn(true);
         when(atelierRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(reservationRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -114,7 +172,7 @@ class DataInitializerTest {
         when(participantRepository.findAll()).thenReturn(List.of(legacyParticipant, penalizedParticipant));
         when(passwordEncoder.encode("Membre1234!")).thenReturn("hashed-default-password");
         when(participantRepository.findByMatriculeIgnoreCase("L10002")).thenReturn(Optional.of(penalizedParticipant));
-        when(penaliteRepository.existsByParticipantIdAndDateFinAfter(eq(2L), any(LocalDate.class))).thenReturn(true);
+        when(penaliteRepository.existsByParticipantId(eq(2L))).thenReturn(true);
 
         dataInitializer.run();
 
@@ -157,7 +215,7 @@ class DataInitializerTest {
             saved.setId(99L);
             return saved;
         });
-        when(penaliteRepository.existsByParticipantIdAndDateFinAfter(any(), any(LocalDate.class))).thenReturn(true);
+        when(penaliteRepository.existsByParticipantId(any())).thenReturn(true);
         when(passwordEncoder.encode("Membre1234!")).thenReturn("hashed-member-password");
 
 
@@ -182,7 +240,7 @@ class DataInitializerTest {
         when(atelierRepository.count()).thenReturn(1L);
         when(participantRepository.findAll()).thenReturn(List.of(participant));
         when(participantRepository.findByMatriculeIgnoreCase("L10002")).thenReturn(Optional.of(participant));
-        when(penaliteRepository.existsByParticipantIdAndDateFinAfter(eq(50L), any(LocalDate.class))).thenReturn(true);
+        when(penaliteRepository.existsByParticipantId(eq(50L))).thenReturn(true);
         when(administrateurRepository.findByEmail(anyString())).thenAnswer(invocation ->
                 admin.getEmail().equals(invocation.getArgument(0)) ? Optional.of(admin) : Optional.empty());
         when(passwordEncoder.encode("ADMIN002")).thenReturn("encoded-admin-matricule");
@@ -210,7 +268,7 @@ class DataInitializerTest {
         when(atelierRepository.count()).thenReturn(1L);
         when(participantRepository.findAll()).thenReturn(List.of(existing));
         when(participantRepository.findByMatriculeIgnoreCase("L10002")).thenReturn(Optional.of(existing));
-        when(penaliteRepository.existsByParticipantIdAndDateFinAfter(eq(50L), any(LocalDate.class)))
+        when(penaliteRepository.existsByParticipantId(eq(50L)))
                 .thenReturn(true);
 
         dataInitializer.run();

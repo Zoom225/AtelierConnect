@@ -40,6 +40,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests de AtelierServiceImpl")
 class AtelierServiceTest {
+    @Mock private com.atelierconnect.service.impl.DetteService detteService;
 
     @Mock
     private AtelierRepository atelierRepository;

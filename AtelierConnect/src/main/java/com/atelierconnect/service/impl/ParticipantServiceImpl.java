@@ -3,17 +3,25 @@ package com.atelierconnect.service.impl;
 import com.atelierconnect.entity.Participant;
 import com.atelierconnect.entity.Penalite;
 import com.atelierconnect.entity.Centre;
+import com.atelierconnect.entity.Atelier;
+import com.atelierconnect.entity.enums.StatutAtelier;
+import com.atelierconnect.entity.enums.TypeAtelier;
 import com.atelierconnect.entity.enums.TypeParticipant;
 import com.atelierconnect.exception.BusinessException;
 import com.atelierconnect.exception.ResourceNotFoundException;
 import com.atelierconnect.repository.ParticipantRepository;
 import com.atelierconnect.repository.PenaliteRepository;
+import com.atelierconnect.repository.AtelierRepository;
+import com.atelierconnect.repository.ReservationRepository;
+import com.atelierconnect.service.AtelierRules;
+import jakarta.persistence.EntityManager;
 import com.atelierconnect.service.ParticipantService;
 import com.atelierconnect.service.CentreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -31,6 +39,10 @@ public class ParticipantServiceImpl implements ParticipantService {
     private final PenaliteRepository penaliteRepository;
     private final CentreService centreService;
     private final PasswordEncoder passwordEncoder;
+    private final AtelierRepository atelierRepository;
+    private final EntityManager entityManager;
+    private final ReservationRepository reservationRepository;
+    private final DetteService detteService;
 
     @Override
     public Participant create(Participant participant, Long centreId, String rawPassword) {
@@ -107,7 +119,7 @@ public class ParticipantServiceImpl implements ParticipantService {
 
     @Override
     public boolean hasActivePenalty(Long participantId) {
-        return penaliteRepository.existsByParticipantIdAndDateFinAfter(participantId, LocalDate.now());
+        return penaliteRepository.existsByParticipantIdAndDateFinGreaterThanEqual(participantId, LocalDate.now());
     }
 
     @Override
@@ -118,10 +130,43 @@ public class ParticipantServiceImpl implements ParticipantService {
     @Override
     public void addPenalty(Long participantId) {
         Participant participant = getById(participantId);
+        savePenalty(participant, "Atelier privé incomplet avant l'échéance");
+    }
+
+    @Override
+    @Transactional
+    public void penalizeIncompletePrivateAtelier(Long atelierId) {
+        var candidate = atelierRepository.findByIdForUpdate(atelierId);
+        if (candidate.isEmpty()) {
+            return;
+        }
+        Atelier atelier = candidate.get();
+        // Un paiement, une annulation ou une ouverture publique a pu se terminer
+        // pendant l'attente du verrou : ne pas utiliser l'état chargé auparavant.
+        entityManager.refresh(atelier);
+        if (atelier.getTypeAtelier() != TypeAtelier.PRIVE
+                || atelier.getStatut() != StatutAtelier.PLANIFIE
+                || !atelier.getDateDebut().toLocalDate().equals(LocalDate.now().plusDays(1))) {
+            return;
+        }
+
+        Participant organisateur = atelier.getOrganisateur();
+        // Identifiant stable conservé dans le motif existant : aucun changement SQL.
+        // Le verrou de l'atelier sérialise les contrôles concurrents de ce motif.
+        String motif = "Atelier privé incomplet avant l'échéance [atelier #" + atelierId + "]";
+        if (!penaliteRepository.existsByParticipantIdAndMotif(organisateur.getId(), motif)) {
+            long paidSeats = reservationRepository.countPaidConfirmedSeats(atelierId);
+            if (paidSeats >= AtelierRules.CAPACITE) return;
+            detteService.chargePrivateAtelier(atelier, paidSeats);
+            savePenalty(organisateur, motif);
+        }
+    }
+
+    private void savePenalty(Participant participant, String motif) {
         Penalite penalite = Penalite.builder()
                 .participant(participant)
                 .dateFin(LocalDate.now().plusWeeks(1))
-                .motif("Atelier privé incomplet avant l'échéance")
+                .motif(motif)
                 .build();
         penaliteRepository.save(penalite);
     }

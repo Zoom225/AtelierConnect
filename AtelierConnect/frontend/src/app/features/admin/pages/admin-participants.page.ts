@@ -17,6 +17,7 @@ import { TypeParticipant, toParticipantCategory } from '../../../shared/models/e
 import { CentreResponse } from '../../../shared/models/centre-salle.model';
 import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { StatusPresentationService } from '../../../shared/services/status-presentation.service';
 
 @Component({
   selector: 'app-admin-members-page',
@@ -60,20 +61,19 @@ import { LanguageService } from '../../../core/i18n/language.service';
           <mat-form-field appearance="outline">
             <mat-label>{{ language.t('admin.members.matricule') }}</mat-label>
             <input matInput formControlName="matricule" [readonly]="editingId() !== null"
-                   [placeholder]="editingId() ? '' : 'G1234 / S12345 / L12345'"
                    class="uppercase font-semibold tracking-wider" />
-            @if (!editingId()) {
-              <mat-hint>{{ language.t('admin.members.matriculeHint') }}</mat-hint>
-            }
           </mat-form-field>
 
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>{{ language.t('admin.members.type') }}</mat-label>
             <mat-select formControlName="categorie" [disabled]="editingId() !== null">
               <mat-option value="PARTENAIRE">{{ language.t('admin.members.typeGlobal') }}</mat-option>
               <mat-option value="ABONNE">{{ language.t('admin.members.typeCentre') }}</mat-option>
               <mat-option value="VISITEUR">{{ language.t('admin.members.typeLibre') }}</mat-option>
             </mat-select>
+            @if (!editingId()) {
+              <mat-hint>{{ language.t('admin.members.bookingHint') }}</mat-hint>
+            }
           </mat-form-field>
 
           <mat-form-field appearance="outline">
@@ -173,7 +173,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
                 <div class="adm-member-name">{{ member.prenom }} {{ member.nom }}</div>
                 <div class="adm-member-matricule">{{ member.matricule }}</div>
               </div>
-              <span class="ds-badge" [class]="typeBadgeClass(member.categorie)">
+              <span class="ds-badge" [class]="status.participantBadge(member.categorie)">
                 {{ categorieParticipant(member) }}
               </span>
               @if (hasActivePenalty(member.id)) {
@@ -331,6 +331,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
   `
 })
 export class AdminParticipantsPage {
+  readonly status = inject(StatusPresentationService);
   private readonly participantsApi = inject(ParticipantsApiService);
   private readonly centresApi = inject(CentresApiService);
   private readonly adminSession = inject(AdminSessionService);
@@ -374,16 +375,6 @@ export class AdminParticipantsPage {
 
   countByType(type: string): number {
     return this.filteredMembers().filter(m => m.categorie === type).length;
-  }
-
-  typeBadgeClass(type: TypeParticipant): string {
-    if (type === 'PARTENAIRE') {
-      return 'ds-badge-info';
-    }
-    if (type === 'ABONNE') {
-      return 'ds-badge-success';
-    }
-    return 'ds-badge-warning';
   }
 
   hasActivePenalty(memberId: number): boolean {

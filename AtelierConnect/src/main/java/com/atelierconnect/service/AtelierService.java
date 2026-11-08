@@ -38,4 +38,5 @@ public interface AtelierService {
     void decrementParticipants(Long atelierId);
 
     void checkAndConvertExpiredPrivateAteliers();
+    void checkAndPenalizeIncompletePrivateAteliers();
 }

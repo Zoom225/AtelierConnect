@@ -10,6 +10,7 @@ import { ParticipantsApiService } from '../../../core/api/participants-api.servi
 import { MemberSessionService } from '../../../core/auth/member-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { ParticipantResponse, categorieParticipant } from '../../../shared/models/participant.model';
+import { StatusPresentationService } from '../../../shared/services/status-presentation.service';
 
 @Component({
   selector: 'app-member-profile-page',
@@ -45,7 +46,7 @@ import { ParticipantResponse, categorieParticipant } from '../../../shared/model
               </div>
 
               <div class="ds-data-list">
-                <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.profile.type') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="memberTypeBadgeClass(profile()!.categorie)">{{ categorieParticipant(profile()!) }}</span></span></div>
+                <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.profile.type') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="status.participantBadge(profile()!.categorie)">{{ categorieParticipant(profile()!) }}</span></span></div>
                 <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.profile.site') }}</span><span class="ds-data-value">{{ profile()!.centreNom || language.t('member.home.tousCentres') }}</span></div>
                 <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.profile.solde') }}</span><span class="ds-data-value">{{ profile()!.solde }} EUR</span></div>
               </div>
@@ -63,6 +64,18 @@ import { ParticipantResponse, categorieParticipant } from '../../../shared/model
             </div>
           }
 
+          @if (hasPenalty()) {
+            <p class="status-error mt-4" role="alert">{{ language.t('member.create.activePenalty') }}</p>
+          }
+
+          @if (hasBalance() && profile()) {
+            <div class="status-error mt-4" role="status" data-testid="member-debt">
+              <p class="font-bold">{{ language.t('member.profile.debtAmount', { amount: debtAmount() }) }}</p>
+              <p>{{ language.t('member.profile.debtHint') }}</p>
+              <a mat-stroked-button routerLink="/member/payments">{{ language.t('member.payments.title') }}</a>
+            </div>
+          }
+
           @if (errorMessage()) {
             <p class="status-error mt-4">{{ errorMessage() }}</p>
           }
@@ -73,7 +86,8 @@ import { ParticipantResponse, categorieParticipant } from '../../../shared/model
               <h3 class="m-0 text-lg font-bold text-slate-800">{{ language.t('member.profile.createQuick') }}</h3>
             </div>
             <div class="grid gap-3 md:grid-cols-2">
-              <a [routerLink]="['/member/ateliers/new']" [queryParams]="{type:'PUBLIC'}"
+              <a [routerLink]="creationUnavailable() ? null : ['/member/ateliers/nouveau']" [queryParams]="{type:'PUBLIC'}"
+                 [attr.aria-disabled]="creationUnavailable()" [attr.tabindex]="creationUnavailable() ? -1 : null" [class.opacity-50]="creationUnavailable()"
                  class="card-soft block rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-green-50 p-5 no-underline transition hover:-translate-y-0.5 hover:shadow-md">
                 <div class="mb-2 flex items-center gap-3">
                   <span class="text-3xl">🌍</span>
@@ -85,7 +99,8 @@ import { ParticipantResponse, categorieParticipant } from '../../../shared/model
                 <p class="m-0 text-sm text-emerald-800">{{ language.t('member.profile.quickPublicBody') }}</p>
               </a>
 
-              <a [routerLink]="['/member/ateliers/new']" [queryParams]="{type:'PRIVE'}"
+              <a [routerLink]="creationUnavailable() ? null : ['/member/ateliers/nouveau']" [queryParams]="{type:'PRIVE'}"
+                 [attr.aria-disabled]="creationUnavailable()" [attr.tabindex]="creationUnavailable() ? -1 : null" [class.opacity-50]="creationUnavailable()"
                  class="card-soft block rounded-2xl border border-violet-200 bg-gradient-to-r from-violet-50 to-purple-50 p-5 no-underline transition hover:-translate-y-0.5 hover:shadow-md">
                 <div class="mb-2 flex items-center gap-3">
                   <span class="text-3xl">🔒</span>
@@ -130,6 +145,7 @@ import { ParticipantResponse, categorieParticipant } from '../../../shared/model
   `
 })
 export class MemberProfilePage {
+  readonly status = inject(StatusPresentationService);
   private readonly participantsApi = inject(ParticipantsApiService);
   private readonly memberSession = inject(MemberSessionService);
   private readonly router = inject(Router);
@@ -141,6 +157,10 @@ export class MemberProfilePage {
   readonly profile = signal<ParticipantResponse | null>(null);
   readonly hasPenalty = signal(false);
   readonly hasBalance = signal(false);
+  readonly debtAmount = computed(() => new Intl.NumberFormat(this.language.locale(), {
+    style: 'currency', currency: 'EUR'
+  }).format(this.profile()?.solde ?? 0));
+  readonly creationUnavailable = computed(() => this.loading() || this.hasPenalty() || this.hasBalance() || !!this.errorMessage());
   readonly memberId = computed(() => this.memberSession.memberId());
 
   constructor() {
@@ -181,13 +201,4 @@ export class MemberProfilePage {
     this.router.navigateByUrl('/member');
   }
 
-  memberTypeBadgeClass(type: ParticipantResponse['categorie']): string {
-    if (type === 'PARTENAIRE') {
-      return 'ds-badge-info';
-    }
-    if (type === 'ABONNE') {
-      return 'ds-badge-success';
-    }
-    return 'ds-badge-warning';
-  }
 }

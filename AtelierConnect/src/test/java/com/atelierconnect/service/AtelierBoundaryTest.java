@@ -24,6 +24,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AtelierBoundaryTest {
+    @Mock private com.atelierconnect.service.impl.DetteService detteService;
     @Mock AtelierRepository atelierRepository;
     @Mock ParticipantRepository participantRepository;
     @Mock ReservationRepository reservationRepository;

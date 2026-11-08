@@ -4,12 +4,13 @@ import { By } from '@angular/platform-browser';
 import { MatSelect } from '@angular/material/select';
 import { ActivatedRoute } from '@angular/router';
 import { provideRouter, Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AteliersApiService } from '../../../core/api/ateliers-api.service';
 import { ReservationsApiService } from '../../../core/api/reservations-api.service';
 import { CentresApiService } from '../../../core/api/centres-api.service';
 import { SallesApiService } from '../../../core/api/salles-api.service';
+import { ParticipantsApiService } from '../../../core/api/participants-api.service';
 import { MemberSessionService } from '../../../core/auth/member-session.service';
 import { AtelierResponse } from '../../../shared/models/atelier.model';
 import { ParticipantResponse } from '../../../shared/models/participant.model';
@@ -73,6 +74,7 @@ describe('MemberCreateAtelierPage', () => {
   let centresApiMock: { getAll: ReturnType<typeof vi.fn> };
   let sallesApiMock: { getByCentre: ReturnType<typeof vi.fn> };
   let ateliersApiMock: { create: ReturnType<typeof vi.fn> };
+  let participantsApiMock: { hasPenalty: ReturnType<typeof vi.fn>; hasBalance: ReturnType<typeof vi.fn> };
   let reservationsApiMock: { createPrivateInvites: ReturnType<typeof vi.fn> };
   let memberSessionMock: {
     isAuthenticated: ReturnType<typeof vi.fn>;
@@ -92,6 +94,7 @@ describe('MemberCreateAtelierPage', () => {
     ateliersApiMock = {
       create: vi.fn().mockReturnValue(of(createdAtelier))
     };
+    participantsApiMock = { hasPenalty: vi.fn().mockReturnValue(of(false)), hasBalance: vi.fn().mockReturnValue(of(false)) };
     reservationsApiMock = {
       createPrivateInvites: vi.fn().mockReturnValue(of([]))
     };
@@ -115,6 +118,7 @@ describe('MemberCreateAtelierPage', () => {
         { provide: CentresApiService, useValue: centresApiMock },
         { provide: SallesApiService, useValue: sallesApiMock },
         { provide: AteliersApiService, useValue: ateliersApiMock },
+        { provide: ParticipantsApiService, useValue: participantsApiMock },
         { provide: ReservationsApiService, useValue: reservationsApiMock },
         { provide: MemberSessionService, useValue: memberSessionMock },
         { provide: ActivatedRoute, useValue: activatedRouteMock }
@@ -126,6 +130,72 @@ describe('MemberCreateAtelierPage', () => {
     vi.useRealTimers();
     vi.restoreAllMocks();
     TestBed.resetTestingModule();
+  });
+
+  it.each(['PUBLIC', 'PRIVE'])('bloque automatiquement la création %s pour un participant suspendu', (type) => {
+    activatedRouteMock.snapshot.queryParamMap.get.mockReturnValue(type);
+    participantsApiMock.hasPenalty.mockReturnValue(of(true));
+    const fixture = TestBed.createComponent(MemberCreateAtelierPage);
+    fixture.detectChanges();
+
+    expect(participantsApiMock.hasPenalty).toHaveBeenCalledWith(member.id);
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain('suspension active');
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain('publics et privés');
+    expect(fixture.nativeElement.querySelector('button[type="submit"]').disabled).toBe(true);
+    expect(fixture.componentInstance.form.disabled).toBe(true);
+    fixture.componentInstance.submit();
+    expect(ateliersApiMock.create).not.toHaveBeenCalled();
+    expect(centresApiMock.getAll).not.toHaveBeenCalled();
+  });
+
+  it('attend la vérification avant de permettre une création', () => {
+    const penalty = new Subject<boolean>();
+    participantsApiMock.hasPenalty.mockReturnValue(penalty);
+    const fixture = TestBed.createComponent(MemberCreateAtelierPage);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[role="status"]').textContent).toContain('Vérification');
+    fixture.componentInstance.submit();
+    expect(ateliersApiMock.create).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.form.disabled).toBe(true);
+
+    penalty.next(false);
+    penalty.complete();
+    expect(fixture.componentInstance.form.enabled).toBe(true);
+    expect(centresApiMock.getAll).toHaveBeenCalledOnce();
+  });
+
+  it.each(['PUBLIC', 'PRIVE'])('bloque la création %s après la suspension si une dette reste due', type => {
+    activatedRouteMock.snapshot.queryParamMap.get.mockReturnValue(type);
+    participantsApiMock.hasBalance.mockReturnValue(of(true));
+    const fixture = TestBed.createComponent(MemberCreateAtelierPage);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.form.disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain('solde');
+    fixture.componentInstance.submit();
+    expect(ateliersApiMock.create).not.toHaveBeenCalled();
+  });
+
+  it('explique une vérification indisponible et permet de réessayer sans créer', () => {
+    participantsApiMock.hasPenalty.mockReturnValue(throwError(() => ({ status: 503 })));
+    const fixture = TestBed.createComponent(MemberCreateAtelierPage);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain('Impossible de vérifier');
+    fixture.componentInstance.submit();
+    expect(ateliersApiMock.create).not.toHaveBeenCalled();
+    participantsApiMock.hasPenalty.mockReturnValue(of(false));
+    fixture.componentInstance.checkCreationEligibility();
+    expect(fixture.componentInstance.creationUnavailable()).toBe(false);
+    expect(fixture.componentInstance.form.enabled).toBe(true);
+  });
+
+  it('explique aussi un refus du serveur si une suspension est ajoutée après ouverture', () => {
+    ateliersApiMock.create.mockReturnValue(throwError(() => ({
+      status: 400, error: { message: 'Vous avez une suspension active et ne pouvez pas créer d\'atelier.' }
+    })));
+    const fixture = TestBed.createComponent(MemberCreateAtelierPage);
+    fixture.componentInstance.submit();
+    expect(ateliersApiMock.create).toHaveBeenCalledOnce();
+    expect(fixture.componentInstance.errorMessage()).toContain('publics et privés');
   });
 
   it('affiche le tarif atelier de 90 EUR même si la salle conserve un ancien prix', () => {

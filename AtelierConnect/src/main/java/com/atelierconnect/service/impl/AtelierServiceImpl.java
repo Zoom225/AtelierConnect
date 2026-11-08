@@ -40,6 +40,7 @@ public class AtelierServiceImpl implements AtelierService {
     private final ParticipantService participantService;
     private final AtelierMapper atelierMapper;
     private final EntityManager entityManager;
+    private final DetteService detteService;
 
     @Override
     @Transactional
@@ -160,6 +161,7 @@ public class AtelierServiceImpl implements AtelierService {
         if (!atelier.getOrganisateur().getId().equals(request.getOrganisateurId())) {
             throw new BusinessException("Seul l'organisateur peut modifier cet atelier.");
         }
+        requireBeforeDebtCharge(atelierId);
 
         Salle salle = salleService.getByIdForUpdate(request.getSalleId());
         // Modifier un atelier ne doit pas contourner les contrôles de sa création.
@@ -201,6 +203,7 @@ public class AtelierServiceImpl implements AtelierService {
         if (!atelier.getOrganisateur().getId().equals(requesterId)) {
             throw new BusinessException("Seul l'organisateur peut annuler cet atelier.");
         }
+        requireBeforeDebtCharge(atelierId);
 
         atelier.setStatut(StatutAtelier.ANNULE);
         atelierRepository.save(atelier);
@@ -234,9 +237,24 @@ public class AtelierServiceImpl implements AtelierService {
 
 
     @Override
+    public void checkAndPenalizeIncompletePrivateAteliers() {
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+        // Chaque atelier est traité dans sa propre transaction par ParticipantService.
+        // Les conditions sont relues sous verrou avant toute sanction.
+        atelierRepository.findByDateDebutBetweenAndStatut(tomorrow.atStartOfDay(),
+                        tomorrow.atTime(LocalTime.MAX), StatutAtelier.PLANIFIE)
+                .stream()
+                .filter(atelier -> atelier.getTypeAtelier() == TypeAtelier.PRIVE)
+                .map(Atelier::getId)
+                .sorted()
+                .forEach(participantService::penalizeIncompletePrivateAtelier);
+    }
+
+    @Override
     @Transactional
     public void convertToPublic(Long atelierId) {
         Atelier atelier = getAtelierEntityByIdForUpdate(atelierId);
+        requireBeforeDebtCharge(atelierId);
         // Regle metier : un atelier deja public ne peut pas etre converti en public.
         if (atelier.getTypeAtelier() == TypeAtelier.PUBLIC) {
             throw new BusinessException("Cet atelier est déjà public.");
@@ -267,6 +285,7 @@ public class AtelierServiceImpl implements AtelierService {
         if (!atelier.getOrganisateur().getId().equals(requesterId)) {
             throw new BusinessException("Seul l'organisateur peut autoriser l'ouverture au public.");
         }
+        requireBeforeDebtCharge(atelierId);
         if (atelier.getTypeAtelier() != TypeAtelier.PRIVE || atelier.getStatut() != StatutAtelier.PLANIFIE
                 || !atelier.getDateDebut().isAfter(LocalDateTime.now())) {
             throw new BusinessException("Cet atelier ne peut pas recevoir un accord d'ouverture au public.");
@@ -277,6 +296,12 @@ public class AtelierServiceImpl implements AtelierService {
         atelier.setAccordOuverturePublique(true);
         atelier.setDateAccordOuverturePublique(LocalDateTime.now());
         atelierRepository.save(atelier);
+    }
+
+    private void requireBeforeDebtCharge(Long atelierId) {
+        if (detteService.isPrivateAtelierCharged(atelierId)) {
+            throw new BusinessException("L'échéance de cet atelier privé est dépassée : son imputation a déjà été enregistrée.");
+        }
     }
 
     @Override

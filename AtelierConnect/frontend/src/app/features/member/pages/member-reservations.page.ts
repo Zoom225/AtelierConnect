@@ -18,6 +18,7 @@ import { AtelierResponse } from '../../../shared/models/atelier.model';
 import { ATELIER_CAPACITY } from '../../../shared/models/atelier-rules';
 import { ReservationResponse } from '../../../shared/models/reservation.model';
 import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
+import { StatusPresentationService } from '../../../shared/services/status-presentation.service';
 
 @Component({
   selector: 'app-member-reservations-page',
@@ -85,8 +86,8 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
                       <p class="mt-1 text-sm text-slate-600">{{ atelier.centreNom }}</p>
                     </div>
                     <div class="flex flex-col items-end gap-1">
-                      <span class="ds-badge" [class]="typeBadgeClass(atelier.typeAtelier)">{{ atelierTypeLabel(atelier.typeAtelier) }}</span>
-                      <span class="ds-badge" [class]="atelierStatusBadgeClass(atelier.statut)">{{ atelierStatusLabel(atelier.statut) }}</span>
+                      <span class="ds-badge" [class]="typeBadgeClass(atelier.typeAtelier)">{{ status.atelierTypeLabel(atelier.typeAtelier) }}</span>
+                      <span class="ds-badge" [class]="atelierStatusBadgeClass(atelier.statut)">{{ status.atelierLabel(atelier.statut) }}</span>
                     </div>
                   </div>
                   <div class="mt-3 text-sm text-slate-700">
@@ -106,7 +107,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
               <mat-option [value]="null">{{ language.t('member.reservations.chooseAtelier') }}</mat-option>
               @for (atelier of managedAteliers(); track atelier.id) {
                 <mat-option [value]="atelier.id">
-                  #{{ atelier.id }} – {{ atelier.date }} {{ atelier.heureDebut }} [{{ atelierTypeLabel(atelier.typeAtelier) }}]
+                  #{{ atelier.id }} – {{ atelier.date }} {{ atelier.heureDebut }} [{{ status.atelierTypeLabel(atelier.typeAtelier) }}]
                 </mat-option>
               }
             </mat-select>
@@ -142,7 +143,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
                 <p class="mb-3 text-sm font-semibold text-slate-800">
                 ✏️ {{ language.t('member.reservations.edit') }} #{{ selectedManagedAtelier()!.id }}
                 <span class="ml-2 ds-badge" [class]="typeBadgeClass(selectedManagedAtelier()!.typeAtelier)">
-                  {{ atelierTypeLabel(selectedManagedAtelier()!.typeAtelier) }}
+                  {{ status.atelierTypeLabel(selectedManagedAtelier()!.typeAtelier) }}
                 </span>
               </p>
               <form [formGroup]="managedAtelierForm" class="grid gap-3 md:grid-cols-4" (ngSubmit)="updateManagedAtelier()">
@@ -209,8 +210,8 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
                     <div>
                       <p class="font-medium text-slate-800">{{ res.participantNom }}</p>
                       <p class="mt-1 flex flex-wrap gap-1 text-xs">
-                        <span class="ds-badge" [class]="reservationBadgeClass(res.statut)">{{ language.t('member.reservations.reservationLabel') }}: {{ reservationStatusLabel(res.statut) }}</span>
-                        <span class="ds-badge" [class]="paymentBadgeClass(res.paiement?.statut)">{{ language.t('member.reservations.paymentLabel') }}: {{ paymentStatusLabel(res.paiement?.statut) }}</span>
+                        <span class="ds-badge" [class]="status.reservationBadge(res.statut)">{{ language.t('member.reservations.reservationLabel') }}: {{ status.reservationLabel(res.statut) }}</span>
+                        <span class="ds-badge" [class]="status.paymentBadge(res.paiement?.statut, 'ds-badge-danger')">{{ language.t('member.reservations.paymentLabel') }}: {{ status.paymentLabel(res.paiement?.statut) }}</span>
                       </p>
                     </div>
                     @if (selectedManagedAtelier()?.typeAtelier === 'PRIVE') {
@@ -244,8 +245,8 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
             <mat-card-content class="ds-data-list">
               <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.reservations.player') }}</span><span class="ds-data-value">{{ reservation.participantNom }}</span></div>
               <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.reservations.atelier') }}</span><span class="ds-data-value">#{{ reservation.atelierId }}</span></div>
-              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.reservations.reservation') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="reservationBadgeClass(reservation.statut)">{{ reservationStatusLabel(reservation.statut) }}</span></span></div>
-              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.reservations.payment') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="paymentBadgeClass(reservation.paiement?.statut)">{{ paymentStatusLabel(reservation.paiement?.statut) }}</span></span></div>
+              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.reservations.reservation') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="status.reservationBadge(reservation.statut)">{{ status.reservationLabel(reservation.statut) }}</span></span></div>
+              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.reservations.payment') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="status.paymentBadge(reservation.paiement?.statut, 'ds-badge-danger')">{{ status.paymentLabel(reservation.paiement?.statut) }}</span></span></div>
               <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.reservations.amount') }}</span><span class="ds-data-value">{{ reservation.paiement?.montant ?? 0 }} €</span></div>
             </mat-card-content>
             <mat-card-actions>
@@ -284,6 +285,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
   `
 })
 export class MemberReservationsPage {
+  readonly status = inject(StatusPresentationService);
   readonly ATELIER_CAPACITY = ATELIER_CAPACITY;
   private readonly ateliersApi = inject(AteliersApiService);
   private readonly reservationsApi = inject(ReservationsApiService);
@@ -681,10 +683,6 @@ export class MemberReservationsPage {
     return type === 'PRIVE' ? 'ds-badge-info' : 'ds-badge-success';
   }
 
-  atelierTypeLabel(type: AtelierResponse['typeAtelier']): string {
-    return type === 'PRIVE' ? this.language.t('member.create.private') : this.language.t('member.create.public');
-  }
-
   atelierStatusBadgeClass(statut: AtelierResponse['statut']): string {
     if (statut === 'COMPLET') {
       return 'ds-badge-success';
@@ -695,65 +693,4 @@ export class MemberReservationsPage {
     return 'ds-badge-warning';
   }
 
-  atelierStatusLabel(statut: AtelierResponse['statut']): string {
-    if (statut === 'COMPLET') {
-      return this.language.t('common.atelierFull');
-    }
-    if (statut === 'ANNULE') {
-      return this.language.t('common.atelierCanceled');
-    }
-    return this.language.t('common.atelierPlanned');
-  }
-
-  reservationBadgeClass(statut: ReservationResponse['statut']): string {
-    if (statut === 'CONFIRMEE') {
-      return 'ds-badge-success';
-    }
-    if (statut === 'EN_ATTENTE') {
-      return 'ds-badge-warning';
-    }
-    return 'ds-badge-danger';
-  }
-
-  reservationStatusLabel(statut: ReservationResponse['statut']): string {
-    if (statut === 'CONFIRMEE') {
-      return this.language.t('common.reservationConfirmed');
-    }
-    if (statut === 'EN_ATTENTE') {
-      return this.language.t('common.reservationPending');
-    }
-    return this.language.t('common.reservationCanceled');
-  }
-
-  paymentBadgeClass(statut: string | undefined): string {
-    if (statut === 'PAYE') {
-      return 'ds-badge-success';
-    }
-    if (statut === 'EN_ATTENTE') {
-      return 'ds-badge-warning';
-    }
-    if (statut === 'REMBOURSE') {
-      return 'ds-badge-info';
-    }
-    if (statut === 'ANNULE') {
-      return 'ds-badge-danger';
-    }
-    return 'ds-badge-neutral';
-  }
-
-  paymentStatusLabel(statut: string | undefined): string {
-    if (statut === 'PAYE') {
-      return this.language.t('common.paymentPaid');
-    }
-    if (statut === 'EN_ATTENTE') {
-      return this.language.t('common.paymentPending');
-    }
-    if (statut === 'REMBOURSE') {
-      return this.language.t('common.paymentRefunded');
-    }
-    if (statut === 'ANNULE') {
-      return this.language.t('common.paymentCanceled');
-    }
-    return this.language.t('common.none');
-  }
 }

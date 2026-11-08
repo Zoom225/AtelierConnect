@@ -9,5 +9,9 @@ import java.time.LocalDate;
 
 @Repository
 public interface PenaliteRepository extends JpaRepository<Penalite, Long> {
-    boolean existsByParticipantIdAndDateFinAfter(Long participantId, LocalDate date);
+    boolean existsByParticipantId(Long participantId);
+    // La suspension reste active pendant toute sa date de fin.
+    boolean existsByParticipantIdAndDateFinGreaterThanEqual(Long participantId, LocalDate date);
+
+    boolean existsByParticipantIdAndMotif(Long participantId, String motif);
 }

@@ -3,6 +3,8 @@ package com.atelierconnect.repository;
 import com.atelierconnect.entity.Participant;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -10,6 +12,8 @@ import java.util.Optional;
 
 @Repository
 public interface ParticipantRepository extends JpaRepository<Participant, Long> {
+    @Query(value = "SELECT id FROM participants WHERE id = :id FOR UPDATE", nativeQuery = true)
+    Long lockParticipantById(@Param("id") Long id);
     @EntityGraph(attributePaths = "centre")
     List<Participant> findAll();
 

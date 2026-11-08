@@ -18,6 +18,7 @@ import { AtelierResponse } from '../../../shared/models/atelier.model';
 import { ATELIER_CAPACITY } from '../../../shared/models/atelier-rules';
 import { CentreResponse } from '../../../shared/models/centre-salle.model';
 import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
+import { StatusPresentationService } from '../../../shared/services/status-presentation.service';
 
 @Component({
   selector: 'app-member-public-ateliers-page',
@@ -118,8 +119,8 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
             </mat-card-header>
             <mat-card-content class="ds-data-list">
               <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.organizer') }}</span><span class="ds-data-value">{{ atelier.organisateurNom }}</span></div>
-              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.status') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="statusBadgeClass(atelier.statut)">{{ atelierStatusLabel(atelier.statut) }}</span></span></div>
-              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.type') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="typeBadgeClass(atelier.typeAtelier)">{{ typeLabel(atelier.typeAtelier) }}</span></span></div>
+              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.status') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="status.catalogueAtelierBadge(atelier.statut)">{{ status.atelierLabel(atelier.statut) }}</span></span></div>
+              <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.type') }}</span><span class="ds-data-value"><span class="ds-badge" [class]="status.catalogueAtelierTypeBadge(atelier.typeAtelier)">{{ status.atelierTypeLabel(atelier.typeAtelier) }}</span></span></div>
               <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.players') }}</span><span class="ds-data-value">{{ atelier.nbParticipantsActuels }}/{{ ATELIER_CAPACITY }}</span></div>
               <div class="ds-data-row"><span class="ds-data-key">{{ language.t('member.public.price') }}</span><span class="ds-data-value">{{ atelier.prixParParticipant }} EUR</span></div>
             </mat-card-content>
@@ -193,6 +194,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
   `
 })
 export class MemberPublicAteliersPage {
+  readonly status = inject(StatusPresentationService);
   readonly ATELIER_CAPACITY = ATELIER_CAPACITY;
   private readonly ateliersApi = inject(AteliersApiService);
   private readonly centresApi = inject(CentresApiService);
@@ -307,34 +309,6 @@ export class MemberPublicAteliersPage {
 
   canModify(atelier: AtelierResponse): boolean {
     return this.isOrganizer(atelier) && this.startsInMoreThan24Hours(atelier);
-  }
-
-  statusBadgeClass(statut: AtelierResponse['statut']): string {
-    if (statut === 'PLANIFIE') {
-      return 'ds-badge-success';
-    }
-    if (statut === 'COMPLET') {
-      return 'ds-badge-warning';
-    }
-    return 'ds-badge-danger';
-  }
-
-  typeBadgeClass(type: AtelierResponse['typeAtelier']): string {
-    return type === 'PRIVE' ? 'ds-badge-info' : 'ds-badge-neutral';
-  }
-
-  typeLabel(type: AtelierResponse['typeAtelier']): string {
-    return type === 'PRIVE' ? this.language.t('member.create.private') : this.language.t('member.create.public');
-  }
-
-  atelierStatusLabel(statut: AtelierResponse['statut']): string {
-    if (statut === 'PLANIFIE') {
-      return this.language.t('common.atelierPlanned');
-    }
-    if (statut === 'COMPLET') {
-      return this.language.t('common.atelierFull');
-    }
-    return this.language.t('common.atelierCanceled');
   }
 
   startEdit(atelier: AtelierResponse): void {

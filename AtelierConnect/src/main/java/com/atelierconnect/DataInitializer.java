@@ -25,6 +25,9 @@ import com.atelierconnect.repository.ReservationRepository;
 import com.atelierconnect.repository.CentreRepository;
 import com.atelierconnect.repository.SalleRepository;
 import com.atelierconnect.service.AtelierRules;
+import com.atelierconnect.entity.MouvementDette;
+import com.atelierconnect.repository.MouvementDetteRepository;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -58,6 +61,7 @@ public class DataInitializer implements CommandLineRunner {
     private final PaiementRepository paiementRepository;
     private final PenaliteRepository penaliteRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MouvementDetteRepository mouvementDetteRepository;
 
     @Override
     @Transactional
@@ -196,14 +200,15 @@ public class DataInitializer implements CommandLineRunner {
                 .prenom("Demo")
                 .email("demo.penalise@gmail.com")
                 .typeParticipant(TypeParticipant.VISITEUR)
-                .solde(0.0)
+                .solde(AtelierRules.PRIX_TOTAL)
                 .centre(null)
                 .passwordHash(defaultParticipantPasswordHash)
                 .build());
 
         log.info("DataInitializer : {} participants créés", participantRepository.count());
 
-        seedActivePenalty(penalise);
+        seedInitialDemoDebt(penalise);
+        seedDemoPenaltyOnce(penalise);
         seedAteliers(salleCreation, salleFormation, salleCollaborative, salleNumerique, lucas, emma, tom, sarah, alex);
 //-----------------------Administrateurs--------------------//
         saveDemoAdmin(Administrateur.builder()
@@ -288,18 +293,30 @@ public class DataInitializer implements CommandLineRunner {
 
     private void ensurePenalizedDemoParticipant() {
         Participant participant = participantRepository.findByMatriculeIgnoreCase("L10002")
-                .orElseGet(() -> participantRepository.save(Participant.builder()
+                .orElseGet(() -> {
+                    Participant created = participantRepository.save(Participant.builder()
                         .matricule("L10002")
                         .nom("Penalise")
                         .prenom("Demo")
                         .email("demo.penalise@gmail.com")
                         .typeParticipant(TypeParticipant.VISITEUR)
-                        .solde(0.0)
+                        .solde(AtelierRules.PRIX_TOTAL)
                         .centre(null)
                         .passwordHash(passwordEncoder.encode(demoParticipantPassword))
-                        .build()));
+                        .build());
+                    seedInitialDemoDebt(created);
+                    return created;
+                });
 
-        seedActivePenalty(participant);
+        seedDemoPenaltyOnce(participant);
+    }
+
+    private void seedInitialDemoDebt(Participant participant) {
+        mouvementDetteRepository.save(MouvementDette.builder().participantId(participant.getId())
+                .nature(MouvementDette.Nature.SOLDE_INITIAL).montant(BigDecimal.valueOf(AtelierRules.PRIX_TOTAL))
+                .referenceSource("solde-demo:" + participant.getId())
+                .description("Solde de démonstration : six places impayées")
+                .dateOperation(LocalDateTime.now()).build());
     }
 
     private void ensureDemoParticipantsCredentials() {
@@ -355,8 +372,9 @@ public class DataInitializer implements CommandLineRunner {
         });
     }
 
-    private void seedActivePenalty(Participant participant) {
-        if (penaliteRepository.existsByParticipantIdAndDateFinAfter(participant.getId(), LocalDate.now())) {
+    private void seedDemoPenaltyOnce(Participant participant) {
+        // Une suspension échue n'est pas renouvelée par un redémarrage.
+        if (penaliteRepository.existsByParticipantId(participant.getId())) {
             return;
         }
 

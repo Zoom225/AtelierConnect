@@ -16,5 +16,6 @@ public interface ParticipantService {
     boolean hasActivePenalty(Long participantId);
     boolean hasOutstandingBalance(Long participantId);
     void addPenalty(Long participantId);
+    void penalizeIncompletePrivateAtelier(Long atelierId);
     Participant authenticate(String matricule, String password);
 }

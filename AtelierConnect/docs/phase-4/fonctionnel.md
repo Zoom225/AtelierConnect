@@ -63,12 +63,30 @@ Ces constantes figurent dans `AtelierRules` et `shared/models/atelier-rules.ts`.
 Les réservations publiques en attente ne garantissent pas une place : leur nombre
 peut dépasser le nombre de places restantes ; le paiement arbitre l'attribution.
 
-## Règles historiques conservées sans nouvel arbitrage
+## Impayés et suspensions
 
 Le scheduler annule les impayés à J−1 et impute un montant à l'organisateur ; le
 paiement suivant peut récupérer une dette. Ces règles existaient et n'ont pas été
-redéfinies par la demande. La fin de suspension utilise une date strictement
-postérieure à aujourd'hui ; préciser si le dernier jour devrait être inclus.
+redéfinies par la demande. Depuis la correction du 7 novembre 2026, le dernier
+jour de suspension est inclus.
+
+Depuis le raccordement de la sanction automatique, un atelier encore privé et
+planifié à J−1, avec moins de six participants confirmés, suspend son organisateur
+jusqu'à la date du contrôle + 7 jours incluse. Le contrôle repasse toutes les cinq
+minutes et enregistre le numéro de l'atelier dans le motif. Une même séance n'est
+sanctionnée qu'une fois, y compris lors de passages concurrents. Les séances
+complètes, annulées, déjà publiques ou hors J−1 sont exclues. La sanction ne crée
+pas d'ouverture publique forcée. La règle financière complémentaire impute à
+l'organisateur le prix total moins les places confirmées et payées, une seule
+fois par atelier. Les invitations privées impayées ne sont pas facturées une
+seconde fois. Les anciens soldes restent conservés.
+
+Le règlement autonome depuis Mes paiements exige le montant attendu et une clé
+de demande. Les accès utilisent le participant authentifié par JWT, sans ID de
+payeur choisi dans le corps de la requête. Une relance est idempotente ; le
+règlement ne lève aucune suspension. Création et participation exigent les deux
+conditions : solde nul et suspension échue. Les mouvements sont conservés dans
+la nouvelle table `mouvements_dette` ; les tables existantes restent inchangées.
 
 Les durées stockées sur les centres et le prix historique d'une salle ne changent
 pas les constantes d'un nouvel atelier. Les ateliers anciens ne sont pas

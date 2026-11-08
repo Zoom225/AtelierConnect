@@ -1,18 +1,25 @@
 [CmdletBinding()]
-param()
+param(
+    [string]$TestContainer = 'atelierconnect-validation-db',
+    [ValidateRange(1024, 65535)][int]$PostgresPort = 5549
+)
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'test-environment-functions.ps1')
 $root = Split-Path $PSScriptRoot -Parent
-$container = 'atelierconnect-validation-db'
+$container = $TestContainer
+if ($container -eq 'atelierconnect-db' -or $PostgresPort -eq 5441) {
+    throw 'Refusing the application PostgreSQL container or port.'
+}
 $metadata = (docker inspect $container | ConvertFrom-Json)[0]
 if ($LASTEXITCODE -ne 0 -or -not $metadata.State.Running -or
     $metadata.Config.Image -ne 'postgres:15' -or
     $metadata.Config.Labels.'atelierconnect.validation' -ne 'true' -or
-    @($metadata.NetworkSettings.Ports.'5432/tcp'.HostPort) -notcontains '5549') {
-    throw 'A running, labelled validation PostgreSQL 15 container on port 5549 is required.'
+    @($metadata.NetworkSettings.Ports.'5432/tcp'.HostPort) -notcontains [string]$PostgresPort) {
+    throw "A running, labelled validation PostgreSQL 15 container on port $PostgresPort is required."
 }
 $names = @('POSTGRES_USER','POSTGRES_PASSWORD','SPRING_DATASOURCE_URL','JWT_SECRET',
     'APP_DEMO_MEMBER_PASSWORD','APP_DEMO_ADMIN_PASSWORD','RUN_POSTGRES_CONCURRENCY_TEST',
-    'APP_DATA_INITIALIZE','SPRING_JPA_HIBERNATE_DDL_AUTO')
+    'APP_DATA_INITIALIZE','SPRING_JPA_HIBERNATE_DDL_AUTO','APP_PRIVATE_PENALTY_CRON')
 $saved = @{}
 foreach ($name in $names) { $saved[$name] = [Environment]::GetEnvironmentVariable($name) }
 $database = 'atelierconnect_test_' + (Get-Date -Format 'yyyyMMdd_HHmmss_fff')
@@ -24,17 +31,17 @@ try {
         if ($entry.Count -ne 1) { throw "Missing test container variable: $name" }
         [Environment]::SetEnvironmentVariable($name, $entry[0].Substring($name.Length + 1))
     }
+    Wait-TestPostgres -Container $container -User $env:POSTGRES_USER
     & docker exec $container createdb -U $env:POSTGRES_USER $database
     if ($LASTEXITCODE -ne 0) { throw 'Cannot create isolated test database.' }
-    $env:SPRING_DATASOURCE_URL = "jdbc:postgresql://127.0.0.1:5549/$database"
+    $env:SPRING_DATASOURCE_URL = "jdbc:postgresql://127.0.0.1:$PostgresPort/$database"
     foreach ($name in @('JWT_SECRET','APP_DEMO_MEMBER_PASSWORD','APP_DEMO_ADMIN_PASSWORD')) {
-        $bytes = New-Object byte[] 48
-        $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
-        try { $rng.GetBytes($bytes) } finally { $rng.Dispose() }
-        [Environment]::SetEnvironmentVariable($name, [Convert]::ToBase64String($bytes))
+        [Environment]::SetEnvironmentVariable($name, (New-TestSecret))
     }
     $env:RUN_POSTGRES_CONCURRENCY_TEST = 'true'
     $env:APP_DATA_INITIALIZE = 'true'
+    # Tests invoke the scheduler explicitly; avoid background jobs racing fixtures.
+    $env:APP_PRIVATE_PENALTY_CRON = '-'
     $env:SPRING_JPA_HIBERNATE_DDL_AUTO = 'update'
     Write-Host "Testing on dedicated container $container; database $database"
     $ErrorActionPreference = 'Continue'

@@ -18,6 +18,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ReservationBookingBoundaryTest {
+    @Mock private com.atelierconnect.service.impl.DetteService detteService;
     @Mock ReservationRepository reservationRepository;
     @Mock PaiementRepository paiementRepository;
     @Mock AtelierService atelierService;

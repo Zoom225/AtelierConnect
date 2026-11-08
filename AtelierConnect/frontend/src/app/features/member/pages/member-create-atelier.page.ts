@@ -12,6 +12,8 @@ import { AteliersApiService } from '../../../core/api/ateliers-api.service';
 import { ReservationsApiService } from '../../../core/api/reservations-api.service';
 import { CentresApiService } from '../../../core/api/centres-api.service';
 import { SallesApiService } from '../../../core/api/salles-api.service';
+import { ParticipantsApiService } from '../../../core/api/participants-api.service';
+import { forkJoin } from 'rxjs';
 import { MemberSessionService } from '../../../core/auth/member-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { TypeParticipant, toParticipantCategory } from '../../../shared/models/enums.model';
@@ -83,6 +85,22 @@ const futureAtelierDateTimeValidator: ValidatorFn = (form): ValidationErrors | n
         </div>
       </div>
 
+      @if (checkingPenalty()) {
+        <p class="status-info" role="status">{{ language.t('member.create.checkingPenalty') }}</p>
+      } @else if (hasPenalty()) {
+        <p class="status-error" role="alert">{{ language.t('member.create.activePenalty') }}</p>
+      } @else if (hasDebt()) {
+        <div class="status-error" role="alert">
+          <p>{{ language.t('member.create.outstandingBalance') }}</p>
+          <a mat-stroked-button routerLink="/member/payments">{{ language.t('member.payments.title') }}</a>
+        </div>
+      } @else if (penaltyCheckFailed()) {
+        <div class="status-error" role="alert">
+          <p>{{ language.t('member.create.penaltyCheckError') }}</p>
+          <button mat-stroked-button type="button" (click)="checkCreationEligibility()">{{ language.t('common.refresh') }}</button>
+        </div>
+      }
+
       <mat-card class="card-soft panel-gradient">
         <mat-card-content>
           <form [formGroup]="form" class="grid gap-4 pt-4 md:grid-cols-2" (ngSubmit)="submit()">
@@ -140,7 +158,7 @@ const futureAtelierDateTimeValidator: ValidatorFn = (form): ValidationErrors | n
               <p class="status-error md:col-span-2" role="alert">{{ language.t('member.create.futureDateTime') }}</p>
             } @else if (errorMessage()) {
               <p class="status-error md:col-span-2">{{ errorMessage() }}</p>
-            } @else if (!centres().length && !loading()) {
+            } @else if (!centres().length && !loading() && !creationUnavailable()) {
               <p class="status-info md:col-span-2">{{ language.t('member.create.noCentre') }}</p>
             }
 
@@ -181,7 +199,7 @@ const futureAtelierDateTimeValidator: ValidatorFn = (form): ValidationErrors | n
             }
 
             <div class="toolbar-actions justify-start md:col-span-2">
-              <button mat-flat-button color="primary" type="submit" [disabled]="loading() || form.invalid || !salles().length">
+              <button mat-flat-button color="primary" type="submit" [disabled]="creationUnavailable() || loading() || form.invalid || !salles().length">
                 {{ language.t('member.create.submit') }}
               </button>
               <a mat-stroked-button routerLink="/member/profile">{{ language.t('member.create.back') }}</a>
@@ -201,12 +219,18 @@ export class MemberCreateAtelierPage {
   private readonly sallesApi = inject(SallesApiService);
   private readonly ateliersApi = inject(AteliersApiService);
   private readonly reservationsApi = inject(ReservationsApiService);
+  private readonly participantsApi = inject(ParticipantsApiService);
   private readonly memberSession = inject(MemberSessionService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   readonly language = inject(LanguageService);
 
   readonly loading = signal(false);
+  readonly checkingPenalty = signal(true);
+  readonly hasPenalty = signal(false);
+  readonly hasDebt = signal(false);
+  readonly penaltyCheckFailed = signal(false);
+  readonly creationUnavailable = computed(() => this.checkingPenalty() || this.hasPenalty() || this.hasDebt() || this.penaltyCheckFailed());
   readonly message = signal('');
   readonly errorMessage = signal('');
   readonly centres = signal<CentreResponse[]>([]);
@@ -267,7 +291,33 @@ export class MemberCreateAtelierPage {
     this.applyPreferredTypeFromQuery();
     this.applyDefaultStartTime();
     this.applyDateBounds();
-    this.loadCentres();
+    this.checkCreationEligibility();
+  }
+
+  checkCreationEligibility(): void {
+    const memberId = this.member()?.id;
+    this.checkingPenalty.set(true);
+    this.penaltyCheckFailed.set(false);
+    this.form.disable({ emitEvent: false });
+    if (!memberId) {
+      this.router.navigateByUrl('/member');
+      return;
+    }
+    forkJoin({ hasPenalty: this.participantsApi.hasPenalty(memberId), hasDebt: this.participantsApi.hasBalance(memberId) }).subscribe({
+      next: ({ hasPenalty, hasDebt }) => {
+        this.hasPenalty.set(hasPenalty);
+        this.hasDebt.set(hasDebt);
+        this.checkingPenalty.set(false);
+        if (!hasPenalty && !hasDebt) {
+          this.form.enable({ emitEvent: false });
+          this.loadCentres();
+        }
+      },
+      error: () => {
+        this.checkingPenalty.set(false);
+        this.penaltyCheckFailed.set(true);
+      }
+    });
   }
 
   private setPageError(message: string): void {
@@ -355,6 +405,9 @@ export class MemberCreateAtelierPage {
   }
 
   submit(): void {
+    if (this.creationUnavailable()) {
+      return;
+    }
     // A date that was valid when the page opened may have passed since then.
     this.form.updateValueAndValidity();
     this.form.markAllAsTouched();
@@ -430,6 +483,7 @@ export class MemberCreateAtelierPage {
     const errorMappings: Record<string, string> = {
       'outstanding balance': this.language.t('member.create.outstandingBalance'),
       'active penalty': this.language.t('member.create.activePenalty'),
+      'suspension active': this.language.t('member.create.activePenalty'),
       'ne peut pas reserver plus de': this.bookingDelayProfileErrorMessage(),
       'ce créneau est déjà réservé': this.language.t('member.create.slotTaken'),
       'site est fermé': this.language.t('member.create.centreClosed'),

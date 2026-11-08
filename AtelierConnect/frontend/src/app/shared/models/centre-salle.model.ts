@@ -9,16 +9,8 @@ export interface CentreRequest {
   ouvertVisiteurs?: boolean | null;
 }
 
-export interface CentreResponse {
+export interface CentreResponse extends CentreRequest {
   id: number;
-  nom: string;
-  adresse: string;
-  heureOuverture: string;
-  heureFermeture: string;
-  dureeAtelierMinutes: number;
-  dureeEntreAtelierMinutes: number;
-  anneeCivile: number;
-  ouvertVisiteurs?: boolean | null;
 }
 
 export interface SalleRequest {

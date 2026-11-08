@@ -398,7 +398,7 @@ class ParticipantServiceTest {
         @Test
         @DisplayName("✅ doit retourner vrai quand le participant a une pénalité active")
         void shouldReturnTrueWhenActivePenalty() {
-            when(penaliteRepository.existsByParticipantIdAndDateFinAfter(eq(1L), any(LocalDate.class)))
+            when(penaliteRepository.existsByParticipantIdAndDateFinGreaterThanEqual(eq(1L), any(LocalDate.class)))
                     .thenReturn(true);
 
             boolean result = participantService.hasActivePenalty(1L);
@@ -409,7 +409,7 @@ class ParticipantServiceTest {
         @Test
         @DisplayName("✅ doit retourner faux quand le participant n'a pas de pénalité active")
         void shouldReturnFalseWhenNoPenalty() {
-            when(penaliteRepository.existsByParticipantIdAndDateFinAfter(eq(1L), any(LocalDate.class)))
+            when(penaliteRepository.existsByParticipantIdAndDateFinGreaterThanEqual(eq(1L), any(LocalDate.class)))
                     .thenReturn(false);
 
             boolean result = participantService.hasActivePenalty(1L);

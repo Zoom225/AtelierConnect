@@ -30,4 +30,13 @@ public class AtelierScheduler {
         paiementService.checkUnpaidBeforeAtelier();
         log.info("Vérification des réservations impayées terminée");
     }
+
+    // Contrôle récurrent à J-1, notamment après un redémarrage ou une création
+    // tardive. Le traitement sous verrou ne sanctionne chaque atelier qu'une fois.
+    @Scheduled(cron = "${APP_PRIVATE_PENALTY_CRON:0 */5 * * * *}")
+    public void processIncompletePrivateAteliers() {
+        log.info("Vérification des ateliers privés incomplets à J-1");
+        atelierService.checkAndPenalizeIncompletePrivateAteliers();
+        log.info("Vérification des suspensions pour atelier privé incomplet terminée");
+    }
 }

@@ -10,7 +10,6 @@ import com.atelierconnect.entity.enums.StatutReservation;
 import com.atelierconnect.exception.BusinessException;
 import com.atelierconnect.exception.ResourceNotFoundException;
 import com.atelierconnect.repository.AtelierRepository;
-import com.atelierconnect.repository.ParticipantRepository;
 import com.atelierconnect.repository.PaiementRepository;
 import com.atelierconnect.repository.ReservationRepository;
 import com.atelierconnect.service.PaiementService;
@@ -35,8 +34,9 @@ public class PaiementServiceImpl implements PaiementService {
     private final ReservationRepository reservationRepository;
     private final EntityManager entityManager;
     private final ReservationService reservationService;
-    private final ParticipantRepository participantRepository;
     private final AtelierRepository atelierRepository;
+    private final DetteService detteService;
+    private final UnpaidReservationProcessor unpaidProcessor;
 
     @Override
     @Transactional
@@ -52,51 +52,10 @@ public class PaiementServiceImpl implements PaiementService {
             throw new BusinessException("Seul le participant associé à cette réservation peut payer.");
         }
 
-        // Regle metier : une reservation annulee ne peut pas etre payee.
-        if (reservation.getStatut() == com.atelierconnect.entity.enums.StatutReservation.ANNULEE) {
-            throw new BusinessException("Impossible de payer une réservation annulée.");
-        }
-
-        Paiement paiement = reservation.getPaiement();
-        if (paiement == null) {
-            throw new ResourceNotFoundException("Aucun paiement trouvé pour la réservation : " + reservationId);
-        }
-
-        // Regle metier : un paiement deja effectue ne peut pas etre refait.
-        if (paiement.getStatut() == StatutPaiement.PAYE) {
-            throw new BusinessException("Le paiement de cette réservation a déjà été effectué.");
-        }
-
-        // Regle metier : un paiement annule ne peut pas etre relance.
-        if (paiement.getStatut() == StatutPaiement.ANNULE) {
-            throw new BusinessException("Le paiement de cette réservation a été annulé.");
-        }
-        // Regle metier : seules les reservations en attente peuvent etre payees.
-        if (reservation.getStatut() != StatutReservation.EN_ATTENTE) {
-            throw new BusinessException("Seules les réservations en attente peuvent être payées.");
-        }
-        // La place est attribuee uniquement au moment du paiement, apres verification de l'atelier sous verrou.
-        Atelier atelier = atelierRepository.findByIdForUpdate(reservation.getAtelier().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Atelier introuvable avec l'ID : " + reservation.getAtelier().getId()));
-        // Rafraîchir sous verrou : l'atelier peut avoir été chargé en mémoire
-        // AVANT le SELECT FOR UPDATE d'une transaction concurrente.
-        entityManager.refresh(atelier);
-        // Regle metier : l'atelier doit toujours etre valide une fois verrouille.
-        if (atelier.getStatut() == StatutAtelier.ANNULE) {
-            throw new BusinessException("Cet atelier est annulé.");
-        }
-        if (atelier.getNbParticipantsActuels() != null && atelier.getNbParticipantsActuels() >= AtelierRules.CAPACITE) {
-            throw new BusinessException("Cet atelier est déjà complet.");
-        }
-        double montantFinal = paiement.getMontant();
-        if (participant.getSolde() > 0.0) {
-            // Regle metier : un solde impaye est recupere au paiement suivant.
-            montantFinal += participant.getSolde();
-            log.info("Solde impayé de {} ajouté au paiement du participant {}",
-                    participant.getSolde(), participantId);
-            participant.setSolde(0.0);
-            participantRepository.save(participant);
-        }
+        Paiement paiement = getPendingPayment(reservation);
+        Atelier atelier = getAvailableAtelierForUpdate(reservation.getAtelier().getId());
+        double montantFinal = paiement.getMontant()
+                + detteService.settleWithReservation(participantId, reservationId).doubleValue();
 
         paiement.setMontant(montantFinal);
         paiement.setStatut(StatutPaiement.PAYE);
@@ -113,8 +72,52 @@ public class PaiementServiceImpl implements PaiementService {
         atelierRepository.save(atelier);
 
         log.info("Paiement effectué pour la réservation {} par le participant {}", reservationId, participantId);
-
         return paiement;
+    }
+
+    private Paiement getPendingPayment(Reservation reservation) {
+        if (reservation.getStatut() == StatutReservation.ANNULEE) {
+            throw new BusinessException("Impossible de payer une réservation annulée.");
+        }
+
+        Paiement paiement = reservation.getPaiement();
+        if (paiement == null) {
+            throw new ResourceNotFoundException("Aucun paiement trouvé pour la réservation : " + reservation.getId());
+        }
+
+        // Regle metier : un paiement deja effectue ne peut pas etre refait.
+        if (paiement.getStatut() == StatutPaiement.PAYE) {
+            throw new BusinessException("Le paiement de cette réservation a déjà été effectué.");
+        }
+
+        // Regle metier : un paiement annule ne peut pas etre relance.
+        if (paiement.getStatut() == StatutPaiement.ANNULE) {
+            throw new BusinessException("Le paiement de cette réservation a été annulé.");
+        }
+        // Regle metier : seules les reservations en attente peuvent etre payees.
+        if (reservation.getStatut() != StatutReservation.EN_ATTENTE) {
+            throw new BusinessException("Seules les réservations en attente peuvent être payées.");
+        }
+        return paiement;
+    }
+
+    private Atelier getAvailableAtelierForUpdate(Long atelierId) {
+        Atelier atelier = atelierRepository.findByIdForUpdate(atelierId)
+                .orElseThrow(() -> new ResourceNotFoundException("Atelier introuvable avec l'ID : " + atelierId));
+        // Rafraîchir sous verrou : l'atelier peut avoir été chargé en mémoire
+        // AVANT le SELECT FOR UPDATE d'une transaction concurrente.
+        entityManager.refresh(atelier);
+        if (detteService.isPrivateAtelierCharged(atelier.getId())) {
+            throw new BusinessException("L'échéance de cet atelier privé est dépassée : ses places impayées sont déjà imputées à l'organisateur.");
+        }
+        // Regle metier : l'atelier doit toujours etre valide une fois verrouille.
+        if (atelier.getStatut() == StatutAtelier.ANNULE) {
+            throw new BusinessException("Cet atelier est annulé.");
+        }
+        if (atelier.getNbParticipantsActuels() != null && atelier.getNbParticipantsActuels() >= AtelierRules.CAPACITE) {
+            throw new BusinessException("Cet atelier est déjà complet.");
+        }
+        return atelier;
     }
 
     @Override
@@ -137,56 +140,27 @@ public class PaiementServiceImpl implements PaiementService {
     @Override
     @Transactional(readOnly = true)
     public void checkPaiementOwner(Long paiementId, Long participantId) {
-        Paiement paiement = getById(paiementId);
-        // Regle metier : un participant ne peut consulter que ses propres paiements.
-        if (!paiement.getReservation().getParticipant().getId().equals(participantId)) {
-            throw new BusinessException("Accès refusé : ce paiement appartient à un autre participant.");
-        }
+        checkOwner(getById(paiementId), participantId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public void checkReservationPaiementOwner(Long reservationId, Long participantId) {
-        Paiement paiement = getByReservationId(reservationId);
-        // Regle metier : un participant ne peut agir que sur le paiement de sa reservation.
+        checkOwner(getByReservationId(reservationId), participantId);
+    }
+
+    private void checkOwner(Paiement paiement, Long participantId) {
         if (!paiement.getReservation().getParticipant().getId().equals(participantId)) {
             throw new BusinessException("Accès refusé : ce paiement appartient à un autre participant.");
         }
     }
 
     @Override
-    @Transactional
     public void checkUnpaidBeforeAtelier() {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
 
         // Regle metier : a J-1, les reservations non payees sont annulees et imputees a l'organisateur.
-        paiementRepository.findByStatut(StatutPaiement.EN_ATTENTE)
-                .stream()
-                .filter(p -> p.getReservation().getAtelier()
-                        .getDateDebut().toLocalDate().equals(tomorrow))
-                .forEach(p -> {
-                    Long reservationId = p.getReservation().getId();
-                    // Le paiement peut avoir eu lieu pendant l'attente du verrou :
-                    // recharger l'état persistant avant de décider une sanction.
-                    reservationRepository.lockReservationById(reservationId);
-                    entityManager.refresh(p);
-                    Reservation reservation = p.getReservation();
-                    entityManager.refresh(reservation);
-                    if (p.getStatut() != StatutPaiement.EN_ATTENTE
-                            || reservation.getStatut() != StatutReservation.EN_ATTENTE) {
-                        return;
-                    }
-
-                    Atelier atelier = reservation.getAtelier();
-                    reservationService.cancel(reservationId);
-
-                    double partManquante = atelier.getPrixParParticipant();
-                    Participant organisateur = atelier.getOrganisateur();
-                    organisateur.setSolde(organisateur.getSolde() + partManquante);
-                    participantRepository.save(organisateur);
-
-                    log.info("Réservation impayée {} annulée, solde {} ajouté à l'organisateur {}",
-                            reservation.getId(), partManquante, organisateur.getId());
-                });
+        paiementRepository.findUnpaidIdsForDay(tomorrow.atStartOfDay(), tomorrow.plusDays(1).atStartOfDay())
+                .forEach(unpaidProcessor::process);
     }
 }

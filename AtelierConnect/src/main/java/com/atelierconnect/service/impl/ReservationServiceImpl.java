@@ -33,12 +33,16 @@ public class ReservationServiceImpl implements ReservationService {
     private final PaiementRepository paiementRepository;
     private final AtelierService atelierService;
     private final ParticipantService participantService;
+    private final DetteService detteService;
 
     @Override
     @Transactional
     public Reservation create(Long atelierId, Long participantId, Long requesterId) {
         // Même verrou que les paiements : invitations et sixième place sont sérialisées.
         Atelier atelier = atelierService.getAtelierEntityByIdForUpdate(atelierId);
+        if (detteService.isPrivateAtelierCharged(atelierId)) {
+            throw new BusinessException("Les inscriptions sont closes : les places impayées sont déjà imputées à l'organisateur.");
+        }
         Participant participant = participantService.getById(participantId);
 
         // Regle metier : impossible de reserver un atelier deja complet.
@@ -185,6 +189,12 @@ public class ReservationServiceImpl implements ReservationService {
         if (reservation.getStatut() == StatutReservation.ANNULEE) {
             throw new BusinessException("La réservation est déjà annulée.");
         }
+        if (wasConfirmed) {
+            atelierService.getAtelierEntityByIdForUpdate(reservation.getAtelier().getId());
+            if (detteService.isPrivateAtelierCharged(reservation.getAtelier().getId())) {
+                throw new BusinessException("L'échéance de cet atelier privé est dépassée : une annulation remboursée n'est plus possible.");
+            }
+        }
 
         reservation.setStatut(StatutReservation.ANNULEE);
         reservationRepository.save(reservation);
@@ -202,6 +212,9 @@ public class ReservationServiceImpl implements ReservationService {
 
         // Regle metier : seule une reservation confirmee libere une place.
         if (wasConfirmed) {
+            // Le rafraîchissement de l'atelier cascade vers ses réservations.
+            // Enregistrer l'annulation et le remboursement avant de relire ce graphe.
+            reservationRepository.flush();
             atelierService.decrementParticipants(reservation.getAtelier().getId());
         }
 

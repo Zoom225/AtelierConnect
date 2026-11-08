@@ -43,6 +43,81 @@ async function loginParticipantInBrowser(page: import('@playwright/test').Page, 
   await expect(page.locator('input[formControlName="password"]')).toHaveCount(0);
 }
 
+test('participant suspendu : message immédiat, créations publique et privée bloquées dans Angular et l’API', async ({ page }) => {
+  const participant = await login(page.request, 'L10002');
+  const headers = bearer(participant.token);
+  const penalty = await page.request.get(`/api/participants/${participant.id}/penalty`, { headers });
+  expect(penalty.status()).toBe(200);
+  expect(await penalty.json()).toBe(true);
+  const before = await (await page.request.get(`/api/ateliers/organisateur/${participant.id}`, { headers })).json();
+  const salles = await (await page.request.get('/api/salles')).json() as Salle[];
+  expect(salles.length).toBeGreaterThan(0);
+
+  await loginParticipantInBrowser(page, 'L10002');
+  await expect(page).toHaveURL(/\/member\/profile$/, { timeout: 20_000 });
+  await expect(page.getByRole('alert')).toContainText('suspension active', { timeout: 20_000 });
+  await expect(page.getByRole('alert')).toContainText('publics et privés');
+  await expect(page.getByTestId('member-debt')).toContainText('Dette à régler');
+  await expect(page.getByTestId('member-debt')).toContainText(/90,00\s*€/);
+  const shortcuts = page.locator('a[aria-disabled="true"]');
+  await expect(shortcuts).toHaveCount(2);
+  await expect(shortcuts.nth(0)).not.toHaveAttribute('href');
+  await expect(shortcuts.nth(1)).not.toHaveAttribute('href');
+
+  let creationRequests = 0;
+  page.on('request', request => {
+    if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/ateliers') creationRequests++;
+  });
+  for (const type of ['PUBLIC', 'PRIVE']) {
+    // Même en ouvrant directement le formulaire, la suspension reste bloquante.
+    await page.goto(`/member/ateliers/nouveau?type=${type}`);
+    await expect(page.getByRole('alert')).toContainText('suspension active', { timeout: 20_000 });
+    await expect(page.getByRole('alert')).toContainText('date de fin incluse');
+    await expect(page.locator('button[type="submit"]')).toBeDisabled();
+    await expect(page.locator('input[formControlName="date"]')).toBeDisabled();
+    // Le contrôle serveur reste obligatoire si le navigateur est contourné.
+    const refused = await page.request.post('/api/ateliers', { headers, data: {
+      salleId: salles[0].id, atelierDate: dateDansSixJours(), atelierType: type
+    } });
+    expect(refused.status()).toBe(400);
+    // Ce compte de démonstration cumule dette et suspension : le backend
+    // contrôle d'abord le solde impayé, les deux motifs restent bloquants.
+    expect((await refused.json()).message).toBe("Vous avez un solde impayé et ne pouvez pas créer d'atelier.");
+  }
+  expect(creationRequests).toBe(0);
+  const after = await (await page.request.get(`/api/ateliers/organisateur/${participant.id}`, { headers })).json();
+  expect(after).toEqual(before);
+});
+
+test('règlement autonome : dette soldée une seule fois, suspension maintenue', async ({ page }) => {
+  const participant = await login(page.request, 'L10002');
+  await loginParticipantInBrowser(page, 'L10002');
+  await expect(page).toHaveURL(/\/member\/profile$/, { timeout: 20_000 });
+  await page.goto('/member/payments');
+  const panel = page.getByTestId('debt-payment-panel');
+  await expect(panel).toContainText(/90,00\s*€/, { timeout: 20_000 });
+  const completed = page.waitForResponse(response => new URL(response.url()).pathname === '/api/paiements/dette/pay');
+  await page.getByTestId('pay-debt').click();
+  const response = await completed;
+  expect(response.status()).toBe(200);
+  const requestData = response.request().postDataJSON();
+  const result = await response.json();
+  expect(result.solde).toBe(0);
+  expect(result.suspensionActive).toBe(true);
+  await expect(page.getByTestId('pay-debt')).toHaveCount(0, { timeout: 20_000 });
+  await expect(panel).toContainText('Aucune dette à régler');
+  const replay = await page.request.post('/api/paiements/dette/pay', {
+    headers: bearer(participant.token), data: requestData
+  });
+  expect(replay.status()).toBe(200);
+  const history = await replay.json();
+  expect(history.solde).toBe(0);
+  expect(history.mouvements.filter((movement: any) => movement.nature === 'REGLEMENT_DETTE')).toHaveLength(1);
+  await page.goto('/member/ateliers/nouveau?type=PUBLIC');
+  await expect(page.getByRole('alert')).toContainText('suspension active', { timeout: 20_000 });
+  await expect(page.locator('button[type="submit"]')).toBeDisabled();
+});
+
 test('parcours complet : identité, atelier privé, invitation, paiement et consentement persistant', async ({ page }) => {
   test.setTimeout(120_000);
 
@@ -276,8 +351,10 @@ test('création Angular, paiement et annulation visibles et persistants', async 
   await page.goto('/member/ateliers/nouveau');
   await page.locator('mat-select[formControlName="centreId"]').click();
   await page.getByRole('option').filter({ hasText: 'Bruxelles' }).click();
-  await page.locator('mat-select[formControlName="salleId"]').click();
-  await page.getByRole('option', { name: /^Salle Création A\b/ }).click();
+  // La première salle est sélectionnée après la réponse HTTP du centre.
+  // Attendre cette sélection évite d'ouvrir un menu encore en chargement.
+  await expect(page.locator('mat-select[formControlName="salleId"]'))
+    .toContainText('Salle Création A', { timeout: 20_000 });
   const date = new Date();
   date.setDate(date.getDate() + 5);
   await page.locator('input[formControlName="date"]').fill(date.toISOString().slice(0, 10));
@@ -329,25 +406,33 @@ test('salles administrables, Swagger et refus HTTP réels', async ({ page }) => 
   await page.locator('input[formControlName="email"]').fill('admin@atelierconnect.example');
   await page.locator('input[formControlName="password"]').fill(adminPassword!);
   await page.locator('form button[type="submit"]').click();
-  await expect(page).toHaveURL(/\/admin\/?$/);
+  await expect(page).toHaveURL(/\/admin\/?$/, { timeout: 20_000 });
   await page.goto('/admin/salles');
+  // Les cartes sont rendues après le chargement conjoint des salles et centres.
+  await expect(page.locator('.adm-ter-card').first()).toBeVisible({ timeout: 20_000 });
   const name = 'Salle validation ' + Date.now();
   await page.locator('input[formControlName="nom"]').fill(name);
   await page.locator('mat-select[formControlName="centreId"]').click();
   await page.getByRole('option').filter({ hasText: 'Bruxelles' }).click();
+  const creationResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/api/salles' && response.request().method() === 'POST');
   await page.locator('form button[type="submit"]').click();
+  expect((await creationResponse).status()).toBe(201);
   const card = page.locator('.adm-ter-card').filter({ hasText: name });
-  await expect(card).toBeVisible();
+  await expect(card).toBeVisible({ timeout: 20_000 });
   await card.locator('button.adm-ter-action-edit').click();
   await page.locator('input[formControlName="nom"]').fill(name + ' modifiée');
+  const updateResponse = page.waitForResponse(response => new URL(response.url()).pathname.startsWith('/api/salles/') && response.request().method() === 'PUT');
   await page.locator('form button[type="submit"]').click();
-  await expect(card).toContainText(name + ' modifiée');
+  expect((await updateResponse).status()).toBe(200);
+  await expect(card).toContainText(name + ' modifiée', { timeout: 20_000 });
   const salles = await (await page.request.get('/api/salles')).json() as Salle[];
   const salle = salles.find(item => item.nom === name + ' modifiée')!;
   expect(salle).toBeDefined();
   page.once('dialog', dialog => dialog.accept());
+  const deletionResponse = page.waitForResponse(response => new URL(response.url()).pathname === `/api/salles/${salle.id}` && response.request().method() === 'DELETE');
   await card.locator('button.adm-ter-action-delete').click();
-  await expect(card).toHaveCount(0);
+  expect((await deletionResponse).status()).toBe(204);
+  await expect(card).toHaveCount(0, { timeout: 20_000 });
   expect((await page.request.get(`/api/salles/${salle.id}`)).status()).toBe(404);
 
   expect((await page.request.get('/swagger-ui.html')).status()).toBe(200);

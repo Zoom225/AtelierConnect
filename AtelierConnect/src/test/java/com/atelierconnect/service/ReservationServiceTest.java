@@ -29,6 +29,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests de ReservationService")
 class ReservationServiceTest {
+    @Mock private com.atelierconnect.service.impl.DetteService detteService;
 
     @Mock
     private ReservationRepository reservationRepository;

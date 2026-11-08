@@ -12,6 +12,10 @@ import java.util.List;
 
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
+    @Query("SELECT count(r) FROM Reservation r WHERE r.atelier.id = :atelierId " +
+            "AND r.statut = com.atelierconnect.entity.enums.StatutReservation.CONFIRMEE " +
+            "AND r.paiement.statut = com.atelierconnect.entity.enums.StatutPaiement.PAYE")
+    long countPaidConfirmedSeats(@Param("atelierId") Long atelierId);
     long countByAtelierIdAndStatutNot(Long atelierId, StatutReservation statut);
     /**
      * Verrouille la ligne avant la lecture de l'état du paiement.

@@ -5,11 +5,13 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterLink } from '@angular/router';
-import { PaiementsApiService } from '../../../core/api/paiements-api.service';
+import { DetteResponse, PaiementsApiService } from '../../../core/api/paiements-api.service';
+import { forkJoin } from 'rxjs';
 import { MemberSessionService } from '../../../core/auth/member-session.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { PaiementResponse } from '../../../shared/models/reservation.model';
 import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
+import { StatusPresentationService } from '../../../shared/services/status-presentation.service';
 
 @Component({
   selector: 'app-member-payments-page',
@@ -38,6 +40,36 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
       }
       @if (message()) {
         <p class="status-success">{{ message() }}</p>
+      }
+
+      @if (debt(); as balance) {
+        <div class="card-soft mb-5 p-5" data-testid="debt-payment-panel">
+          <h2>{{ language.t('member.payments.debtTitle') }}</h2>
+          <p class="text-2xl font-bold" [class.text-red-700]="balance.solde > 0">{{ formatMoney(balance.solde) }}</p>
+          <p>{{ language.t('member.payments.debtRule') }}</p>
+          @if (balance.suspensionActive) {
+            <p class="status-error" role="status">{{ language.t('member.create.activePenalty') }}</p>
+          }
+          @if (balance.solde > 0) {
+            <button type="button" class="pay-action-btn mt-3" data-testid="pay-debt"
+                    [disabled]="payingDebt() || loading() || actionPaymentId() !== null" (click)="payDebt()">
+              {{ language.t(payingDebt() ? 'member.payments.debtPaying' : 'member.payments.debtPay') }} {{ formatMoney(balance.solde) }}
+            </button>
+          } @else {
+            <p class="status-success">{{ language.t('member.payments.debtZero') }}</p>
+          }
+          @if (balance.mouvements.length) {
+            <h3 class="mt-4">{{ language.t('member.payments.debtHistory') }}</h3>
+            <ul class="space-y-2">
+              @for (movement of balance.mouvements; track movement.id) {
+                <li class="flex flex-wrap justify-between gap-2 border-b py-2">
+                  <span>{{ movement.description }} <small>{{ movement.dateOperation | date:'dd/MM/yyyy HH:mm' }}</small></span>
+                  <strong>{{ movement.nature.startsWith('REGLEMENT') ? '−' : '+' }} {{ formatMoney(movement.montant) }}</strong>
+                </li>
+              }
+            </ul>
+          }
+        </div>
       }
 
       <div class="pay-kpi-card">
@@ -74,7 +106,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
                   type="button"
                   class="pay-action-btn"
                   (click)="pay(payment)"
-                  [disabled]="actionPaymentId() === payment.id"
+                  [disabled]="actionPaymentId() !== null || payingDebt()"
                 >
                   {{ actionPaymentId() === payment.id ? 'Paiement...' : 'Payer maintenant' }}
                 </button>
@@ -82,7 +114,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
             }
             <div class="pay-card-body">
               <span class="pay-amount">{{ payment.montant }} €</span>
-              <span class="pay-badge" [class]="payBadgeClass(payment.statut)">{{ paymentStatusLabel(payment.statut) }}</span>
+              <span class="pay-badge" [class]="payBadgeClass(payment.statut)">{{ status.paymentLabel(payment.statut) }}</span>
             </div>
           </div>
         } @empty {
@@ -164,6 +196,7 @@ import { extractApiErrorMessage } from '../../../shared/utils/api-error.util';
   `
 })
 export class MemberPaymentsPage {
+  readonly status = inject(StatusPresentationService);
   private readonly paiementsApi = inject(PaiementsApiService);
   private readonly memberSession = inject(MemberSessionService);
   readonly language = inject(LanguageService);
@@ -174,6 +207,9 @@ export class MemberPaymentsPage {
   readonly message = signal('');
   readonly errorMessage = signal('');
   readonly payments = signal<PaiementResponse[]>([]);
+  readonly debt = signal<DetteResponse | null>(null);
+  readonly payingDebt = signal(false);
+  private debtRequest: { amount: number; key: string } | null = null;
   readonly memberId = computed(() => this.memberSession.memberId());
   readonly totalPaid = computed(() =>
     this.payments()
@@ -189,7 +225,7 @@ export class MemberPaymentsPage {
 
   private setPageError(message: string): void {
     this.errorMessage.set(
-      message.trim() === MemberPaymentsPage.HIDDEN_GENERIC_ERROR ? '' : message
+      message.trim() === MemberPaymentsPage.HIDDEN_GENERIC_ERROR ? this.language.t('member.payments.error') : message
     );
   }
 
@@ -203,9 +239,10 @@ export class MemberPaymentsPage {
     this.loading.set(true);
     this.message.set('');
     this.errorMessage.set('');
-    this.paiementsApi.getByParticipant(memberId).subscribe({
-      next: (payments) => {
+    forkJoin({ payments: this.paiementsApi.getByParticipant(memberId), debt: this.paiementsApi.getDebt() }).subscribe({
+      next: ({ payments, debt }) => {
         this.payments.set(payments);
+        this.debt.set(debt);
         this.loading.set(false);
       },
       error: (error) => {
@@ -216,7 +253,7 @@ export class MemberPaymentsPage {
   }
 
   pay(payment: PaiementResponse): void {
-    if (payment.reservationId == null || this.actionPaymentId() !== null) {
+    if (payment.reservationId == null || this.actionPaymentId() !== null || this.payingDebt()) {
       return;
     }
 
@@ -231,10 +268,40 @@ export class MemberPaymentsPage {
           payments.map((currentPayment) => (currentPayment.id === updatedPayment.id ? updatedPayment : currentPayment))
         );
         this.message.set('Paiement effectue avec succes. Votre reservation est maintenant confirmee.');
+        this.paiementsApi.getDebt().subscribe({ next: debt => this.debt.set(debt), error: error => this.setPageError(extractApiErrorMessage(error, this.language.t('member.payments.error'))) });
       },
       error: (error) => {
         this.actionPaymentId.set(null);
         this.setPageError(extractApiErrorMessage(error, 'Paiement impossible.'));
+      }
+    });
+  }
+
+  formatMoney(amount: number): string {
+    return new Intl.NumberFormat(this.language.locale(), { style: 'currency', currency: 'EUR' }).format(amount);
+  }
+
+  payDebt(): void {
+    const amount = this.debt()?.solde ?? 0;
+    if (amount <= 0 || this.payingDebt() || this.loading() || this.actionPaymentId() !== null) return;
+    if (!this.debtRequest || this.debtRequest.amount !== amount) {
+      this.debtRequest = { amount, key: crypto.randomUUID() };
+    }
+    this.payingDebt.set(true);
+    this.message.set('');
+    this.errorMessage.set('');
+    this.paiementsApi.payDebt(amount, this.debtRequest.key).subscribe({
+      next: debt => {
+        this.debt.set(debt);
+        this.debtRequest = null;
+        this.payingDebt.set(false);
+        this.message.set(this.language.t('member.payments.debtSuccess'));
+      },
+      error: error => {
+        this.payingDebt.set(false);
+        this.setPageError(extractApiErrorMessage(error, this.language.t('member.payments.error')));
+        // Conserver la clé pour rejouer un appel dont la réponse a été perdue.
+        this.paiementsApi.getDebt().subscribe({ next: debt => this.debt.set(debt), error: () => {} });
       }
     });
   }
@@ -248,18 +315,4 @@ export class MemberPaymentsPage {
     }
   }
 
-  paymentStatusLabel(statut: string): string {
-    switch (statut) {
-      case 'PAYE':
-        return this.language.t('common.paymentPaid');
-      case 'EN_ATTENTE':
-        return this.language.t('common.paymentPending');
-      case 'REMBOURSE':
-        return this.language.t('common.paymentRefunded');
-      case 'ANNULE':
-        return this.language.t('common.paymentCanceled');
-      default:
-        return this.language.t('common.none');
-    }
-  }
 }

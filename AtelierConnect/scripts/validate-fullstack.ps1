@@ -7,6 +7,7 @@ param(
 
 # Windows PowerShell 5.1 and PowerShell 7. No application database is used.
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'test-environment-functions.ps1')
 $projectRoot = Split-Path $PSScriptRoot -Parent
 $runId = Get-Date -Format 'yyyyMMdd_HHmmss_fff'
 $reportDir = Join-Path $projectRoot ".local/validation/$runId"
@@ -14,18 +15,11 @@ New-Item -ItemType Directory -Path $reportDir -Force | Out-Null
 $originalLocation = Get-Location
 $runtimeVariables = @('POSTGRES_USER', 'POSTGRES_PASSWORD', 'SPRING_DATASOURCE_URL',
     'JWT_SECRET', 'APP_DEMO_MEMBER_PASSWORD', 'APP_DEMO_ADMIN_PASSWORD',
-    'RUN_POSTGRES_CONCURRENCY_TEST', 'PLAYWRIGHT_JSON_OUTPUT_NAME', 'POSTGRES_DB')
+    'RUN_POSTGRES_CONCURRENCY_TEST', 'PLAYWRIGHT_JSON_OUTPUT_NAME', 'POSTGRES_DB', 'APP_PRIVATE_PENALTY_CRON')
 $savedEnvironment = @{}
 foreach ($name in $runtimeVariables) { $savedEnvironment[$name] = [Environment]::GetEnvironmentVariable($name) }
 $backend = $null
 $frontend = $null
-
-function New-RandomSecret {
-    $bytes = New-Object byte[] 48
-    $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
-    try { $rng.GetBytes($bytes) } finally { $rng.Dispose() }
-    return [Convert]::ToBase64String($bytes)
-}
 
 function Invoke-Checked {
     param([string]$Executable, [string[]]$Arguments, [string]$LogName)
@@ -93,7 +87,7 @@ try {
             throw "Test PostgreSQL port $PostgresPort is already occupied."
         }
         $env:POSTGRES_USER = 'atelier_validation'
-        $env:POSTGRES_PASSWORD = New-RandomSecret
+        $env:POSTGRES_PASSWORD = New-TestSecret
         $env:POSTGRES_DB = 'atelierconnect_validation'
         try {
             Invoke-Checked docker @('run', '-d', '--name', $TestContainer,
@@ -113,16 +107,7 @@ try {
         $env:POSTGRES_PASSWORD = ($metadata.Config.Env | Where-Object { $_ -like 'POSTGRES_PASSWORD=*' }) -replace '^POSTGRES_PASSWORD=', ''
         Invoke-Checked docker @('start', $TestContainer) 'postgres-start.log'
     }
-    $ready = $false
-    for ($attempt = 0; $attempt -lt 60; $attempt++) {
-        $ErrorActionPreference = 'Continue'
-        & docker exec $TestContainer pg_isready -U $env:POSTGRES_USER *> $null
-        $ready = $LASTEXITCODE -eq 0
-        $ErrorActionPreference = 'Stop'
-        if ($ready) { break }
-        Start-Sleep -Seconds 1
-    }
-    if (-not $ready) { throw 'Test PostgreSQL did not become ready.' }
+    Wait-TestPostgres -Container $TestContainer -User $env:POSTGRES_USER
     $metadata = (docker inspect $TestContainer | ConvertFrom-Json)[0]
     if (@($metadata.NetworkSettings.Ports.'5432/tcp'.HostPort) -notcontains "$PostgresPort") {
         throw 'Test container port does not match PostgresPort. No database was modified.'
@@ -132,12 +117,17 @@ try {
     $browserDatabase = "atelierconnect_browser_$runId"
     foreach ($database in @($testDatabase, $browserDatabase)) {
         Invoke-Checked docker @('exec', $TestContainer, 'createdb', '-U', $env:POSTGRES_USER, $database) "$database-create.log"
+        $migration = Join-Path $projectRoot 'scripts/migrations/20261107_add_debt_ledger.up.sql'
+        Get-Content $migration -Raw | & docker exec -i $TestContainer psql -X -v ON_ERROR_STOP=1 -U $env:POSTGRES_USER -d $database -f - *> (Join-Path $reportDir "$database-ledger.log")
+        if ($LASTEXITCODE -ne 0) { throw 'Additive debt ledger preparation failed on the isolated database.' }
     }
     $env:SPRING_DATASOURCE_URL = "jdbc:postgresql://127.0.0.1:$PostgresPort/$testDatabase"
-    $env:JWT_SECRET = New-RandomSecret
-    $env:APP_DEMO_MEMBER_PASSWORD = New-RandomSecret
-    $env:APP_DEMO_ADMIN_PASSWORD = New-RandomSecret
+    $env:JWT_SECRET = New-TestSecret
+    $env:APP_DEMO_MEMBER_PASSWORD = New-TestSecret
+    $env:APP_DEMO_ADMIN_PASSWORD = New-TestSecret
     $env:RUN_POSTGRES_CONCURRENCY_TEST = 'true'
+    # Scheduler scenarios are invoked explicitly by tests, not by the wall clock.
+    $env:APP_PRIVATE_PENALTY_CRON = '-'
     Write-Host 'Compiling and testing Java against the dedicated test database...'
     Invoke-Checked (Join-Path $projectRoot 'mvnw.cmd') @('-B', '-ntp', 'clean', 'verify') 'maven.log'
 
@@ -180,22 +170,13 @@ try {
         throw 'Browser report contains failed or skipped tests.'
     }
 
-    $fingerprintSql = "SELECT md5(COALESCE(string_agg(row_to_json(r)::text, '' ORDER BY id), '')) FROM reservations r;"
+    $fingerprintSql = "SELECT md5(concat((SELECT COALESCE(string_agg(row_to_json(r)::text, '' ORDER BY id), '') FROM reservations r), (SELECT COALESCE(string_agg(row_to_json(m)::text, '' ORDER BY id), '') FROM mouvements_dette m), (SELECT COALESCE(string_agg(json_build_object('id',id,'solde',solde)::text, '' ORDER BY id), '') FROM participants)));"
     $beforeRestart = Invoke-TestSql $browserDatabase $fingerprintSql
     Stop-OwnedProcesses
     $backend = $null
     $frontend = $null
     Invoke-Checked docker @('restart', $TestContainer) 'postgres-restart.log'
-    $ready = $false
-    for ($attempt = 0; $attempt -lt 60; $attempt++) {
-        $ErrorActionPreference = 'Continue'
-        & docker exec $TestContainer pg_isready -U $env:POSTGRES_USER *> $null
-        $ready = $LASTEXITCODE -eq 0
-        $ErrorActionPreference = 'Stop'
-        if ($ready) { break }
-        Start-Sleep -Seconds 1
-    }
-    if (-not $ready) { throw 'Test PostgreSQL did not recover after restart.' }
+    Wait-TestPostgres -Container $TestContainer -User $env:POSTGRES_USER
     if ($beforeRestart -ne (Invoke-TestSql $browserDatabase $fingerprintSql)) {
         throw 'Persistence check failed after test PostgreSQL restart.'
     }

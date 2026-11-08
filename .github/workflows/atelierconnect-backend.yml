@@ -2,10 +2,11 @@ name: AtelierConnect - Vérification full-stack
 
 on:
   push:
-    branches: [ "phase-2/refactoring-backend", "phase-3/refactoring-frontend", "develop" ]
+    branches: [ "phase-2/refactoring-backend", "phase-3/refactoring-frontend", "develop", "fix/**" ]
     paths:
       - "AtelierConnect/src/**"
       - "AtelierConnect/pom.xml"
+      - "AtelierConnect/scripts/**"
       - "AtelierConnect/frontend/**"
       - ".github/workflows/atelierconnect-backend.yml"
   pull_request:
@@ -13,6 +14,7 @@ on:
     paths:
       - "AtelierConnect/src/**"
       - "AtelierConnect/pom.xml"
+      - "AtelierConnect/scripts/**"
       - "AtelierConnect/frontend/**"
       - ".github/workflows/atelierconnect-backend.yml"
 
@@ -44,6 +46,7 @@ jobs:
       POSTGRES_USER: atelier_ci
       POSTGRES_PASSWORD: ci_only_password
       RUN_POSTGRES_CONCURRENCY_TEST: "true"
+      APP_PRIVATE_PENALTY_CRON: "-"
 
     steps:
       - name: Checkout
@@ -131,6 +134,7 @@ jobs:
       SPRING_DATASOURCE_URL: jdbc:postgresql://127.0.0.1:5441/atelierconnect_browser
       POSTGRES_USER: atelier_browser
       POSTGRES_PASSWORD: browser_ci_only
+      APP_PRIVATE_PENALTY_CRON: "-"
 
     steps:
       - name: Checkout

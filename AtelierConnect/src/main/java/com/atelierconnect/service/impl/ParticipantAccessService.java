@@ -50,11 +50,7 @@ public class ParticipantAccessService {
     }
 
     public void assertCanRead(Participant participant) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean admin = authentication != null && authentication.getAuthorities().stream()
-                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
-
-        if (admin) {
+        if (isAdmin()) {
             adminAuthorizationService.checkParticipantAccess(participant);
             return;
         }
@@ -63,14 +59,16 @@ public class ParticipantAccessService {
     }
 
     private boolean canRead(Participant participant) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean admin = authentication != null && authentication.getAuthorities().stream()
-                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
-
-        if (admin) {
+        if (isAdmin()) {
             return adminAuthorizationService.canAccessParticipant(participant);
         }
 
         return currentParticipantService.isCurrentParticipantId(participant.getId());
+    }
+
+    private boolean isAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
     }
 }
