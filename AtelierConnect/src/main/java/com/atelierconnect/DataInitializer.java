@@ -49,6 +49,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
+    private record DemoAdminAccount(String matricule, String email, String legacyEmail) { }
+
+    private static final DemoAdminAccount GLOBAL_ADMIN = new DemoAdminAccount(
+            "ADMIN001", "admin@atelierconnect.example", "admin@padel.com");
+    private static final DemoAdminAccount BRUXELLES_ADMIN = new DemoAdminAccount(
+            "ADMIN002", "admin.bruxelles@atelierconnect.example", "admin.lyon@padel.com");
+    private static final DemoAdminAccount NAMUR_ADMIN = new DemoAdminAccount(
+            "ADMIN003", "admin.namur@atelierconnect.example", "admin.paris@padel.com");
+
     @Value("${APP_DEMO_MEMBER_PASSWORD}")
     private String demoParticipantPassword;
     private final CentreRepository centreRepository;
@@ -211,29 +220,23 @@ public class DataInitializer implements CommandLineRunner {
         seedDemoPenaltyOnce(penalise);
         seedAteliers(salleCreation, salleFormation, salleCollaborative, salleNumerique, lucas, emma, tom, sarah, alex);
 //-----------------------Administrateurs--------------------//
-        saveDemoAdmin(Administrateur.builder()
-                .matricule("ADMIN001")
+        saveDemoAdmin(GLOBAL_ADMIN, Administrateur.builder()
                 .nom("Admin")
                 .prenom("Global")
-                .email("admin@atelierconnect.example")
                 .typeAdministrateur(TypeAdministrateur.GLOBAL)
                 .centre(null)
                 .build());
 
-        saveDemoAdmin(Administrateur.builder()
-                .matricule("ADMIN002")
+        saveDemoAdmin(BRUXELLES_ADMIN, Administrateur.builder()
                 .nom("Admin")
                 .prenom("Bruxelles")
-                .email("admin.bruxelles@atelierconnect.example")
                 .typeAdministrateur(TypeAdministrateur.SITE)
                 .centre(centreBruxelles)
                 .build());
 
-        saveDemoAdmin(Administrateur.builder()
-                .matricule("ADMIN003")
+        saveDemoAdmin(NAMUR_ADMIN, Administrateur.builder()
                 .nom("Admin")
                 .prenom("Namur")
-                .email("admin.namur@atelierconnect.example")
                 .typeAdministrateur(TypeAdministrateur.SITE)
                 .centre(centreNamur)
                 .build());
@@ -347,26 +350,36 @@ public class DataInitializer implements CommandLineRunner {
         });
     }
 
-    private void saveDemoAdmin(Administrateur admin) {
+    private void saveDemoAdmin(DemoAdminAccount account, Administrateur admin) {
+        admin.setMatricule(account.matricule());
+        admin.setEmail(account.email());
         admin.setPasswordHash(passwordEncoder.encode(admin.getMatricule()));
         administrateurRepository.save(admin);
     }
 
     private void ensureDemoAdminCredentials() {
-        // Maintenir les identifiants historiques des bases déjà initialisées.
-        updateDemoAdminCredentials("admin@padel.com");
-        updateDemoAdminCredentials("admin.lyon@padel.com");
-        updateDemoAdminCredentials("admin.paris@padel.com");
-        updateDemoAdminCredentials("admin@atelierconnect.example");
-        updateDemoAdminCredentials("admin.bruxelles@atelierconnect.example");
-        updateDemoAdminCredentials("admin.namur@atelierconnect.example");
+        List.of(GLOBAL_ADMIN, BRUXELLES_ADMIN, NAMUR_ADMIN).forEach(this::updateDemoAdminCredentials);
     }
 
-    private void updateDemoAdminCredentials(String email) {
-        administrateurRepository.findByEmail(email).ifPresent(admin -> {
-            // Préserver les identifiants de connexion déjà personnalisés.
+    private void updateDemoAdminCredentials(DemoAdminAccount account) {
+        administrateurRepository.findByMatricule(account.matricule()).ifPresent(admin -> {
+            boolean changed = false;
+            // Remplacer uniquement l'adresse historique connue, jamais une adresse personnalisée.
+            if (!StringUtils.hasText(admin.getEmail()) || account.legacyEmail().equalsIgnoreCase(admin.getEmail())) {
+                administrateurRepository.findByEmail(account.email()).ifPresent(existing -> {
+                    if (!existing.getId().equals(admin.getId())) {
+                        throw new IllegalStateException("L'adresse administrateur de démonstration est déjà utilisée : " + account.email());
+                    }
+                });
+                admin.setEmail(account.email());
+                changed = true;
+            }
+            // Préserver les mots de passe déjà enregistrés, y compris personnalisés.
             if (!StringUtils.hasText(admin.getPasswordHash())) {
                 admin.setPasswordHash(passwordEncoder.encode(admin.getMatricule()));
+                changed = true;
+            }
+            if (changed) {
                 administrateurRepository.save(admin);
             }
         });
